@@ -21,7 +21,7 @@ def index():
 
 @app.route('/<path:filename>')
 def static_files(filename):
-    return send_from_directory(BASE_DIR, filename)
+return send_from_directory(BASE_DIR, filename)
 
 # ── Proxy: Voyage AI ──────────────────────────────────────────────────────────
 @app.route('/voyage/embeddings', methods=['POST'])
