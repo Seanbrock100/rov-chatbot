@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROV Manual Chatbot — Cloud</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #2a2e3a; border-radius: 2px; }
+
+  body { font-family: 'IBM Plex Sans', sans-serif; background: #0e1118; color: #ddd8cc; min-height: 100vh; display: flex; flex-direction: column; }
+
+  #header { border-bottom: 1px solid #1a1e28; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; background: #0b0e16; flex-shrink: 0; }
+  #header h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: #f0ece0; }
+  .phase-badge { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.15em; padding: 2px 8px; border-radius: 2px; border: 1px solid #00b4d8; color: #00b4d8; background: rgba(0,180,216,0.08); margin-left: 10px; }
+  #sub-header { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #4a5060; letter-spacing: 0.1em; margin-top: 4px; }
+  #file-info { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-align: right; display: none; }
+  #file-stats { color: #3a7a5a; margin-top: 2px; }
+
+  #body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* ── KEY STAGE ── */
+  .centre-stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px; }
+  .stage-inner { width: 100%; max-width: 480px; }
+  .card { background: #13171f; border: 1px solid #1e2330; border-radius: 4px; padding: 24px; }
+  .card-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: #00b4d8; text-transform: uppercase; margin-bottom: 12px; }
+  .card-body { font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; color: #8a8070; line-height: 1.7; margin-bottom: 20px; }
+  .key-input { width: 100%; background: #0a0d14; border: 1px solid #2a3040; border-radius: 3px; padding: 12px 14px; color: #ddd8cc; font-family: 'IBM Plex Mono', monospace; font-size: 13px; outline: none; letter-spacing: 0.05em; transition: border-color 0.2s; }
+  .key-input:focus { border-color: #e8a44a; }
+  .primary-btn { background: #e8a44a; border: none; color: #0e1118; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; padding: 11px 20px; cursor: pointer; border-radius: 3px; transition: all 0.15s; width: 100%; margin-top: 14px; }
+  .primary-btn:hover:not(:disabled) { background: #d4923a; }
+  .primary-btn:disabled { background: #2a2e3a; color: #4a5060; cursor: not-allowed; }
+  .info-box { margin-top: 20px; padding: 16px; background: #13171f; border: 1px solid #1e2330; border-radius: 4px; }
+  .info-title { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: #4a5060; text-transform: uppercase; margin-bottom: 8px; }
+  .info-body { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5a6070; line-height: 1.9; }
+  .info-note { color: #00b4d8; display: block; margin-top: 4px; }
+
+  /* ── DROP ZONE ── */
+  #drop-zone { border: 1px dashed #2a3040; border-radius: 6px; padding: 48px 32px; text-align: center; cursor: pointer; transition: all 0.2s; background: #13171f; }
+  #drop-zone:hover { border-color: #e8a44a; background: rgba(232,164,74,0.04); }
+  #drop-zone .icon { font-size: 32px; margin-bottom: 16px; }
+  #drop-zone .title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: #e8a44a; margin-bottom: 8px; }
+  #drop-zone .sub { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #4a5060; line-height: 1.7; }
+  #error-box { display: none; margin-top: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #c0504a; padding: 10px 14px; background: rgba(192,80,74,0.08); border-radius: 3px; border: 1px solid rgba(192,80,74,0.2); }
+
+  /* ── PROCESSING ── */
+  #processing-stage { display: none; flex: 1; align-items: center; justify-content: center; padding: 32px; text-align: center; }
+  .proc-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: #e8a44a; margin-bottom: 20px; }
+  #processing-step { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6a7080; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; }
+  .progress-outer { background: #1e2330; border-radius: 2px; height: 4px; width: 100%; max-width: 360px; margin: 0 auto 8px; }
+  .progress-inner { background: #e8a44a; height: 4px; border-radius: 2px; transition: width 0.3s; width: 0%; }
+  #progress-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #4a5060; }
+  #embed-note { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #3a5040; margin-top: 6px; }
+
+  /* ── CHAT ── */
+  #chat-stage { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+  #messages { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+  .msg-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 4px; }
+  .msg-label.user { color: #4a7090; }
+  .msg-label.assistant { color: #8a7040; }
+  .msg-bubble { padding: 14px 16px; border-radius: 4px; font-size: 13px; line-height: 1.85; white-space: pre-wrap; }
+  .msg-bubble.user { background: transparent; border: 1px solid #1e2330; border-left: 3px solid #3a5060; color: #a0b0c0; }
+  .msg-bubble.assistant { background: #13171f; border: 1px solid #1e2330; border-left: 3px solid #e8a44a; color: #ccc8bc; }
+  .chunk-meta { margin-top: 12px; padding-top: 10px; border-top: 1px solid #1e2330; }
+  .chunk-meta-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: #3a4050; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .chunk-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chunk-pill { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.1em; padding: 3px 8px; border-radius: 2px; border: 1px solid #2a3040; background: #13171f; cursor: pointer; transition: all 0.15s; }
+  .chunk-pill:hover { border-color: #e8a44a; }
+  .chunk-pill.high { color: #4a9a6a; border-color: #2a5a3a; }
+  .chunk-pill.mid  { color: #a0904a; border-color: #4a4020; }
+  .chunk-pill.low  { color: #6a7080; }
+  .chunk-drawer { background: #0a0d14; border: 1px solid #1e2330; border-radius: 4px; padding: 14px; margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.7; color: #6a7a6a; max-height: 200px; overflow-y: auto; display: none; }
+  .chunk-drawer.open { display: block; }
+  .chunk-drawer-title { color: #00b4d8; margin-bottom: 6px; font-size: 10px; }
+  #thinking { display: none; align-items: center; gap: 10px; padding: 12px 16px; background: #13171f; border: 1px solid #1e2330; border-left: 3px solid #e8a44a; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #4a5060; margin: 0 24px 12px; }
+
+  /* ── INPUT ── */
+  #input-bar { border-top: 1px solid #1a1e28; padding: 16px 24px; background: #0b0e16; flex-shrink: 0; }
+  #input-row { display: flex; gap: 10px; align-items: flex-end; max-width: 900px; }
+  #input-field { flex: 1; background: #13171f; border: 1px solid #1e2330; border-radius: 3px; padding: 10px 14px; color: #ddd8cc; font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; outline: none; resize: none; line-height: 1.5; }
+  #input-field:focus { border-color: #3a4050; }
+  #send-btn { background: #e8a44a; border: none; color: #0e1118; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.08em; padding: 10px 20px; cursor: pointer; border-radius: 3px; transition: all 0.15s; white-space: nowrap; }
+  #send-btn:hover:not(:disabled) { background: #d4923a; }
+  #send-btn:disabled { background: #2a2e3a; color: #4a5060; cursor: not-allowed; }
+  #input-hint { margin-top: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: #2a3040; letter-spacing: 0.1em; }
+
+  .spinner { width: 12px; height: 12px; border: 2px solid #2a2e3a; border-top-color: #e8a44a; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <div style="display:flex;align-items:center;">
+      <h1>ROV Manual Chatbot</h1>
+      <span class="phase-badge">PHASE 2B</span>
+    </div>
+    <div id="sub-header">CLOUD HOSTED · SEMANTIC SEARCH · SUBSEA 7 — SEVEN OCEANIC</div>
+  </div>
+  <div id="file-info">
+    <div id="file-name"></div>
+    <div id="file-stats"></div>
+  </div>
+</div>
+
+<div id="body">
+
+  <!-- KEY ENTRY -->
+  <div id="key-stage" class="centre-stage">
+    <div class="stage-inner">
+      <div class="card">
+        <div class="card-label">API Keys — All stay in browser memory only</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;color:#4a5060;text-transform:uppercase;margin-bottom:6px;">Voyage AI Key</div>
+        <input class="key-input" id="voyage-key-input" type="password" placeholder="pa-xxxxxxxxxxxxxxxxxxxxxxxx" />
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;color:#4a5060;text-transform:uppercase;margin-bottom:6px;">Anthropic API Key</div>
+        <input class="key-input" id="anthropic-key-input" type="password" placeholder="sk-ant-xxxxxxxxxxxxxxxxxxxx" />
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;color:#4a5060;text-transform:uppercase;margin-bottom:6px;">Supabase Project URL</div>
+        <input class="key-input" id="supabase-url-input" type="text" placeholder="https://xxxx.supabase.co" style="letter-spacing:normal;" />
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;color:#4a5060;text-transform:uppercase;margin-bottom:6px;">Supabase Anon Key</div>
+        <input class="key-input" id="supabase-anon-input" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;color:#4a5060;text-transform:uppercase;margin-bottom:6px;">Supabase Service Role Key</div>
+        <input class="key-input" id="supabase-service-input" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+        <button class="primary-btn" id="confirm-key-btn" disabled>Confirm Keys →</button>
+      </div>
+      <div class="info-box">
+        <div class="info-title">What changed from Phase 2A</div>
+        <div class="info-body">
+          Phase 2A: vectors in browser memory — lost on close<br>
+          Phase 2B: vectors in Supabase — permanent, instant reload<br>
+          <span class="info-note">↳ Embed once, query forever across any device</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div id="upload-stage" class="centre-stage" style="display:none;">
+    <div class="stage-inner">
+      <div id="drop-zone">
+        <div class="icon">📄</div>
+        <div class="title">Drop your manual here</div>
+        <div class="sub">
+          PDF only · First upload embeds via Voyage AI (~60s)<br>
+          Subsequent loads are instant from Supabase
+        </div>
+        <input id="file-input" type="file" accept="application/pdf" style="display:none">
+      </div>
+      <div id="error-box"></div>
+    </div>
+  </div>
+
+  <!-- PROCESSING -->
+  <div id="processing-stage">
+    <div style="width:100%;max-width:420px;">
+      <div class="proc-title">Building semantic index...</div>
+      <div id="processing-step"><span class="spinner"></span><span id="step-text">Starting...</span></div>
+      <div class="progress-outer"><div class="progress-inner" id="progress-bar"></div></div>
+      <div id="progress-label"></div>
+      <div id="embed-note">Each chunk is being converted to meaning-coordinates by Voyage AI</div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat-stage">
+    <div id="messages"></div>
+    <div id="thinking"><span class="spinner"></span>Embedding query · Semantic search · Querying Claude...</div>
+    <div id="input-bar">
+      <div id="input-row">
+        <textarea id="input-field" rows="2" placeholder="Ask in plain English — semantic search handles the rest..."></textarea>
+        <button id="send-btn" disabled>Send ↵</button>
+      </div>
+      <div id="input-hint">ENTER TO SEND · SHIFT+ENTER FOR NEW LINE · SEMANTIC SEARCH · PHASE 2B</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const CHUNK_SIZE    = 400;
+const CHUNK_OVERLAP = 50;
+const TOP_K         = 4;
+const VOYAGE_MODEL  = 'voyage-large-2';
+
+const SYSTEM_PROMPT = `You are an experienced offshore ROV and marine construction technician working aboard a Subsea 7 vessel. You specialise in:
+- Fault finding and diagnostics on deck and subsea equipment
+- Operating procedures for cranes, winches, and launch systems
+- Maintenance and inspection of hydraulic, electrical, and mechanical systems
+
+You are answering questions from Sean Brock, an electronic systems specialist with HND Electrical and Electronic Engineering. Treat him as a peer engineer — no basics, no padding.
+
+Rules:
+1. Answer ONLY from the manual chunks provided. Do not use outside knowledge.
+2. Always cite the chunk number and page (if available) you drew from.
+3. If the answer isn't in the provided chunks, say so clearly — do not guess.
+4. Use numbered lists for procedures, tables for specs, plain prose for explanations.
+5. Be direct. No preamble. No sign-off.`;
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let voyageKey      = '';
+let anthropicKey   = '';
+let supabaseUrl    = '';
+let supabaseAnon   = '';
+let supabaseService = '';
+let chunks      = [];
+let chatHistory = [];
+let isLoading   = false;
+
+// ── PDF.JS ────────────────────────────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+async function extractTextFromPDF(file) {
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page    = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    pages.push({ pageNum: i, text: content.items.map(x => x.str).join(' ') });
+  }
+  return pages;
+}
+
+// ── CHUNKING ──────────────────────────────────────────────────────────────────
+function chunkPages(pages) {
+  const tokens = [];
+  for (const { pageNum, text } of pages)
+    for (const word of text.split(/\s+/).filter(Boolean))
+      tokens.push({ word, pageNum });
+
+  const result = [];
+  let i = 0, id = 0;
+  while (i < tokens.length) {
+    const slice     = tokens.slice(i, i + CHUNK_SIZE);
+    const startPage = slice[0]?.pageNum ?? 0;
+    const endPage   = slice[slice.length - 1]?.pageNum ?? 0;
+    result.push({
+      id: id++, text: slice.map(t => t.word).join(' '),
+      startPage, endPage,
+      label: startPage === endPage ? `Page ${startPage}` : `Pages ${startPage}–${endPage}`,
+      embedding: null,
+    });
+    i += CHUNK_SIZE - CHUNK_OVERLAP;
+  }
+  return result;
+}
+
+// ── VOYAGE AI ─────────────────────────────────────────────────────────────────
+// Send texts to Voyage AI — retries automatically on 429 rate limit
+async function voyageEmbed(texts, inputType, retries = 4) {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const res = await fetch('/voyage/embeddings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${voyageKey}` },
+      body: JSON.stringify({ model: VOYAGE_MODEL, input: texts, input_type: inputType }),
+    });
+    if (res.status === 429) {
+      // Rate limited — back off and retry
+      const wait = (attempt + 1) * 3000;
+      document.getElementById('step-text').textContent = `Rate limited by Voyage AI — retrying in ${wait/1000}s...`;
+      await new Promise(r => setTimeout(r, wait));
+      continue;
+    }
+    const data = await res.json();
+    if (data.error) throw new Error('Voyage AI: ' + (data.error.message || JSON.stringify(data.error)));
+    if (!data.data) throw new Error('Voyage AI unexpected response: ' + JSON.stringify(data));
+    return data.data.map(d => d.embedding);
+  }
+  throw new Error('Voyage AI rate limit — exceeded retries. Wait 60s and reload.');
+}
+
+// Embed chunks in small batches with generous pauses — respects free tier limits
+async function embedAllChunks(rawChunks) {
+  const BATCH = 8;    // small batches — free tier allows ~300 req/min
+  const DELAY = 1200; // 1.2s between batches — well within rate limits
+  const result = rawChunks.map(c => ({ ...c }));
+  for (let i = 0; i < result.length; i += BATCH) {
+    const batch      = result.slice(i, i + BATCH);
+    const embeddings = await voyageEmbed(batch.map(c => c.text), 'document');
+    embeddings.forEach((emb, j) => { result[i + j].embedding = emb; });
+    const done = Math.min(i + BATCH, result.length);
+    const pct  = Math.round((done / result.length) * 100);
+    document.getElementById('progress-bar').style.width   = pct + '%';
+    document.getElementById('progress-label').textContent = `${done} / ${result.length} chunks embedded (${pct}%)`;
+    document.getElementById('step-text').textContent      = `Embedding chunks: ${done}/${result.length}`;
+    if (i + BATCH < result.length) await new Promise(r => setTimeout(r, DELAY));
+  }
+  return result;
+}
+
+// ── COSINE SIMILARITY ─────────────────────────────────────────────────────────
+// Measures how close two meaning-coordinate vectors are (0 = unrelated, 1 = identical)
+function cosine(a, b) {
+  let dot = 0, ma = 0, mb = 0;
+  for (let i = 0; i < a.length; i++) { dot += a[i]*b[i]; ma += a[i]*a[i]; mb += b[i]*b[i]; }
+  return dot / (Math.sqrt(ma) * Math.sqrt(mb));
+}
+
+// ── SEMANTIC RETRIEVAL ────────────────────────────────────────────────────────
+function retrieveSemantic(queryEmbedding) {
+  return chunks
+    .filter(c => c.embedding)
+    .map(c => ({ chunk: c, score: cosine(c.embedding, queryEmbedding) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, TOP_K);
+}
+
+
+// ── SUPABASE ──────────────────────────────────────────────────────────────────
+
+// Check if this manual already exists in Supabase
+async function manualExistsInDB(manualName) {
+  const res = await fetch(
+    `/supabase/chunks?manual_name=eq.${encodeURIComponent(manualName)}&limit=1&select=id`,
+    { headers: { 'apikey': supabaseAnon, 'Authorization': `Bearer ${supabaseAnon}`, 'x-supabase-url': supabaseUrl } }
+  );
+  const data = await res.json();
+  return Array.isArray(data) && data.length > 0;
+}
+
+// Save all embedded chunks to Supabase
+async function saveChunksToDB(embeddedChunks, manualName) {
+  const BATCH = 50;
+  for (let i = 0; i < embeddedChunks.length; i += BATCH) {
+    const batch = embeddedChunks.slice(i, i + BATCH).map(c => ({
+      manual_name:  manualName,
+      page_label:   c.label,
+      chunk_index:  c.id,
+      text:         c.text,
+      embedding:    JSON.stringify(c.embedding), // pgvector accepts JSON array
+    }));
+    const res = await fetch(`/supabase/chunks`, {
+      method: 'POST',
+      headers: {
+        'apikey':          supabaseService,
+        'Authorization':   `Bearer ${supabaseService}`,
+        'Content-Type':    'application/json',
+        'Prefer':          'return=minimal',
+        'x-supabase-url':  supabaseUrl,
+      },
+      body: JSON.stringify(batch),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error('Supabase save failed: ' + err);
+    }
+    const done = Math.min(i + BATCH, embeddedChunks.length);
+    setStep(`Saving to database: ${done}/${embeddedChunks.length}`);
+  }
+}
+
+// Load chunks from Supabase for a given manual
+async function loadChunksFromDB(manualName) {
+  const res = await fetch(
+    `/supabase/chunks?manual_name=eq.${encodeURIComponent(manualName)}&order=chunk_index.asc&select=*`,
+    { headers: { 'apikey': supabaseAnon, 'Authorization': `Bearer ${supabaseAnon}`, 'x-supabase-url': supabaseUrl } }
+  );
+  const data = await res.json();
+  if (!Array.isArray(data)) throw new Error('Failed to load from Supabase: ' + JSON.stringify(data));
+  return data.map(row => ({
+    id:        row.chunk_index,
+    text:      row.text,
+    label:     row.page_label,
+    embedding: typeof row.embedding === 'string' ? JSON.parse(row.embedding) : row.embedding,
+  }));
+}
+
+// Semantic search via Supabase RPC function
+async function searchSupabase(queryEmbedding) {
+  const res = await fetch(`/supabase/rpc/match_chunks`, {
+    method: 'POST',
+    headers: {
+      'apikey':          supabaseAnon,
+      'Authorization':   `Bearer ${supabaseAnon}`,
+      'Content-Type':    'application/json',
+      'x-supabase-url':  supabaseUrl,
+    },
+    body: JSON.stringify({ query_embedding: queryEmbedding, match_count: TOP_K }),
+  });
+  const data = await res.json();
+  if (!Array.isArray(data)) throw new Error('Supabase search failed: ' + JSON.stringify(data));
+  return data.map(row => ({
+    chunk: { id: row.chunk_index, text: row.text, label: row.page_label },
+    score: row.similarity,
+  }));
+}
+
+// Get list of all manuals stored in Supabase
+async function getStoredManuals() {
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/chunks?select=manual_name&order=manual_name.asc`,
+    { headers: { 'apikey': supabaseAnon, 'Authorization': `Bearer ${supabaseAnon}` } }
+  );
+  const data = await res.json();
+  if (!Array.isArray(data)) return [];
+  const unique = [...new Set(data.map(r => r.manual_name))];
+  return unique;
+}
+
+// ── CLAUDE API ────────────────────────────────────────────────────────────────
+async function askClaude(query, retrieved) {
+  const context = retrieved
+    .map(({ chunk, score }) =>
+      `[Chunk ${chunk.id} | ${chunk.label} | similarity: ${score.toFixed(3)}]\n${chunk.text}`)
+    .join('\n\n---\n\n');
+
+  const messages = [
+    ...chatHistory.slice(-6),
+    { role: 'user', content: `<manual_excerpts>\n${context}\n</manual_excerpts>\n\n<question>${query}</question>` },
+  ];
+
+  const res = await fetch('/anthropic/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: SYSTEM_PROMPT, messages }),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.content?.map(b => b.text || '').join('') || 'No response.';
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function showStage(stage) {
+  ['key-stage','upload-stage','processing-stage','chat-stage'].forEach(id => {
+    const el = document.getElementById(id);
+    if (id === 'processing-stage' || id === 'chat-stage') {
+      el.style.display = el.id.replace('-stage','') === stage ? 'flex' : 'none';
+    } else {
+      el.style.display = el.id.replace('-stage','') === stage ? 'flex' : 'none';
+    }
+  });
+}
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.textContent = msg;
+  box.style.display = msg ? 'block' : 'none';
+}
+
+function setStep(text) { document.getElementById('step-text').textContent = text; }
+
+function appendMessage(role, content, retrieved) {
+  const msgs    = document.getElementById('messages');
+  const wrapper = document.createElement('div');
+
+  const label       = document.createElement('div');
+  label.className   = `msg-label ${role}`;
+  label.textContent = role === 'user' ? 'Sean' : 'Manual AI';
+  wrapper.appendChild(label);
+
+  const bubble       = document.createElement('div');
+  bubble.className   = `msg-bubble ${role}`;
+  bubble.textContent = content;
+  wrapper.appendChild(bubble);
+
+  if (role === 'assistant' && retrieved && retrieved.length > 0) {
+    const meta = document.createElement('div');
+    meta.className = 'chunk-meta';
+
+    const metaLabel       = document.createElement('div');
+    metaLabel.className   = 'chunk-meta-label';
+    metaLabel.textContent = 'Retrieved chunks — semantic similarity scores';
+    meta.appendChild(metaLabel);
+
+    const pills = document.createElement('div');
+    pills.className = 'chunk-pills';
+
+    retrieved.forEach(({ chunk, score }) => {
+      const simClass = score > 0.8 ? 'high' : score > 0.6 ? 'mid' : 'low';
+      const pill     = document.createElement('span');
+      pill.className = `chunk-pill ${simClass}`;
+      pill.textContent = `Chunk ${chunk.id} · ${chunk.label} · ${score.toFixed(3)}`;
+
+      const drawer = document.createElement('div');
+      drawer.className = 'chunk-drawer';
+      drawer.innerHTML = `<div class="chunk-drawer-title">Chunk ${chunk.id} · ${chunk.label} · similarity ${score.toFixed(3)}</div>${chunk.text}`;
+
+      pill.addEventListener('click', () => drawer.classList.toggle('open'));
+      pills.appendChild(pill);
+      meta.appendChild(pills);
+      meta.appendChild(drawer);
+    });
+
+    bubble.appendChild(meta);
+  }
+
+  msgs.appendChild(wrapper);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function setLoading(val) {
+  isLoading = val;
+  document.getElementById('thinking').style.display = val ? 'flex' : 'none';
+  document.getElementById('send-btn').disabled      = val;
+}
+
+// ── FILE HANDLER — Phase 2B ──────────────────────────────────────────────────
+async function handleFile(file) {
+  if (!file || file.type !== 'application/pdf') { showError('PDF files only.'); return; }
+  showError('');
+  showStage('processing');
+  const manualName = file.name;
+
+  try {
+    // Check if already embedded and stored in Supabase
+    setStep('Checking database for existing embeddings...');
+    document.getElementById('progress-bar').style.width = '0%';
+    document.getElementById('embed-note').style.display = 'none';
+
+    const exists = await manualExistsInDB(manualName);
+
+    if (exists) {
+      // ── FAST PATH: load from Supabase ──────────────────────────────────────
+      setStep('Found in database — loading embeddings...');
+      document.getElementById('embed-note').textContent = 'Loading pre-computed vectors from Supabase — no re-embedding needed';
+      document.getElementById('embed-note').style.display = 'block';
+      chunks = await loadChunksFromDB(manualName);
+      document.getElementById('progress-bar').style.width = '100%';
+      document.getElementById('progress-label').textContent = `${chunks.length} chunks loaded from database instantly`;
+      setStep('✓ Loaded from Supabase.');
+
+    } else {
+      // ── FIRST TIME: extract, embed, save ───────────────────────────────────
+      setStep('Extracting text from PDF...');
+      const pages = await extractTextFromPDF(file);
+
+      setStep(`Chunking ${pages.length} pages...`);
+      await new Promise(r => setTimeout(r, 100));
+      const raw = chunkPages(pages);
+
+      document.getElementById('embed-note').textContent = 'First time loading — embedding via Voyage AI then saving to Supabase permanently';
+      document.getElementById('embed-note').style.display = 'block';
+      setStep(`Embedding ${raw.length} chunks via Voyage AI...`);
+      const embedded = await embedAllChunks(raw);
+
+      setStep(`Saving ${embedded.length} chunks to Supabase...`);
+      await saveChunksToDB(embedded, manualName);
+      chunks = embedded;
+      document.getElementById('progress-bar').style.width = '100%';
+      setStep('✓ Saved to Supabase. Future loads will be instant.');
+    }
+
+    await new Promise(r => setTimeout(r, 500));
+
+    document.getElementById('file-name').textContent  = manualName;
+    document.getElementById('file-stats').textContent = `✓ ${chunks.length} chunks · ${exists ? 'loaded from DB' : 'saved to DB'}`;
+    document.getElementById('file-info').style.display = 'block';
+
+    showStage('chat');
+    document.getElementById('send-btn').disabled = false;
+
+    appendMessage('assistant',
+      `Manual loaded: ${manualName}\n${chunks.length} chunks · ${exists ? '⚡ Instant load from Supabase — no re-embedding' : '✓ Embedded and saved to Supabase — future loads will be instant'}\n\nAsk me anything in plain English.`,
+      null);
+
+  } catch (err) {
+    showError('Processing failed: ' + err.message);
+    showStage('upload');
+  }
+}
+
+
+// ── SEND MESSAGE ──────────────────────────────────────────────────────────────
+async function sendMessage() {
+  const field = document.getElementById('input-field');
+  const q     = field.value.trim();
+  if (!q || isLoading) return;
+  field.value = '';
+
+  appendMessage('user', q, null);
+  setLoading(true);
+
+  try {
+    // 1. Embed the query
+    const [queryEmbedding] = await voyageEmbed([q], 'query');
+    // 2. Search Supabase by vector similarity
+    const retrieved = await searchSupabase(queryEmbedding);
+    if (!retrieved.length) {
+      appendMessage('assistant', 'No relevant sections found. Try rephrasing.', []);
+      setLoading(false);
+      return;
+    }
+    // 3. Ask Claude with retrieved chunks as context
+    const answer = await askClaude(q, retrieved);
+    chatHistory.push({ role: 'user', content: q }, { role: 'assistant', content: answer });
+    appendMessage('assistant', answer, retrieved);
+  } catch (err) {
+    appendMessage('assistant', 'Error: ' + err.message, null);
+  }
+
+  setLoading(false);
+  document.getElementById('messages').scrollTop = 999999;
+}
+
+// ── EVENT LISTENERS ───────────────────────────────────────────────────────────
+const keyInput   = document.getElementById('voyage-key-input');
+const confirmBtn = document.getElementById('confirm-key-btn');
+const dropZone   = document.getElementById('drop-zone');
+const fileInput  = document.getElementById('file-input');
+
+function checkKeys() {
+  confirmBtn.disabled = !document.getElementById('supabase-url-input').value.trim() ||
+                        !document.getElementById('voyage-key-input').value.trim() ||
+                        !document.getElementById('anthropic-key-input').value.trim() ||
+                        !document.getElementById('supabase-anon-input').value.trim() ||
+                        !document.getElementById('supabase-service-input').value.trim();
+}
+document.getElementById('supabase-url-input').addEventListener('input', checkKeys);
+document.getElementById('voyage-key-input').addEventListener('input', checkKeys);
+document.getElementById('anthropic-key-input').addEventListener('input', checkKeys);
+document.getElementById('supabase-anon-input').addEventListener('input', checkKeys);
+document.getElementById('supabase-service-input').addEventListener('input', checkKeys);
+keyInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && keyInput.value.trim()) confirmBtn.click();
+});
+confirmBtn.addEventListener('click', () => {
+  voyageKey       = keyInput.value.trim();
+  anthropicKey    = document.getElementById('anthropic-key-input').value.trim();
+  supabaseUrl     = document.getElementById('supabase-url-input').value.trim();
+  supabaseAnon    = document.getElementById('supabase-anon-input').value.trim();
+  supabaseService = document.getElementById('supabase-service-input').value.trim();
+  showStage('upload');
+});
+
+dropZone.addEventListener('click',    ()  => fileInput.click());
+dropZone.addEventListener('dragover', e   => { e.preventDefault(); dropZone.style.borderColor = '#e8a44a'; });
+dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; });
+dropZone.addEventListener('drop',     e   => {
+  e.preventDefault(); dropZone.style.borderColor = '';
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+document.getElementById('send-btn').addEventListener('click', sendMessage);
+document.getElementById('input-field').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+// Init
+showStage('key');
+</script>
+</body>
+</html>
