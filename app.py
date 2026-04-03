@@ -24,7 +24,7 @@ SUPABASE_SERVICE = os.environ.get('SUPABASE_SERVICE', '')
 # ── Serve frontend ────────────────────────────────────────────────────────────
 @app.route('/')
 def index():
-    return send_from_directory(BASE_DIR, 'rov_agentic_chatbot 2.html')
+    return send_from_directory(BASE_DIR, 'rov_agentic_chatbot.html')
 
 @app.route('/<path:filename>')
 def static_files(filename):
