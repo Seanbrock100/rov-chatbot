@@ -17,7 +17,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # ── Serve frontend ────────────────────────────────────────────────────────────
 @app.route('/')
 def index():
-    return send_from_directory(BASE_DIR, 'index.html')
+    return send_from_directory(BASE_DIR, 'rov_agentic_chatbot.html')
+
 
 @app.route('/<path:filename>')
 def static_files(filename):
