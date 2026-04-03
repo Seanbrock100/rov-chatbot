@@ -77,7 +77,13 @@ def supabase_proxy(path):
         json    = request.get_json(silent=True),
         timeout = 30,
     )
-    return jsonify(res.json()) if res.text else ('', res.status_code), res.status_code
+if res.text:
+    try:
+        return jsonify(res.json()), res.status_code
+    except:
+        return res.text, res.status_code
+return '', res.status_code
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
