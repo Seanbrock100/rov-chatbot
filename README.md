@@ -28,3 +28,4 @@ pip install -r requirements.txt
 python app.py
 ```
 Then open http://localhost:8000
+# v2 - drawing tool enabled
