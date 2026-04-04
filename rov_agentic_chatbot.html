@@ -264,7 +264,7 @@
 // ════════════════════════════════════════════════════════════════════════════
 const CHUNK_WORDS   = 350;
 const CHUNK_OVERLAP = 50;
-const TOP_K         = 5;
+const TOP_K         = 3;
 const VOYAGE_BATCH  = 8;
 const SUPABASE_BATCH = 50;
 const VOYAGE_MODEL  = 'voyage-large-2';
@@ -611,7 +611,7 @@ async function runAgenticQuery(userQuestion, onStep) {
 
         const resultText = chunks.length > 0
           ? chunks.map((c, i) =>
-              `[Result ${i+1} | ${c.manual_name} | ${c.page_label} | similarity: ${c.similarity?.toFixed(3) ?? 'n/a'}]\n${c.text}`
+            `[Result ${i+1} | ${c.manual_name} | ${c.page_label} | similarity: ${c.similarity?.toFixed(3) ?? 'n/a'}]\n${c.text.split(' ').slice(0, 200).join(' ')}`
             ).join('\n\n---\n\n')
           : 'No results found for this query.';
 
