@@ -296,7 +296,7 @@ SYSTEM OVERVIEW — HERCULES 15 (use to guide searches):
 
 COMMUNICATIONS (CWDM/WWDM):
 - Tether: fibre optic, CWDM multiplexed
-- CWDM wavelengths: 1470nm (RS232/control), 1490nm (video ch1-4), 1510nm (video ch5-8), 1530nm (spare), 1550nm (Ethernet), 1570nm (WWDM payload), 1590nm (spare), 1610nm (HPU/thrusters)
+- CWDM wavelengths: 1470nm (RS232/control), 1490nm (video ch1-4), 1510nm (video ch5-8), 1530nm (spare), 1550nm (Ethernet/Gigabit), 1570nm (WWDM payload), 1590nm (spare), 1610nm (HPU/thrusters)
 - Rainbow CWDM system: topside rack ROV-0311-D-0680-00, bottomside in electronics pod
 - WWDM for high-bandwidth video over 1570nm channel
 - Key PCBs: PCB-0163 (control interface), PCB-0161 (video mux A), PCB-0162 (video mux B), PCB-0188 (FO interface), PCB-0094 (relay board), PCB-0165 (serial comms)
@@ -357,6 +357,14 @@ ROV-0311-D-0680-00  Rainbow & PSU Rack GA
 ROV-0311-D-0680-90  Rainbow & PSU Rack Wiring
 ROV-0311-D-0214-00  Combined WWDM & CWDM Topside Rack
 
+TOOL ROUTING RULES:
+- search_drawings: ONLY when user asks to "show me", "find the drawing", mentions a drawing number, or asks for a cable drawing
+- search_manuals: for fault-finding, technical specs, procedures, component details
+- search_fault_log: when user asks about historical faults, recurring issues, "has this happened before", "what failed on H15/H30"
+- search_handover_log: when user asks about recent trips, outstanding jobs, handover notes, "what did my back-to-back leave"
+- DO NOT call search_drawings when the user is asking about a fault or procedure
+- DO NOT call search_fault_log or search_handover_log when user asks for a drawing or cable
+
 ANSWER FORMAT:
 - Direct answers only, no preamble
 - Cite manual name + page/drawing number for every technical claim
@@ -386,13 +394,53 @@ const SEARCH_TOOL = {
 
 const DRAWING_TOOL = {
   name: 'search_drawings',
-  description: 'Search for individual technical drawings by drawing number, title, or system. Use when the user asks to see a drawing, or when a drawing number is referenced during fault finding. Returns a clickable Google Drive link.',
+  description: 'Search for technical drawings and cable drawings by drawing number, title, or system. ONLY use when user explicitly asks to see a drawing, mentions a drawing number, or asks for a cable drawing. Do NOT use for fault-finding queries.',
   input_schema: {
     type: 'object',
     properties: {
       query: {
         type: 'string',
-        description: 'Drawing number (e.g. "ROV-0311-D-0510-00"), system name (e.g. "T4 junction box wiring"), or component (e.g. "electronics pod GA")'
+        description: 'Drawing number (e.g. "ROV-0311-D-0510-00"), cable type (e.g. "altimeter cable"), or system name'
+      }
+    },
+    required: ['query']
+  }
+};
+
+const FAULT_LOG_TOOL = {
+  name: 'search_fault_log',
+  description: 'Search the historical fault log from the ROV Sub Engineers Log (H15 and H30). Use when user asks about historical faults, recurring issues, what has failed before, or fault history on a specific system. Returns dated fault entries with engineer notes.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      query: {
+        type: 'string',
+        description: 'Fault or system to search for, e.g. "T4 jaw fault", "valve pack", "thruster", "camera". Keep it concise — 2-4 words.'
+      },
+      vehicle: {
+        type: 'string',
+        description: 'Optional: filter by vehicle. Use "H15" or "H30". Omit to search both.',
+        enum: ['H15', 'H30']
+      }
+    },
+    required: ['query']
+  }
+};
+
+const HANDOVER_LOG_TOOL = {
+  name: 'search_handover_log',
+  description: 'Search end-of-trip handover reports (2023-2026). Use when user asks about recent trip history, outstanding jobs, what was handed over, recurring issues across trips, or what their back-to-back left for them.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      query: {
+        type: 'string',
+        description: 'Topic to search for, e.g. "outstanding jobs H15", "T4 manipulator", "latch beam", "TMS fault"'
+      },
+      category: {
+        type: 'string',
+        description: 'Optional: filter by category. fault=problems found, maintenance=work done, outstanding=pending jobs, watchout=warnings for incoming engineer.',
+        enum: ['fault', 'maintenance', 'outstanding', 'watchout', 'general']
       }
     },
     required: ['query']
@@ -548,6 +596,47 @@ async function searchDrawings(query) {
   return results || [];
 }
 
+async function searchFaultLog(query, vehicle) {
+  // Text search on description column — no embeddings needed
+  const headers = {
+    'apikey': config.supabaseAnon || '',
+    'Authorization': `Bearer ${config.supabaseAnon || ''}`,
+  };
+  if (appPassword) headers['X-App-Password'] = appPassword;
+
+  // Extract key terms and build ilike filter
+  const terms = query.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+  const primaryTerm = terms[0] || query;
+
+  let url = `/supabase/fault_log?description=ilike.*${encodeURIComponent(primaryTerm)}*&order=log_date.desc&limit=8&select=log_date,vehicle,section,description,engineer`;
+  if (vehicle) url += `&vehicle=eq.${vehicle}`;
+
+  const res = await fetch(url, {headers});
+  if (!res.ok) throw new Error(`fault_log search ${res.status}`);
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+async function searchHandoverLog(query, category) {
+  // Text search on content column
+  const headers = {
+    'apikey': config.supabaseAnon || '',
+    'Authorization': `Bearer ${config.supabaseAnon || ''}`,
+  };
+  if (appPassword) headers['X-App-Password'] = appPassword;
+
+  const terms = query.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+  const primaryTerm = terms[0] || query;
+
+  let url = `/supabase/handover_log?content=ilike.*${encodeURIComponent(primaryTerm)}*&order=trip_start.desc&limit=6&select=trip_start,trip_end,section,content,category,outgoing_engineer`;
+  if (category) url += `&category=eq.${category}`;
+
+  const res = await fetch(url, {headers});
+  if (!res.ok) throw new Error(`handover_log search ${res.status}`);
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 //  AGENTIC LOOP — multi-search Claude tool use
 // ════════════════════════════════════════════════════════════════════════════
@@ -573,7 +662,7 @@ async function runAgenticQuery(userQuestion, onStep) {
       model: ANTHROPIC_MODEL,
       max_tokens: 2000,
       system: SYSTEM_PROMPT,
-      tools: [SEARCH_TOOL, DRAWING_TOOL],
+      tools: [SEARCH_TOOL, DRAWING_TOOL, FAULT_LOG_TOOL, HANDOVER_LOG_TOOL],
       messages,
     };
 
@@ -635,6 +724,36 @@ async function runAgenticQuery(userQuestion, onStep) {
           : 'No drawings found matching this query.';
 
         toolResults.push({type: 'tool_result', tool_use_id: tu.id, content: resultText});
+
+      } else if (tu.name === 'search_fault_log') {
+        const query   = tu.input.query;
+        const vehicle = tu.input.vehicle || null;
+        onStep({type: 'search', query, reason: `Fault log: ${query}${vehicle ? ' ('+vehicle+')' : ''}`});
+        let entries = [];
+        try { entries = await searchFaultLog(query, vehicle); }
+        catch(e) { onStep({type: 'error', message: e.message}); }
+        onStep({type: 'result', query, count: entries.length, chunks: []});
+        const faultText = entries.length > 0
+          ? entries.map((e, i) =>
+            `[${i+1} | ${e.vehicle} | ${e.log_date || 'undated'} | ${e.section}]\n${e.description}${e.engineer ? ' — '+e.engineer : ''}`
+            ).join('\n\n---\n\n')
+          : 'No fault log entries found for this query.';
+        toolResults.push({type: 'tool_result', tool_use_id: tu.id, content: faultText});
+
+      } else if (tu.name === 'search_handover_log') {
+        const query    = tu.input.query;
+        const category = tu.input.category || null;
+        onStep({type: 'search', query, reason: `Handover log: ${query}${category ? ' ('+category+')' : ''}`});
+        let entries = [];
+        try { entries = await searchHandoverLog(query, category); }
+        catch(e) { onStep({type: 'error', message: e.message}); }
+        onStep({type: 'result', query, count: entries.length, chunks: []});
+        const handoverText = entries.length > 0
+          ? entries.map((e, i) =>
+            `[${i+1} | ${e.trip_start}-${e.trip_end || '?'} | ${e.section} | ${e.category}]\n${e.content}${e.outgoing_engineer ? ' — handed over by: '+e.outgoing_engineer : ''}`
+            ).join('\n\n---\n\n')
+          : 'No handover log entries found for this query.';
+        toolResults.push({type: 'tool_result', tool_use_id: tu.id, content: handoverText});
       }
     }
 
