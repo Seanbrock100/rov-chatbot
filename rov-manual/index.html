@@ -217,7 +217,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
           <div id="pod-ga-viewer" style="display:none;width:100%;height:100%;position:relative;background:var(--surface);overflow:hidden;">
             <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);padding:8px 14px;border-bottom:1px solid var(--border);letter-spacing:.1em;display:flex;justify-content:space-between;align-items:center;">
               <span>EQP952-0203-DR-PD-55000 — ELECTRONICS POD ASSEMBLY</span>
-              <span style="cursor:pointer;color:var(--amber)" onclick="window.open('manuals/drawings/EQP952-0203-DR-PD-55000.pdf','_blank')">↗ OPEN FULL DRAWING</span>
+              <span style="cursor:pointer;color:var(--amber)" onclick="window.open('manuals/EQP952-0203-DR-PD-55000.pdf','_blank')">↗ OPEN FULL DRAWING</span>
             </div>
             <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px;height:calc(100% - 32px);">
               <svg id="pod-ga-svg" viewBox="0 0 820 500" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:100%;overflow:visible;">
@@ -619,6 +619,21 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 </div>
 
 <script>
+// ── DESCRIPTIONS — loaded from descriptions_norm.json at startup ─────────────
+let DESCRIPTIONS = {};
+fetch('descriptions_norm.json').then(r => r.json()).then(d => {
+  DESCRIPTIONS = d;
+  console.log('Descriptions loaded:', Object.keys(d).length, 'entries');
+}).catch(e => console.warn('descriptions_norm.json not found:', e));
+
+function normKey(zone, name) {
+  let s = name.replace(/×/g,'x').replace(/–/g,'-').replace(/—/g,'-')
+              .replace(/×/g,'x').replace(/-{2,}/g,'-')
+              .replace(/&/g,'and').replace(/[()]/g,'')
+              .replace(/\s+/g,' ').trim().toLowerCase();
+  return zone + '/' + s;
+}
+
 // ── SNIPPETS ─────────────────────────────────────────────────────────────────
 const SNIPPETS = {
   electronics_pod: "The Electronics Pod on the Hercules MK3 ROV serves as the central command and control hub, housing all critical electrical systems required for vehicle operation and subsea tasks. The pod contains two main chassis systems: the control chassis which manages vehicle navigation, thrusters, and core functions, and the payload chassis which supports mission-specific equipment and tooling operations. Power distribution is handled by multiple power supply units (PSUs) that convert and regulate electrical power from the surface, while two penetrator rings provide watertight electrical connections between the internal systems and external components such as thrusters, lights, and manipulators. Communication with the surface is maintained through a Coarse Wavelength Division Multiplexing (CWDM) optical system that enables high-bandwidth data transmission for real-time video, telemetry, and control signals over the fiber optic tether.",
@@ -648,46 +663,46 @@ const SNIPPETS = {
 const DATA = {
   electronics_pod: {
     drawings: [
-      {num:"EQP952-0203-DR-PD-55000", title:"Electronics Pod Assembly", file:"manuals/drawings/EQP952-0203-DR-PD-55000.pdf"},
-      {num:"EQP952-0203-DR-PD-55001", title:"Control Chassis Assembly", file:"manuals/drawings/EQP952-0203-DR-PD-55001.pdf"},
-      {num:"EQP952-0203-DR-PD-55002", title:"Payload Chassis Assembly", file:"manuals/drawings/EQP952-0203-DR-PD-55002.pdf"},
-      {num:"EQP952-0203-DR-PD-55003", title:"Control Penetrator Ring Assembly", file:"manuals/drawings/EQP952-0203-DR-PD-55003.pdf"},
-      {num:"EQP952-0203-DR-PD-55004", title:"Payload Penetrator Ring Assembly", file:"manuals/drawings/EQP952-0203-DR-PD-55004.pdf"},
+      {num:"EQP952-0203-DR-PD-55000", title:"Electronics Pod Assembly", file:"manuals/EQP952-0203-DR-PD-55000.pdf"},
+      {num:"EQP952-0203-DR-PD-55001", title:"Control Chassis Assembly", file:"manuals/EQP952-0203-DR-PD-55001.pdf"},
+      {num:"EQP952-0203-DR-PD-55002", title:"Payload Chassis Assembly", file:"manuals/EQP952-0203-DR-PD-55002.pdf"},
+      {num:"EQP952-0203-DR-PD-55003", title:"Control Penetrator Ring Assembly", file:"manuals/EQP952-0203-DR-PD-55003.pdf"},
+      {num:"EQP952-0203-DR-PD-55004", title:"Payload Penetrator Ring Assembly", file:"manuals/EQP952-0203-DR-PD-55004.pdf"},
       {num:"EQP952-0203-DR-PD-55006", title:"MCB Earth Strip Plate GA (Control Chassis)", file:"manuals/drawings/EQP952-0203-DR-PD-55006.pdf"},
       {num:"EQP952-0203-DR-PD-55007", title:"MCB Earth Strip Plate GA (Payload Chassis)", file:"manuals/drawings/EQP952-0203-DR-PD-55007.pdf"},
-      {num:"EQP952-0203-DR-PD-55011", title:"Ethernet Gyro Cover Plate Assembly", file:"manuals/drawings/EQP952-0203-DR-PD-55011.pdf"},
-      {num:"EQP952-0203-DR-PD-55016", title:"Payload Chassis Wiring Diagram", file:"manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf"},
-      {num:"EQP952-0203-DR-PD-55017", title:"Control Chassis Wiring Diagram", file:"manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf"},
+      {num:"EQP952-0203-DR-PD-55011", title:"Ethernet Gyro Cover Plate Assembly", file:"manuals/EQP952-0203-DR-PD-55011.pdf"},
+      {num:"EQP952-0203-DR-PD-55016", title:"Payload Chassis Wiring Diagram", file:"manuals/EQP952-0203-DR-PD-55016.pdf"},
+      {num:"EQP952-0203-DR-PD-55017", title:"Control Chassis Wiring Diagram", file:"manuals/EQP952-0203-DR-PD-55017.pdf"},
       {num:"EQP952-0203-DR-PD-55018", title:"Payload Penetrator Ring Label Set", file:"manuals/drawings/EQP952-0203-DR-PD-55018.pdf"},
       {num:"EQP952-0203-DR-PD-55019", title:"Payload Penetrator Ring Label Set (2)", file:"manuals/drawings/EQP952-0203-DR-PD-55019.pdf"},
-      {num:"HCV-0030-D-0200-00", title:"Electronics Pod Assembly (HCV)", file:"manuals/drawings/HCV-0015-D-0200-00 (1 of 2).pdf"},
-      {num:"HCV-0030-D-0200-90", title:"Electronics Pod Wiring Diagram 3000m", file:"manuals/drawings/HCV-0015-D-0200-90 (1 of 3).pdf"},
-      {num:"HCV-0030-D-0201-00", title:"Control Chassis Assembly (HCV)", file:"manuals/drawings/HCV-0015-D-0201-00 (1 of 2).pdf"},
-      {num:"HCV-0030-D-0201-90", title:"Control Chassis Wiring Diagram (HCV)", file:"manuals/drawings/HCV-0015-D-0201-90 (2 of 3).pdf"},
-      {num:"HCV-0030-D-0202-00", title:"Payload Chassis Assembly (HCV)", file:"manuals/drawings/HCV-0015-D-0202-00 (1 of 2).pdf"},
-      {num:"ROV-0311-D-0200-90", title:"Pod Bottomside Network Diagram", file:"manuals/drawings/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf"},
-      {num:"ROV-0311-D-0206-00", title:"MCB Earth Strip Plate (Control Chassis)", file:"manuals/drawings/ROV-0311-D-0206-00 Pod control earth strip plate 1 of 1.pdf"},
-      {num:"ROV-0311-D-0208-90", title:"Valve Pack Unregulated Supply Wiring", file:"manuals/drawings/ROV-0311-D-0208-90.pdf"},
-      {num:"ROV-0311-D-0212-00", title:"CWDM Blue 8HP Module Assembly", file:"manuals/drawings/ROV-0311-D-0212-00.pdf"},
-      {num:"ROV-0311-D-0213-01", title:"Fan Tray Mounting Detail", file:"manuals/drawings/ROV-0311-D-0213-01 SHT 1 .pdf"},
-      {num:"ROV-0311-D-0500-00", title:"Vehicle Cabling Diagram", file:"manuals/drawings/ROV-0311-D-0500-00 SHT 1-Model.pdf"},
-      {num:"ROV-0311-D-0680-90", title:"Rainbow & PSU Rack Wiring Diagram", file:"manuals/drawings/ROV-0311-D-0680-90.pdf"},
-      {num:"ROV-0226-725-00", title:"HV Junction Box General Arrangement", file:"manuals/drawings/ROV-0226-725-00 SHEET 1.pdf"},
-      {num:"ROV-0226-725-90", title:"HV Junction Box Circuit Diagram", file:"manuals/drawings/ROV-0226-725-90 SHEET 1.pdf"},
+      {num:"HCV-0030-D-0200-00", title:"Electronics Pod Assembly (HCV)", file:"manuals/HCV-0015-D-0200-00 (1 of 2).pdf"},
+      {num:"HCV-0030-D-0200-90", title:"Electronics Pod Wiring Diagram 3000m", file:"manuals/HCV-0015-D-0200-90 (1 of 3).pdf"},
+      {num:"HCV-0030-D-0201-00", title:"Control Chassis Assembly (HCV)", file:"manuals/HCV-0015-D-0201-00 (1 of 2).pdf"},
+      {num:"HCV-0030-D-0201-90", title:"Control Chassis Wiring Diagram (HCV)", file:"manuals/HCV-0015-D-0201-90 (2 of 3).pdf"},
+      {num:"HCV-0030-D-0202-00", title:"Payload Chassis Assembly (HCV)", file:"manuals/HCV-0015-D-0202-00 (1 of 2).pdf"},
+      {num:"ROV-0311-D-0200-90", title:"Pod Bottomside Network Diagram", file:"manuals/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf"},
+      {num:"ROV-0311-D-0206-00", title:"MCB Earth Strip Plate (Control Chassis)", file:"manuals/ROV-0311-D-0206-00 Pod control earth strip plate 1 of 1.pdf"},
+      {num:"ROV-0311-D-0208-90", title:"Valve Pack Unregulated Supply Wiring", file:"manuals/ROV-0311-D-0208-90.pdf"},
+      {num:"ROV-0311-D-0212-00", title:"CWDM Blue 8HP Module Assembly", file:"manuals/ROV-0311-D-0212-00.pdf"},
+      {num:"ROV-0311-D-0213-01", title:"Fan Tray Mounting Detail", file:"manuals/ROV-0311-D-0213-01 SHT 1 .pdf"},
+      {num:"ROV-0311-D-0500-00", title:"Vehicle Cabling Diagram", file:"manuals/ROV-0311-D-0500-00 SHT 1-Model.pdf"},
+      {num:"ROV-0311-D-0680-90", title:"Rainbow & PSU Rack Wiring Diagram", file:"manuals/ROV-0311-D-0680-90.pdf"},
+      {num:"ROV-0226-725-00", title:"HV Junction Box General Arrangement", file:"manuals/ROV-0226-725-00 SHEET 1.pdf"},
+      {num:"ROV-0226-725-90", title:"HV Junction Box Circuit Diagram", file:"manuals/ROV-0226-725-90 SHEET 1.pdf"},
     ],
     manuals: [
-      {title:"TMA01028 — H15 GA Top Level & Schematics", file:"manuals/TMA01028-H15-GA-Schematics.pdf"},
+      {title:"TMA01028 — H15 GA Top Level & Schematics", file:"manuals/H15- GA Top Level & Schematics Manual - TMA01028.pdf"},
       {title:"TMA01030 — Interface Systems Manual", file:"manuals/TMA01030-Interface-Systems.pdf"},
       {title:"TMA01031 — Control System Manual", file:"manuals/TMA01031-Control-System.pdf"},
     ]
   },
   tcu: {
     drawings: [
-      {num:"ROV-0226-420-00", title:"TCU General Arrangement", file:"manuals/drawings/ROV-0226-420-00 SHEET 1.pdf"},
-      {num:"ROV-0226-420-01", title:"TCU Assembly Sht 2", file:"manuals/drawings/ROV-0226-420-01 SHEET 2.pdf"},
-      {num:"ROV-0226-420-01", title:"TCU Junction Box Sht 3", file:"manuals/drawings/ROV-0226-420-01 SHEET 3.pdf"},
-      {num:"ROV-0300-D-0420-00", title:"TCU Assembly Drawing", file:"manuals/drawings/ROV-0300-D-0420-00 TCU Assembly.pdf"},
-      {num:"ROV-0300-D-0420-90", title:"TCU Wiring Diagram", file:"manuals/drawings/ROV-0300-D-0420-90 TCU Wiring Diagram.pdf"},
+      {num:"ROV-0226-420-00", title:"TCU General Arrangement", file:"manuals/ROV-0226-420-00 SHEET 1.pdf"},
+      {num:"ROV-0226-420-01", title:"TCU Assembly Sht 2", file:"manuals/ROV-0226-420-01 SHEET 2.pdf"},
+      {num:"ROV-0226-420-01", title:"TCU Junction Box Sht 3", file:"manuals/ROV-0226-420-01 SHEET 3.pdf"},
+      {num:"ROV-0300-D-0420-00", title:"TCU Assembly Drawing", file:"manuals/ROV-0300-D-0420-00 TCU Assembly.pdf"},
+      {num:"ROV-0300-D-0420-90", title:"TCU Wiring Diagram", file:"manuals/ROV-0300-D-0420-90 TCU Wiring Diagram.pdf"},
     ],
     manuals: [
       {title:"TMA01031 — Control System Manual", file:"manuals/TMA01031-Control-System.pdf"},
@@ -695,18 +710,18 @@ const DATA = {
   },
   hpu: {
     drawings: [
-      {num:"ROV-0249-D-0050-90", title:"120HP MK II-B HPU Wiring Diagram", file:"manuals/drawings/ROV-0249-D-0050-90.pdf"},
-      {num:"ROV-0305-D-0450-00", title:"Hydraulic Control Unit Internal Arrangement", file:"manuals/drawings/ROV-0305-D-0450-00.PDF"},
+      {num:"ROV-0249-D-0050-90", title:"120HP MK II-B HPU Wiring Diagram", file:"manuals/ROV-0249-D-0050-90.pdf"},
+      {num:"ROV-0305-D-0450-00", title:"Hydraulic Control Unit Internal Arrangement", file:"manuals/ROV-0305-D-0450-00.PDF"},
     ],
     manuals: [
-      {title:"TMA01028 — H15 GA Top Level & Schematics", file:"manuals/TMA01028-H15-GA-Schematics.pdf"},
+      {title:"TMA01028 — H15 GA Top Level & Schematics", file:"manuals/H15- GA Top Level & Schematics Manual - TMA01028.pdf"},
     ]
   },
   valve_packs: {
     drawings: [
-      {num:"ROV-0305-D-0470-00", title:"High Flow Valve Pack GA", file:"manuals/drawings/ROV-0305-D-0470-00 sht 1.pdf"},
-      {num:"ROV-0311-D-0208-00", title:"Valve Pack Unregulated Supply GA", file:"manuals/drawings/ROV-0311-D-0208-00 Pod valve pack unregulated supply.pdf"},
-      {num:"ROV-0311-D-0208-90", title:"Valve Pack Unregulated Supply Wiring", file:"manuals/drawings/ROV-0311-D-0208-90.pdf"},
+      {num:"ROV-0305-D-0470-00", title:"High Flow Valve Pack GA", file:"manuals/ROV-0305-D-0470-00 sht 1.pdf"},
+      {num:"ROV-0311-D-0208-00", title:"Valve Pack Unregulated Supply GA", file:"manuals/ROV-0311-D-0208-00 Pod valve pack unregulated supply.pdf"},
+      {num:"ROV-0311-D-0208-90", title:"Valve Pack Unregulated Supply Wiring", file:"manuals/ROV-0311-D-0208-90.pdf"},
     ],
     manuals: [
       {title:"TMA01030 — Interface Systems Manual", file:"manuals/TMA01030-Interface-Systems.pdf"},
@@ -714,9 +729,9 @@ const DATA = {
   },
   thrusters: {
     drawings: [
-      {num:"ROV-0226-420-00", title:"Thruster Control Unit GA", file:"manuals/drawings/ROV-0226-420-00 SHEET 1.pdf"},
-      {num:"ROV-0226-420-01", title:"Thruster Control Unit Assembly", file:"manuals/drawings/ROV-0226-420-01 SHEET 2.pdf"},
-      {num:"ROV-0300-D-0420-90", title:"TCU Wiring Diagram", file:"manuals/drawings/ROV-0300-D-0420-90 TCU Wiring Diagram.pdf"},
+      {num:"ROV-0226-420-00", title:"Thruster Control Unit GA", file:"manuals/ROV-0226-420-00 SHEET 1.pdf"},
+      {num:"ROV-0226-420-01", title:"Thruster Control Unit Assembly", file:"manuals/ROV-0226-420-01 SHEET 2.pdf"},
+      {num:"ROV-0300-D-0420-90", title:"TCU Wiring Diagram", file:"manuals/ROV-0300-D-0420-90 TCU Wiring Diagram.pdf"},
     ],
     manuals: []
   },
@@ -728,9 +743,9 @@ const DATA = {
   },
   rov_term_can: {
     drawings: [
-      {num:"ROV-0300-D-0300-00", title:"Umbilical Termination Assembly — Single Mode", file:"manuals/drawings/ROV-0300-D-0300-00 sht 1 rev C1.pdf"},
-      {num:"ROV-0300-D-0300-00", title:"Umbilical Termination Parts List", file:"manuals/drawings/ROV-0300-D-0300-00 parts list rev C1.pdf"},
-      {num:"ROV-0311-D-0300-90", title:"Umbilical Termination Wiring Diagram", file:"manuals/drawings/ROV-0311-D-0300-90 sht 1-Model.pdf"},
+      {num:"ROV-0300-D-0300-00", title:"Umbilical Termination Assembly — Single Mode", file:"manuals/ROV-0300-D-0300-00 sht 1 rev C1.pdf"},
+      {num:"ROV-0300-D-0300-00", title:"Umbilical Termination Parts List", file:"manuals/ROV-0300-D-0300-00 parts list rev C1.pdf"},
+      {num:"ROV-0311-D-0300-90", title:"Umbilical Termination Wiring Diagram", file:"manuals/ROV-0311-D-0300-90 sht 1-Model.pdf"},
     ],
     manuals: [
       {title:"TMA01030 — Interface Systems Manual", file:"manuals/TMA01030-Interface-Systems.pdf"},
@@ -738,24 +753,24 @@ const DATA = {
   },
   frame: {
     drawings: [
-      {num:"SSA-0277-D-0004-01", title:"Hercules MK3 General Arrangement", file:"manuals/drawings/SSA-0277-D-0004-01 SHT 2.pdf"},
-      {num:"ROV-0305-D-0100-00", title:"Hercules Vehicle Frame Assembly", file:"manuals/drawings/ROV-0305-D-0100-00 (1).pdf"},
-      {num:"ROV-0300-D-0115-00", title:"Buoyancy Assembly 3000 MSW GA", file:"manuals/drawings/ROV-0300-D-0115-00 Sht 1-2.pdf"},
-      {num:"ROV-0300-D-0115-01", title:"Buoyancy Block 3000 MSW Fwd", file:"manuals/drawings/ROV-0300-D-0115-01.pdf"},
-      {num:"ROV-0300-D-0110-02", title:"Vehicle Side Protection", file:"manuals/drawings/ROV-0300-D-0110-02 sht 1 Frame Protection Acetal .pdf"},
-      {num:"SSA-0277-D-0004-16", title:"Forward Buoyancy 450kg/m³", file:"manuals/drawings/SSA-0277-D-0004-16 Forward Buoyancy 450kgm3.pdf"},
-      {num:"SSA-0277-D-0004-17", title:"Middle Buoyancy Tray 450kg/m³", file:"manuals/drawings/SSA-0277-D-0004-17 Middle Buoyancy 450kgm3.pdf"},
-      {num:"SSA-0277-D-0004-14", title:"Tool Tray Skid Tool Tray", file:"manuals/drawings/SSA-0277-D-0004-14 SHT 1.pdf"},
+      {num:"SSA-0277-D-0004-01", title:"Hercules MK3 General Arrangement", file:"manuals/SSA-0277-D-0004-01 SHT 2.pdf"},
+      {num:"ROV-0305-D-0100-00", title:"Hercules Vehicle Frame Assembly", file:"manuals/ROV-0305-D-0100-00 (1).pdf"},
+      {num:"ROV-0300-D-0115-00", title:"Buoyancy Assembly 3000 MSW GA", file:"manuals/ROV-0300-D-0115-00 Sht 1-2.pdf"},
+      {num:"ROV-0300-D-0115-01", title:"Buoyancy Block 3000 MSW Fwd", file:"manuals/ROV-0300-D-0115-01.pdf"},
+      {num:"ROV-0300-D-0110-02", title:"Vehicle Side Protection", file:"manuals/ROV-0300-D-0110-02 sht 1 Frame Protection Acetal .pdf"},
+      {num:"SSA-0277-D-0004-16", title:"Forward Buoyancy 450kg/m³", file:"manuals/SSA-0277-D-0004-16 Forward Buoyancy 450kgm3.pdf"},
+      {num:"SSA-0277-D-0004-17", title:"Middle Buoyancy Tray 450kg/m³", file:"manuals/SSA-0277-D-0004-17 Middle Buoyancy 450kgm3.pdf"},
+      {num:"SSA-0277-D-0004-14", title:"Tool Tray Skid Tool Tray", file:"manuals/SSA-0277-D-0004-14 SHT 1.pdf"},
     ],
     manuals: [
-      {title:"TMA01028 — H15 GA Top Level & Schematics", file:"manuals/TMA01028-H15-GA-Schematics.pdf"},
+      {title:"TMA01028 — H15 GA Top Level & Schematics", file:"manuals/H15- GA Top Level & Schematics Manual - TMA01028.pdf"},
     ]
   },
   t4_manip: {
     drawings: [
-      {num:"ROV-0305-D-0111-01", title:"T4 Manipulator Mounting Plate (Port)", file:"manuals/drawings/ROV-0305-D-0111-01 SHT 1-Model.pdf"},
-      {num:"ROV-0300-D-0111-01", title:"T4 Mounting Plate (Stbd)", file:"manuals/drawings/ROV-0300-D-0111-01 T4 mounting plate (stbd).pdf"},
-      {num:"ROV-0300-D-0802-00", title:"T4 Deck JIB", file:"manuals/drawings/ROV-0300-D-0802-00.pdf"},
+      {num:"ROV-0305-D-0111-01", title:"T4 Manipulator Mounting Plate (Port)", file:"manuals/ROV-0305-D-0111-01 SHT 1-Model.pdf"},
+      {num:"ROV-0300-D-0111-01", title:"T4 Mounting Plate (Stbd)", file:"manuals/ROV-0300-D-0111-01 T4 mounting plate (stbd).pdf"},
+      {num:"ROV-0300-D-0802-00", title:"T4 Deck JIB", file:"manuals/ROV-0300-D-0802-00.pdf"},
     ],
     manuals: [
       {title:"011-8239 — T4 Manipulator Manual", file:"manuals/011-8239.pdf"},
@@ -763,7 +778,7 @@ const DATA = {
   },
   atlas_manip: {
     drawings: [
-      {num:"ROV-0226-420-01", title:"Manipulator Control Unit", file:"manuals/drawings/ROV-0226-420-01 SHEET 1.pdf"},
+      {num:"ROV-0226-420-01", title:"Manipulator Control Unit", file:"manuals/ROV-0226-420-01 SHEET 1.pdf"},
     ],
     manuals: [
       {title:"Aleron VP Manual", file:"manuals/Aleron-VP-Manual.pdf"},
@@ -789,15 +804,15 @@ const DATA = {
   },
   control_console: {
     drawings: [
-      {num:"ROV-0311-D-0800-50", title:"WROV Control Console Block Diagram", file:"manuals/drawings/ROV-0311-D-0800-50 SHT 1-Model.pdf"},
-      {num:"ROV-0311-D-0800-90 Sht1", title:"Control Console Wiring Diagram Sht 1", file:"manuals/drawings/ROV-0311-D-0800-90 SHT 1 - Control Console Wiring.pdf"},
-      {num:"ROV-0311-D-0800-90 Sht2", title:"Control Console Wiring Diagram Sht 2", file:"manuals/drawings/ROV-0311-D-0800-90 SHT 2 - Control Console Wiring.pdf"},
-      {num:"ROV-0311-D-0800-90 Sht3", title:"Control Console Wiring Diagram Sht 3", file:"manuals/drawings/ROV-0311-D-0800-90 SHT 3 - Control Console Wiring.pdf"},
-      {num:"ROV-0311-D-0800-90 Sht4", title:"Control Console Wiring Diagram Sht 4", file:"manuals/drawings/ROV-0311-D-0800-90 SHT 4 - Control Console Wiring.pdf"},
-      {num:"ROV-0311-D-0800-90 Sht5", title:"Control Console Wiring Diagram Sht 5", file:"manuals/drawings/ROV-0311-D-0800-90 SHT 5 - Control Console Wiring.pdf"},
-      {num:"ROV-0311-D-0680-00", title:"Rainbow & PSU Rack Subrack Assembly", file:"manuals/drawings/ROV-0311-D-0680-00.pdf"},
-      {num:"ROV-0305-D-0660-00", title:"Ethernet Switch Panel GA", file:"manuals/drawings/ROV-0305-D-0660-00.pdf"},
-      {num:"ROV-0305-D-0630-90", title:"Controller Connector Wiring Diagram", file:"manuals/drawings/ROV-0305-D-0630-90 Sht 1-3.pdf"},
+      {num:"ROV-0311-D-0800-50", title:"WROV Control Console Block Diagram", file:"manuals/ROV-0311-D-0800-50 SHT 1-Model.pdf"},
+      {num:"ROV-0311-D-0800-90 Sht1", title:"Control Console Wiring Diagram Sht 1", file:"manuals/ROV-0311-D-0800-90 SHT 1 - Control Console Wiring.pdf"},
+      {num:"ROV-0311-D-0800-90 Sht2", title:"Control Console Wiring Diagram Sht 2", file:"manuals/ROV-0311-D-0800-90 SHT 2 - Control Console Wiring.pdf"},
+      {num:"ROV-0311-D-0800-90 Sht3", title:"Control Console Wiring Diagram Sht 3", file:"manuals/ROV-0311-D-0800-90 SHT 3 - Control Console Wiring.pdf"},
+      {num:"ROV-0311-D-0800-90 Sht4", title:"Control Console Wiring Diagram Sht 4", file:"manuals/ROV-0311-D-0800-90 SHT 4 - Control Console Wiring.pdf"},
+      {num:"ROV-0311-D-0800-90 Sht5", title:"Control Console Wiring Diagram Sht 5", file:"manuals/ROV-0311-D-0800-90 SHT 5 - Control Console Wiring.pdf"},
+      {num:"ROV-0311-D-0680-00", title:"Rainbow & PSU Rack Subrack Assembly", file:"manuals/ROV-0311-D-0680-00.pdf"},
+      {num:"ROV-0305-D-0660-00", title:"Ethernet Switch Panel GA", file:"manuals/ROV-0305-D-0660-00.pdf"},
+      {num:"ROV-0305-D-0630-90", title:"Controller Connector Wiring Diagram", file:"manuals/ROV-0305-D-0630-90 Sht 1-3.pdf"},
       {num:"HCV-0030-D-0691-90", title:"Pilots Console Panel 2 Wiring Diagram", file:"manuals/drawings/Control Room/Console wiring and Panels/HCV-0030-D-0691-90 sht 1-Layout1.pdf"},
     ],
     manuals: [
@@ -806,19 +821,19 @@ const DATA = {
   },
   control_room: {
     drawings: [
-      {num:"HCV-0030-D-0800-90 Sht1", title:"Control Console Wiring Diagram Sht 1", file:"manuals/drawings/HCV-0015/HCV-0015-D-0800-90 (1 of 5).pdf"},
-      {num:"HCV-0030-D-0800-90 Sht3", title:"Control Console Wiring Diagram Sht 3", file:"manuals/drawings/HCV-0015/HCV-0015-D-0800-90 (3 of 5).pdf"},
-      {num:"HCV-0030-D-0800-90 Sht5", title:"Fibre Bundle Distribution Diagram", file:"manuals/drawings/HCV-0015/HCV-0015-D-0800-90 (5 of 5).pdf"},
+      {num:"HCV-0030-D-0800-90 Sht1", title:"Control Console Wiring Diagram Sht 1", file:"manuals/HCV-0015-D-0800-90 (1 of 5).pdf"},
+      {num:"HCV-0030-D-0800-90 Sht3", title:"Control Console Wiring Diagram Sht 3", file:"manuals/HCV-0015-D-0800-90 (3 of 5).pdf"},
+      {num:"HCV-0030-D-0800-90 Sht5", title:"Fibre Bundle Distribution Diagram", file:"manuals/HCV-0015-D-0800-90 (5 of 5).pdf"},
     ],
     manuals: []
   },
   pdu: {
     drawings: [
-      {num:"PDU-0009-D-0016-90 Sht1", title:"PDU Circuit Diagram (AC)", file:"manuals/drawings/PDU-009-D-0016-90/PDU-0009-D-0016-90 (1 of 3).pdf"},
-      {num:"PDU-0009-D-0016-90 Sht2", title:"PDU Circuit Diagram (DC)", file:"manuals/drawings/PDU-009-D-0016-90/PDU-0009-D-0016-90 (2 of 3).pdf"},
-      {num:"PDU-1012-D-0017-90", title:"2.4kV Transformer Panel Circuit Diagram", file:"manuals/drawings/PDU-1012-D-0017-90 SHT 1.pdf"},
-      {num:"PDU-1012-D-0017-00", title:"2.4kV Transformer Panel Assembly", file:"manuals/drawings/PDU-1012-D-0017-00 SHT 1.pdf"},
-      {num:"PDU-1012-D-0007-90", title:"2.4kV Transformer Panel Wiring Diagram", file:"manuals/drawings/PDU-1012-D-0007-90 SHT 1 - 2.4KV Transformer Panel Wiring Diagram.pdf"},
+      {num:"PDU-0009-D-0016-90 Sht1", title:"PDU Circuit Diagram (AC)", file:"manuals/PDU-0009-D-0016-90 (1 of 3).pdf"},
+      {num:"PDU-0009-D-0016-90 Sht2", title:"PDU Circuit Diagram (DC)", file:"manuals/PDU-0009-D-0016-90 (2 of 3).pdf"},
+      {num:"PDU-1012-D-0017-90", title:"2.4kV Transformer Panel Circuit Diagram", file:"manuals/PDU-1012-D-0017-90 SHT 1.pdf"},
+      {num:"PDU-1012-D-0017-00", title:"2.4kV Transformer Panel Assembly", file:"manuals/PDU-1012-D-0017-00 SHT 1.pdf"},
+      {num:"PDU-1012-D-0007-90", title:"2.4kV Transformer Panel Wiring Diagram", file:"manuals/PDU-1012-D-0007-90 SHT 1 - 2.4KV Transformer Panel Wiring Diagram.pdf"},
     ],
     manuals: []
   },
@@ -836,7 +851,7 @@ const POD_ZONES = {
   control_chassis: {
     title: 'Control Chassis — EQP952-0203-DR-PD-55001',
     drawing: 'EQP952-0203-DR-PD-55001',
-    file: 'manuals/drawings/EQP952-0203-DR-PD-55001.pdf',
+    file: 'manuals/EQP952-0203-DR-PD-55001.pdf',
     body: 'The Control Chassis (55001) houses primary vehicle control electronics. PSU1 (SLE124), PSU2 (SLE112), PSU3 (MAX315), PSU4–7 (MAX124 ×4). Camera 24V is supplied by the Camera PSU via backplane — NOT through the penetrator ring. Coax video routes via the Video MUX PCB. Serial channels CH1–10 via 155MHz fibre. CWDM RED band (1470–1610nm) to surface. Wiring diagram: EQP952-0203-DR-PD-55017.',
     cards: [
       {name:'PSU 1 — SLE124', detail:'Primary 24V DC power supply — main control chassis rail'},
@@ -844,35 +859,35 @@ const POD_ZONES = {
       {name:'PSU 3 — MAX315', detail:'Power supply unit — sensor and instrument supply'},
       {name:'PSU 4–7 — MAX124 ×4', detail:'24V DC auxiliary power supply units'},
       {name:'Camera PSU ×2', detail:'Dedicated 24V supply for camera heads. Fed via backplane connectors — NOT through penetrator ring'},
-      {name:'Video MUX PCB — PCB-0124',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf',drawings:[{num:'EQP952-0203-DR-PD-55017',title:'Control Chassis Wiring Diagram',file:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf'},{num:'EQP952-0203-DR-PD-55001',title:'Control Chassis Assembly',file:'manuals/drawings/EQP952-0203-DR-PD-55001.pdf'}], detail:'Coax video multiplexer for CAM 1–8. Uses 8-pin Mini Burton (5929-0207-PE04). Signal: SIGNAL(Y), SIGNAL(C), FOCUS HI/LO. Power from camera PSU via backplane'},
-      {name:'Camera Control PCB — PCB-0161',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Camera iris, focus, zoom control — backplane CON 75–81'},
-      {name:'Relay & HK PCB 1 — PCB-0163 (Camera Power)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Camera power relay switching — backplane CON 31–37'},
-      {name:'Relay & HK PCB 2 — PCB-0163 (Auxiliaries)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Auxiliary power relay switching — backplane CON 45–51'},
-      {name:'Thruster Control Unit PCB — PCB-0162',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf',drawings:[{num:'EQP952-0203-DR-PD-55017',title:'Control Chassis Wiring Diagram',file:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf'},{num:'ROV-0300-D-0420-90',title:'TCU Wiring Diagram',file:'manuals/drawings/ROV-0300-D-0420-90 TCU Wiring Diagram.pdf'}], detail:'TCU servo valve control card — backplane CON 66–72. Drives SV1–8 servo valves via control ring CON28/CON29'},
-      {name:'155MHz Fibre Optic I/F — PCB-0186 (1530nm)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf',drawings:[{num:'EQP952-0203-DR-PD-55017 Sht3',title:'Control Chassis Wiring — Fibre',file:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf'},{num:'ROV-0311-D-0200-90',title:'Pod Bottomside Network Diagram',file:'manuals/drawings/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf'}], detail:'Serial channel fibre interface — carries CH1–10 serial data within CWDM RED band'},
-      {name:'CWDM Assembly RED — ROV-0311-D-0212',drawingFile:'manuals/drawings/ROV-0311-D-0212-00.pdf',drawings:[{num:'ROV-0311-D-0212-00',title:'CWDM Blue 8HP Module Assembly',file:'manuals/drawings/ROV-0311-D-0212-00.pdf'},{num:'ROV-0311-D-0200-90',title:'Pod Bottomside Network',file:'manuals/drawings/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf'}], detail:'RED band: 1470, 1490, 1510, 1530, 1550, 1570, 1590, 1610nm. Single-mode 6-way fibre penetrator to surface'},
+      {name:'Video MUX PCB — PCB-0124',drawingFile:'manuals/EQP952-0203-DR-PD-55017.pdf',drawings:[{num:'EQP952-0203-DR-PD-55017',title:'Control Chassis Wiring Diagram',file:'manuals/EQP952-0203-DR-PD-55017.pdf'},{num:'EQP952-0203-DR-PD-55001',title:'Control Chassis Assembly',file:'manuals/EQP952-0203-DR-PD-55001.pdf'}], detail:'Coax video multiplexer for CAM 1–8. Uses 8-pin Mini Burton (5929-0207-PE04). Signal: SIGNAL(Y), SIGNAL(C), FOCUS HI/LO. Power from camera PSU via backplane'},
+      {name:'Camera Control PCB — PCB-0161',drawingFile:'manuals/EQP952-0203-DR-PD-55017.pdf', detail:'Camera iris, focus, zoom control — backplane CON 75–81'},
+      {name:'Relay & HK PCB 1 — PCB-0163 (Camera Power)',drawingFile:'manuals/EQP952-0203-DR-PD-55017.pdf', detail:'Camera power relay switching — backplane CON 31–37'},
+      {name:'Relay & HK PCB 2 — PCB-0163 (Auxiliaries)',drawingFile:'manuals/EQP952-0203-DR-PD-55017.pdf', detail:'Auxiliary power relay switching — backplane CON 45–51'},
+      {name:'Thruster Control Unit PCB — PCB-0162',drawingFile:'manuals/EQP952-0203-DR-PD-55017.pdf',drawings:[{num:'EQP952-0203-DR-PD-55017',title:'Control Chassis Wiring Diagram',file:'manuals/EQP952-0203-DR-PD-55017.pdf'},{num:'ROV-0300-D-0420-90',title:'TCU Wiring Diagram',file:'manuals/ROV-0300-D-0420-90 TCU Wiring Diagram.pdf'}], detail:'TCU servo valve control card — backplane CON 66–72. Drives SV1–8 servo valves via control ring CON28/CON29'},
+      {name:'155MHz Fibre Optic I/F — PCB-0186 (1530nm)',drawingFile:'manuals/EQP952-0203-DR-PD-55017.pdf',drawings:[{num:'EQP952-0203-DR-PD-55017 Sht3',title:'Control Chassis Wiring — Fibre',file:'manuals/EQP952-0203-DR-PD-55017.pdf'},{num:'ROV-0311-D-0200-90',title:'Pod Bottomside Network Diagram',file:'manuals/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf'}], detail:'Serial channel fibre interface — carries CH1–10 serial data within CWDM RED band'},
+      {name:'CWDM Assembly RED — ROV-0311-D-0212',drawingFile:'manuals/ROV-0311-D-0212-00.pdf',drawings:[{num:'ROV-0311-D-0212-00',title:'CWDM Blue 8HP Module Assembly',file:'manuals/ROV-0311-D-0212-00.pdf'},{num:'ROV-0311-D-0200-90',title:'Pod Bottomside Network',file:'manuals/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf'}], detail:'RED band: 1470, 1490, 1510, 1530, 1550, 1570, 1590, 1610nm. Single-mode 6-way fibre penetrator to surface'},
       {name:'Band Splitter — ROV-0311-D-0210', detail:'COM/RED/BLUE splitter. RED stays in control chassis; BLUE passes to payload chassis via energy chain'},
       {name:'Sixnet 9-Port Gigabit Switch — SLX-10MG-1', detail:'Bottomside Ethernet network switch'},
-      {name:'Gyro Cover Plate — EQP952-0203-DR-PD-55011',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55011.pdf',drawings:[{num:'EQP952-0203-DR-PD-55011',title:'Ethernet Gyro Cover Plate Assembly',file:'manuals/drawings/EQP952-0203-DR-PD-55011.pdf'},{num:'EQP952-0203-DR-PD-55017',title:'Control Chassis Wiring Diagram',file:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf'}], detail:'Houses IXBlue Octans Nano gyro. RS-232 CH2 + 24VDC. Connected via CON60 on backplane'},
-      {name:'24V Unregulated Supply — ROV-0311-D-0208',drawingFile:'manuals/drawings/ROV-0311-D-0208-00 Pod valve pack unregulated supply.pdf', detail:'Unregulated 24V supply module for VP1 and VP2 valve packs'},
-      {name:'System Backplane Breakout — PCB-0197',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55001.pdf', detail:'Main chassis backplane distribution board'},
+      {name:'Gyro Cover Plate — EQP952-0203-DR-PD-55011',drawingFile:'manuals/EQP952-0203-DR-PD-55011.pdf',drawings:[{num:'EQP952-0203-DR-PD-55011',title:'Ethernet Gyro Cover Plate Assembly',file:'manuals/EQP952-0203-DR-PD-55011.pdf'},{num:'EQP952-0203-DR-PD-55017',title:'Control Chassis Wiring Diagram',file:'manuals/EQP952-0203-DR-PD-55017.pdf'}], detail:'Houses IXBlue Octans Nano gyro. RS-232 CH2 + 24VDC. Connected via CON60 on backplane'},
+      {name:'24V Unregulated Supply — ROV-0311-D-0208',drawingFile:'manuals/ROV-0311-D-0208-00 Pod valve pack unregulated supply.pdf', detail:'Unregulated 24V supply module for VP1 and VP2 valve packs'},
+      {name:'System Backplane Breakout — PCB-0197',drawingFile:'manuals/EQP952-0203-DR-PD-55001.pdf', detail:'Main chassis backplane distribution board'},
     ]
   },
   payload_chassis: {
     title: 'Payload Chassis — EQP952-0203-DR-PD-55002',
     drawing: 'EQP952-0203-DR-PD-55002',
-    file: 'manuals/drawings/EQP952-0203-DR-PD-55002.pdf',
+    file: 'manuals/EQP952-0203-DR-PD-55002.pdf',
     body: 'The Payload Chassis (55002) handles mission and survey equipment interfaces. CWDM BLUE band (1270–1410nm). Sixnet 10-port Gigabit switch manages payload Ethernet. Atlas manipulator (Ethernet CH10) connects through payload ring 55004. Remaining channels are project-configurable for survey payloads. Wiring diagram: EQP952-0203-DR-PD-55016.',
     cards: [
       {name:'PSU 1 — SLE124', detail:'Main 24V PSU for payload chassis'},
       {name:'PSU 2 — MAX315', detail:'Secondary PSU'},
       {name:'PSU 3–8 — MAX124 ×6', detail:'Six additional 24V PSU modules'},
-      {name:'Generic Interface PCB — PCB-0115',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf', detail:'General I/O interface for payload sensor connections — backplane CON 5'},
-      {name:'Payload Chassis Backplane — PCB-0169',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55002.pdf', detail:'Main backplane for payload PCB stack'},
+      {name:'Generic Interface PCB — PCB-0115',drawingFile:'manuals/EQP952-0203-DR-PD-55016.pdf', detail:'General I/O interface for payload sensor connections — backplane CON 5'},
+      {name:'Payload Chassis Backplane — PCB-0169',drawingFile:'manuals/EQP952-0203-DR-PD-55002.pdf', detail:'Main backplane for payload PCB stack'},
       {name:'Relay & Housekeeping PCB — PCB-0163', detail:'Relay switching and system monitoring'},
-      {name:'155MHz Fibre Optic I/F — PCB-0186 (1370nm)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf',drawings:[{num:'EQP952-0203-DR-PD-55016',title:'Payload Chassis Wiring Diagram',file:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf'},{num:'EQP952-0203-DR-PD-55002',title:'Payload Chassis Assembly',file:'manuals/drawings/EQP952-0203-DR-PD-55002.pdf'}], detail:'155MHz fibre interface for payload data — BLUE CWDM band'},
-      {name:'CWDM Assembly BLUE — ROV-0311-D-0212',drawingFile:'manuals/drawings/ROV-0311-D-0212-00.pdf', detail:'BLUE band: 1270, 1290, 1310, 1330, 1350, 1370, 1390, 1410nm — payload comms to surface'},
-      {name:'Sixnet 10-Port Gigabit Switch',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf',drawings:[{num:'EQP952-0203-DR-PD-55016',title:'Payload Chassis Wiring Diagram',file:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf'},{num:'ROV-0311-D-0200-90',title:'Pod Bottomside Network',file:'manuals/drawings/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf'}], detail:'10-port managed Ethernet switch for payload network. E1/E2/E4 ports used for survey equipment'},
+      {name:'155MHz Fibre Optic I/F — PCB-0186 (1370nm)',drawingFile:'manuals/EQP952-0203-DR-PD-55016.pdf',drawings:[{num:'EQP952-0203-DR-PD-55016',title:'Payload Chassis Wiring Diagram',file:'manuals/EQP952-0203-DR-PD-55016.pdf'},{num:'EQP952-0203-DR-PD-55002',title:'Payload Chassis Assembly',file:'manuals/EQP952-0203-DR-PD-55002.pdf'}], detail:'155MHz fibre interface for payload data — BLUE CWDM band'},
+      {name:'CWDM Assembly BLUE — ROV-0311-D-0212',drawingFile:'manuals/ROV-0311-D-0212-00.pdf', detail:'BLUE band: 1270, 1290, 1310, 1330, 1350, 1370, 1390, 1410nm — payload comms to surface'},
+      {name:'Sixnet 10-Port Gigabit Switch',drawingFile:'manuals/EQP952-0203-DR-PD-55016.pdf',drawings:[{num:'EQP952-0203-DR-PD-55016',title:'Payload Chassis Wiring Diagram',file:'manuals/EQP952-0203-DR-PD-55016.pdf'},{num:'ROV-0311-D-0200-90',title:'Pod Bottomside Network',file:'manuals/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf'}], detail:'10-port managed Ethernet switch for payload network. E1/E2/E4 ports used for survey equipment'},
       {name:'RS232 Module — PCB-0032', detail:'Serial comms module for payload instruments'},
       {name:'SFP Ethernet Module ×2 (MRV)', detail:'MRV Layer 1 fibre Ethernet media converters (1290nm and 1370nm data slots)'},
       {name:'Optical Transceivers ×4', detail:'1310nm, 1330nm, 1390nm, 1410nm — BLUE CWDM optical modules'},
@@ -882,7 +897,7 @@ const POD_ZONES = {
   control_ring: {
     title: 'Control Penetrator Ring — EQP952-0203-DR-PD-55003',
     drawing: 'EQP952-0203-DR-PD-55003',
-    file: 'manuals/drawings/EQP952-0203-DR-PD-55003.pdf',
+    file: 'manuals/EQP952-0203-DR-PD-55003.pdf',
     body: 'The Control Penetrator Ring (55003) carries all vehicle control, camera, and sensor connections. Cameras 1–8 use 8-pin Mini Burton connectors — coax video (Y/C), 24V (from Camera PSU via backplane), focus Hi/Lo. Serial CH1–10 route all instrument data. TCU servo valve signals also exit through this ring. Supersedes ROV-0311-D-0203 series.',
     cards: [
       {name:'CAM 1–8 ×8 (Mini Burton 8-pin)', detail:'5929-0207-PE04 each. SIGNAL(Y), SIGNAL(C) coax, +24V, 0V, FOCUS HI, FOCUS LO, SCREEN, N/C. 24V from Camera PSU via backplane, video via Video MUX PCB'},
@@ -905,7 +920,7 @@ const POD_ZONES = {
   payload_ring: {
     title: 'Payload Penetrator Ring — EQP952-0203-DR-PD-55004',
     drawing: 'EQP952-0203-DR-PD-55004',
-    file: 'manuals/drawings/EQP952-0203-DR-PD-55004.pdf',
+    file: 'manuals/EQP952-0203-DR-PD-55004.pdf',
     body: 'The Payload Penetrator Ring (55004) carries project-configurable mission equipment connections. Atlas manipulator uses CH10 (RS232 + 24V HP 10A). Remaining serial channels and 24V supplies are available for project-specific payload equipment — sonars, DVL, ROV nav, survey instruments. Supersedes ROV-0311-D-0204 series.',
     cards: [
       {name:'CH10 — ATLAS MANIPULATOR', detail:'Burton 5507-2006-PE04 — RS232 TX/RX + 24V HP 10A + 0V + SCN. Atlas/Schilling manipulator via Aleron VP interface'},
@@ -987,28 +1002,27 @@ function openCardInfo(zone, cardIdx){
   fetchCardDescription(c.name, c.detail, zone);
 }
 
-async function fetchCardDescription(cardName, cardDetail, zone){
-  const chassis = zone === 'control_chassis' ? 'control chassis (55001)' : 'payload chassis (55002)';
-  const prompt = `You are a technical reference for the Hercules MK3 ROV electronics pod. Describe the following component in 3-4 clear paragraphs for a subsea engineer. Cover: what it does, how it interfaces with other cards/systems, key fault indicators or common issues, and any important operational notes.\n\nComponent: ${cardName}\nContext: ${cardDetail}\nLocation: ${chassis}, Hercules MK3 ROV Electronics Pod, Subsea 7 Seven Oceanic\n\nRespond in plain prose, no headings or bullet points.`;
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:600,
-        system:'You are a technical reference assistant for the Hercules MK3 ROV. Provide accurate, practical component descriptions for subsea engineers. Be concise and technically precise. Plain prose only, no headings.',
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data = await res.json();
-    const text = data.content?.[0]?.text || 'Description not available.';
-    document.getElementById('card-ai-text').className = '';
-    document.getElementById('card-ai-text').textContent = text;
-  } catch(e) {
-    document.getElementById('card-ai-text').className = '';
-    document.getElementById('card-ai-text').textContent = 'Could not load description — check network connection.';
+function fetchCardDescription(cardName, cardDetail, zone){
+  const el = document.getElementById('card-ai-text');
+  // Try normalised key lookup in pre-loaded descriptions
+  const key = normKey(zone, cardName);
+  if(DESCRIPTIONS[key]){
+    el.className = '';
+    el.textContent = DESCRIPTIONS[key];
+    return;
   }
+  // Fallback: try a fuzzy scan (in case key doesn't match exactly)
+  const lk = key.split('/')[1];
+  for(const k of Object.keys(DESCRIPTIONS)){
+    if(k.startsWith(zone + '/') && k.split('/')[1].includes(lk.substring(0,12))){
+      el.className = '';
+      el.textContent = DESCRIPTIONS[k];
+      return;
+    }
+  }
+  // Nothing found — show detail text as fallback
+  el.className = '';
+    el.textContent = cardDetail + ' -- Description available when descriptions_norm.json is in the folder.';
 }
 
 function cardInfoBack(){
@@ -1032,8 +1046,8 @@ function buildChassisSVG(zone, z){
   const svg = document.getElementById('chassis-detail-svg');
   const isControl = (zone === 'control_chassis');
   const ringFile  = isControl
-    ? 'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'
-    : 'manuals/drawings/EQP952-0203-DR-PD-55004.pdf';
+    ? 'manuals/EQP952-0203-DR-PD-55003.pdf'
+    : 'manuals/EQP952-0203-DR-PD-55004.pdf';
   const ringNum   = isControl ? '55003' : '55004';
   const ringLabel = isControl ? 'CONTROL RING' : 'PAYLOAD RING';
   const accent    = isControl ? '#3a6080' : '#6a4080';
