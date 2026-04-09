@@ -64,12 +64,33 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .l2-group{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;white-space:nowrap;}
 #l2-body{flex:1;display:flex;overflow:hidden;min-height:0;}
 /* DRAWING VIEWER */
-#l2-viewer{flex:1;background:#000;overflow:hidden;position:relative;}
-#l2-viewer iframe{width:100%;height:100%;border:none;}
-.viewer-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--surface);}
+#l2-viewer{flex:1;background:#000;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+#l2-viewer iframe{flex:1;width:100%;border:none;}
+.viewer-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--surface);}
 .vp-icon{font-size:40px;opacity:.2;}
 .vp-text{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);text-align:center;line-height:2;letter-spacing:.08em;}
 .vp-text strong{color:var(--amber-dim);}
+/* POD VIEWER TABS */
+#pod-viewer-tabs{display:none;flex-shrink:0;border-bottom:1px solid var(--border);background:#090c13;}
+#pod-viewer-tabs.visible{display:flex;}
+.pvtab{flex:1;padding:8px 12px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-align:center;cursor:pointer;color:var(--text-dim);border-bottom:2px solid transparent;background:transparent;border-top:none;border-left:none;border-right:none;transition:all .15s;}
+.pvtab:hover{color:var(--text);}
+.pvtab.active{color:var(--amber);border-bottom-color:var(--amber);background:rgba(232,164,74,.04);}
+.pvtab-sub{font-size:8px;color:var(--text-dim);margin-top:2px;letter-spacing:.08em;}
+/* LAYER 3 HOTSPOT OVERLAY */
+#l3-overlay{position:absolute;inset:0;pointer-events:none;display:none;}
+#l3-overlay.visible{display:block;pointer-events:all;}
+.hotspot{position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid var(--amber);background:rgba(232,164,74,.15);cursor:pointer;transform:translate(-50%,-50%);transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.hotspot:hover{background:rgba(232,164,74,.4);box-shadow:0 0 16px rgba(232,164,74,.5);}
+.hotspot-label{position:absolute;font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--amber);white-space:nowrap;top:-18px;left:50%;transform:translateX(-50%);pointer-events:none;background:rgba(9,12,19,.8);padding:1px 4px;border-radius:2px;}
+/* LAYER 3 TOOLTIP */
+#l3-tooltip{position:absolute;z-index:20;background:#13171f;border:1px solid var(--amber);border-radius:4px;padding:12px 14px;max-width:260px;display:none;pointer-events:none;}
+#l3-tooltip.visible{display:block;}
+.l3-tt-title{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#f0ece0;margin-bottom:6px;}
+.l3-tt-body{font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--text-mid);line-height:1.6;}
+.l3-tt-num{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:6px;}
+.l3-tt-l3btn{margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber);cursor:pointer;letter-spacing:.08em;padding:4px 8px;border:1px solid var(--amber-dim);border-radius:2px;display:inline-block;background:rgba(232,164,74,.08);}
+.l3-tt-l3btn:hover{background:rgba(232,164,74,.2);}
 /* SIDEBAR */
 #l2-sidebar{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid var(--border);overflow:hidden;}
 /* Snippet */
@@ -137,11 +158,31 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       </div>
       <div id="l2-body">
         <div id="l2-viewer">
+          <!-- Pod-only penetrator ring tabs — only shown for Electronics Pod -->
+          <div id="pod-viewer-tabs">
+            <button class="pvtab active" id="pvtab-control" onclick="switchPodView('control')">
+              CONTROL PENETRATOR RING
+              <div class="pvtab-sub">EQP952-0203-DR-PD-55003</div>
+            </button>
+            <button class="pvtab" id="pvtab-payload" onclick="switchPodView('payload')">
+              PAYLOAD PENETRATOR RING
+              <div class="pvtab-sub">EQP952-0203-DR-PD-55004</div>
+            </button>
+          </div>
           <div class="viewer-placeholder" id="viewer-ph">
             <div class="vp-icon">📐</div>
             <div class="vp-text">SELECT A DRAWING FROM THE LIST<br>to view it here<br><strong>Click any drawing → opens in new tab</strong><br><span style="color:#3a4050">PDF viewer requires manuals/ folder populated</span></div>
           </div>
           <iframe id="l2-frame" style="display:none"></iframe>
+          <!-- Layer 3 hotspot overlay — pod penetrator rings only -->
+          <div id="l3-overlay"></div>
+          <!-- Layer 3 tooltip -->
+          <div id="l3-tooltip">
+            <div class="l3-tt-title" id="l3-tt-title"></div>
+            <div class="l3-tt-body" id="l3-tt-body"></div>
+            <div class="l3-tt-num" id="l3-tt-num"></div>
+            <div class="l3-tt-l3btn" id="l3-tt-btn" onclick="openL3Drawing()">↗ OPEN DRAWING</div>
+          </div>
         </div>
         <div id="l2-sidebar">
           <div id="l2-snippet">
@@ -422,6 +463,40 @@ const DATA = {
 
 // ── FUNCTIONS ─────────────────────────────────────────────────────────────────
 let activeTab = 'drawings';
+let currentKey = '';
+let activePodView = 'control';
+let l3DrawingFile = '';
+
+// Pod penetrator ring data for Layer 3 hotspots
+const POD_RINGS = {
+  control: {
+    drawing: 'manuals/drawings/EQP952-0203-DR-PD-55003.pdf',
+    label: 'Control Penetrator Ring — EQP952-0203-DR-PD-55003',
+    hotspots: [
+      {id:'c1', x:28, y:32, label:'THRUSTERS', title:'Thruster Power Supply', body:'Provides 110V AC power to all eight thruster motor controllers via the thruster power distribution module.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
+      {id:'c2', x:48, y:18, label:'CWDM', title:'CWDM Fibre Optic', body:'Single-mode fibre optic penetrator for the CWDM comms system (1270–1410nm wavelengths). Carries all serial, Ethernet, and video channels.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
+      {id:'c3', x:68, y:25, label:'LIGHTS', title:'Lighting Control', body:'24VDC supply and PWM control signal for the LED light heads. Controlled via the lighting interface PCB.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
+      {id:'c4', x:78, y:48, label:'CAMERAS', title:'Camera Video Feed', body:'Coaxial video feeds for the forward and zoom cameras routed through CWDM laser modules at 1310nm and 1390nm.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
+      {id:'c5', x:62, y:70, label:'T4 MANIP', title:'T4 Manipulator Interface', body:'Provides 110V AC power and serial control data to the T4 manipulator junction box. Separate power and signal penetrators.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
+      {id:'c6', x:38, y:76, label:'HPU SENSORS', title:'HPU Sensor Interface', body:'PT100 temperature sensors and water ingress detector signals from the HPU motor housing back to the control chassis.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
+      {id:'c7', x:20, y:58, label:'VP 1 & 2', title:'Valve Pack 1 & 2 Serial', body:'Serial control and 24VDC unregulated supply to VP1 and VP2 hydraulic valve packs. Carries proportional valve control signals.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
+    ]
+  },
+  payload: {
+    drawing: 'manuals/drawings/EQP952-0203-DR-PD-55004.pdf',
+    label: 'Payload Penetrator Ring — EQP952-0203-DR-PD-55004',
+    hotspots: [
+      {id:'p1', x:30, y:28, label:'ATLAS MANIP', title:'Atlas Manipulator', body:'110V AC power and Ethernet control to the Atlas/Schilling manipulator via the Aleron VP interface.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
+      {id:'p2', x:52, y:18, label:'DVL/ALT', title:'DVL & Altimeter', body:'Dedicated penetrators for the Doppler Velocity Log and altimeter. RS-232 serial data and 24VDC power.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
+      {id:'p3', x:72, y:30, label:'GYRO', title:'Octans Nano Gyro', body:'RS-232 and 24VDC supply to the IXBlue Octans Nano gyro. Provides heading, pitch, roll, and heave data to the control system.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
+      {id:'p4', x:76, y:52, label:'RESPONDER', title:'USBL Responder', body:'Transducer cable for the USBL transponder/responder. Carries high-frequency acoustic pulses for subsea positioning.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
+      {id:'p5', x:60, y:72, label:'DEPTH', title:'Digiquartz Depth Sensor', body:'RS-232 serial and 24VDC supply to the Digiquartz pressure/depth sensor. High-accuracy depth measurement for the ROV.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
+      {id:'p6', x:36, y:74, label:'VP 3', title:'Valve Pack 3 — High Flow', body:'Serial control and 24VDC unregulated supply to VP3 high flow valve pack. Services tooling and ancillary hydraulic equipment.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
+      {id:'p7', x:20, y:52, label:'SONAR', title:'Tritech Sonar', body:'Coaxial video and RS-232 interface for the Tritech scanning sonar head. Provides subsea mapping and obstacle avoidance data.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
+      {id:'p8', x:48, y:48, label:'COMMS HP', title:'HP Comms 1045nm', body:'High-power 1045nm laser comms penetrator for the Ethernet bottomside network trunk. High-bandwidth vehicle data bus.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
+    ]
+  }
+};
 
 function openMenu(){
   document.getElementById('menu-panel').classList.remove('collapsed');
@@ -435,6 +510,7 @@ function closeMenu(){
   closeL2();
 }
 function sel(key, name, group){
+  currentKey = key;
   document.getElementById('l2-title').textContent = name;
   document.getElementById('l2-group').textContent = group;
   document.getElementById('l2-snippet-text').textContent = SNIPPETS[key] || 'Technical overview pending.';
@@ -443,11 +519,77 @@ function sel(key, name, group){
   renderList('list-manuals', d.manuals, 'manual');
   resetViewer();
   showTab('drawings');
+  // Pod-specific: show penetrator ring tabs and load control ring by default
+  const isPod = (key === 'electronics_pod');
+  document.getElementById('pod-viewer-tabs').classList.toggle('visible', isPod);
+  if(isPod){
+    activePodView = 'control';
+    switchPodView('control');
+  }
   document.getElementById('l2-pane').classList.add('visible');
 }
 function closeL2(){
   document.getElementById('l2-pane').classList.remove('visible');
+  document.getElementById('pod-viewer-tabs').classList.remove('visible');
+  hideL3Tooltip();
   resetViewer();
+}
+function switchPodView(view){
+  activePodView = view;
+  document.querySelectorAll('.pvtab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pvtab-' + view).classList.add('active');
+  const ring = POD_RINGS[view];
+  loadPodDrawing(ring);
+}
+function loadPodDrawing(ring){
+  hideL3Tooltip();
+  const ph = document.getElementById('viewer-ph');
+  const frame = document.getElementById('l2-frame');
+  const overlay = document.getElementById('l3-overlay');
+  // Show drawing note in viewer (iframe blocked for local files)
+  ph.style.display = 'flex';
+  ph.innerHTML = `<div class="vp-icon">📐</div>
+    <div class="vp-text">
+      <strong>${ring.label}</strong><br><br>
+      Open drawing in new tab to view full PDF<br>
+      <span style="color:var(--amber);cursor:pointer;text-decoration:underline" onclick="window.open('${ring.drawing}','_blank')">↗ OPEN DRAWING</span><br><br>
+      <span style="color:#3a4050">Hotspots below are active — hover to inspect penetrators</span>
+    </div>`;
+  frame.style.display = 'none';
+  // Render hotspots
+  overlay.innerHTML = '';
+  overlay.classList.add('visible');
+  ring.hotspots.forEach(hs => {
+    const el = document.createElement('div');
+    el.className = 'hotspot';
+    el.style.left = hs.x + '%';
+    el.style.top = hs.y + '%';
+    el.innerHTML = `<div class="hotspot-label">${hs.label}</div>`;
+    el.addEventListener('click', (e) => { e.stopPropagation(); showL3Tooltip(hs, e); });
+    overlay.appendChild(el);
+  });
+}
+function showL3Tooltip(hs, e){
+  l3DrawingFile = hs.file;
+  const tt = document.getElementById('l3-tooltip');
+  document.getElementById('l3-tt-title').textContent = hs.title;
+  document.getElementById('l3-tt-body').textContent = hs.body;
+  document.getElementById('l3-tt-num').textContent = hs.drawing;
+  // Position tooltip
+  const viewer = document.getElementById('l2-viewer');
+  const vr = viewer.getBoundingClientRect();
+  let tx = e.clientX - vr.left + 16;
+  let ty = e.clientY - vr.top - 20;
+  if(tx + 280 > vr.width) tx = e.clientX - vr.left - 276;
+  tt.style.left = tx + 'px';
+  tt.style.top  = ty + 'px';
+  tt.classList.add('visible');
+}
+function hideL3Tooltip(){
+  document.getElementById('l3-tooltip').classList.remove('visible');
+}
+function openL3Drawing(){
+  if(l3DrawingFile) window.open(l3DrawingFile, '_blank');
 }
 function resetViewer(){
   document.getElementById('l2-frame').style.display = 'none';
@@ -482,6 +624,13 @@ function openDoc(file){
   if(!file) return;
   window.open(file, '_blank');
 }
+// Click anywhere on viewer to dismiss tooltip
+document.addEventListener('click', (e) => {
+  const tt = document.getElementById('l3-tooltip');
+  if(!e.target.closest('.hotspot') && !e.target.closest('#l3-tooltip')){
+    tt.classList.remove('visible');
+  }
+});
 </script>
 </body>
 </html>
