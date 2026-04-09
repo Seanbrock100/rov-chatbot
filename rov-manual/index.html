@@ -88,6 +88,35 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .pod-zone:hover .zone-rect{filter:brightness(1.4);}
 .pod-zone .zone-cta{opacity:.5;transition:opacity .2s;}
 .pod-zone:hover .zone-cta{opacity:1;}
+
+/* CARD INFO PANEL */
+#card-info-panel{position:absolute;inset:0;background:var(--bg);z-index:30;display:none;flex-direction:column;overflow:hidden;}
+#card-info-panel.visible{display:flex;}
+#card-info-bar{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0;background:#090c13;}
+.ci-back{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);cursor:pointer;padding:3px 9px;border:1px solid var(--border2);border-radius:2px;background:transparent;transition:all .15s;}
+.ci-back:hover{border-color:var(--amber);color:var(--amber);}
+#card-info-crumb{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.1em;flex:1;}
+#card-info-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;gap:24px;}
+#card-info-body::-webkit-scrollbar{width:3px;}
+#card-info-body::-webkit-scrollbar-thumb{background:var(--border2);}
+#card-ai-col{flex:1;min-width:0;}
+#card-draw-col{width:280px;flex-shrink:0;}
+.ci-section-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--amber-dim);margin-bottom:10px;}
+#card-ai-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#f0ece0;margin-bottom:4px;}
+#card-ai-pcb{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);margin-bottom:16px;letter-spacing:.08em;}
+#card-ai-text{font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;color:var(--text-mid);line-height:1.8;}
+#card-ai-text.loading{color:var(--text-dim);font-style:italic;}
+.ci-draw-item{padding:8px 10px;border-left:2px solid transparent;cursor:pointer;transition:background .12s;margin-bottom:2px;}
+.ci-draw-item:hover{background:rgba(232,164,74,.06);border-left-color:var(--amber);}
+.ci-draw-num{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.05em;}
+.ci-draw-title{font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--text-mid);margin-top:2px;}
+.ci-draw-open{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--blue);margin-top:2px;}
+.ci-draw-item:hover .ci-draw-num{color:var(--amber);}
+/* CLICKABLE CARDS in chassis SVG */
+.cd-card-btn{cursor:pointer;}
+.cd-card-btn rect{transition:fill .15s,stroke .15s;}
+.cd-card-btn:hover rect{fill:rgba(232,164,74,0.12) !important;stroke:#e8a44a !important;}
+.cd-card-btn text{pointer-events:none;}
 /* CHASSIS DETAIL VIEW */
 #chassis-detail{display:none;width:100%;height:100%;flex-direction:column;background:var(--surface);}
 #chassis-detail.visible{display:flex;}
@@ -476,8 +505,27 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
               <span id="chassis-detail-title"></span>
               <button class="cd-open-ga" id="chassis-ga-btn" onclick="chassisOpenGA()">↗ OPEN GA DRAWING</button>
             </div>
-            <div id="chassis-detail-svg-wrap">
+            <div id="chassis-detail-svg-wrap" style="position:relative;">
               <svg id="chassis-detail-svg" viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:100%;overflow:visible;"></svg>
+              <!-- Card info panel — overlays chassis detail SVG on card click -->
+              <div id="card-info-panel">
+                <div id="card-info-bar">
+                  <button class="ci-back" onclick="cardInfoBack()">← CHASSIS VIEW</button>
+                  <span id="card-info-crumb"></span>
+                </div>
+                <div id="card-info-body">
+                  <div id="card-ai-col">
+                    <div class="ci-section-label">COMPONENT OVERVIEW</div>
+                    <div id="card-ai-name"></div>
+                    <div id="card-ai-pcb"></div>
+                    <div id="card-ai-text" class="loading">Loading technical description…</div>
+                  </div>
+                  <div id="card-draw-col">
+                    <div class="ci-section-label">RELATED DRAWINGS</div>
+                    <div id="card-draw-list"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -790,16 +838,16 @@ const POD_ZONES = {
       {name:'PSU 3 — MAX315', detail:'Power supply unit — sensor and instrument supply'},
       {name:'PSU 4–7 — MAX124 ×4', detail:'24V DC auxiliary power supply units'},
       {name:'Camera PSU ×2', detail:'Dedicated 24V supply for camera heads. Fed via backplane connectors — NOT through penetrator ring'},
-      {name:'Video MUX PCB — PCB-0124',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Coax video multiplexer for CAM 1–8. Uses 8-pin Mini Burton (5929-0207-PE04). Signal: SIGNAL(Y), SIGNAL(C), FOCUS HI/LO. Power from camera PSU via backplane'},
+      {name:'Video MUX PCB — PCB-0124',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf',drawings:[{num:'EQP952-0203-DR-PD-55017',title:'Control Chassis Wiring Diagram',file:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf'},{num:'EQP952-0203-DR-PD-55001',title:'Control Chassis Assembly',file:'manuals/drawings/EQP952-0203-DR-PD-55001.pdf'}], detail:'Coax video multiplexer for CAM 1–8. Uses 8-pin Mini Burton (5929-0207-PE04). Signal: SIGNAL(Y), SIGNAL(C), FOCUS HI/LO. Power from camera PSU via backplane'},
       {name:'Camera Control PCB — PCB-0161',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Camera iris, focus, zoom control — backplane CON 75–81'},
       {name:'Relay & HK PCB 1 — PCB-0163 (Camera Power)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Camera power relay switching — backplane CON 31–37'},
       {name:'Relay & HK PCB 2 — PCB-0163 (Auxiliaries)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Auxiliary power relay switching — backplane CON 45–51'},
-      {name:'Thruster Control Unit PCB — PCB-0162',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'TCU servo valve control card — backplane CON 66–72. Drives SV1–8 servo valves via control ring CON28/CON29'},
-      {name:'155MHz Fibre Optic I/F — PCB-0186 (1530nm)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Serial channel fibre interface — carries CH1–10 serial data within CWDM RED band'},
-      {name:'CWDM Assembly RED — ROV-0311-D-0212',drawingFile:'manuals/drawings/ROV-0311-D-0212-00.pdf', detail:'RED band: 1470, 1490, 1510, 1530, 1550, 1570, 1590, 1610nm. Single-mode 6-way fibre penetrator to surface'},
+      {name:'Thruster Control Unit PCB — PCB-0162',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf',drawings:[{num:'EQP952-0203-DR-PD-55017',title:'Control Chassis Wiring Diagram',file:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf'},{num:'ROV-0300-D-0420-90',title:'TCU Wiring Diagram',file:'manuals/drawings/ROV-0300-D-0420-90 TCU Wiring Diagram.pdf'}], detail:'TCU servo valve control card — backplane CON 66–72. Drives SV1–8 servo valves via control ring CON28/CON29'},
+      {name:'155MHz Fibre Optic I/F — PCB-0186 (1530nm)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf',drawings:[{num:'EQP952-0203-DR-PD-55017 Sht3',title:'Control Chassis Wiring — Fibre',file:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf'},{num:'ROV-0311-D-0200-90',title:'Pod Bottomside Network Diagram',file:'manuals/drawings/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf'}], detail:'Serial channel fibre interface — carries CH1–10 serial data within CWDM RED band'},
+      {name:'CWDM Assembly RED — ROV-0311-D-0212',drawingFile:'manuals/drawings/ROV-0311-D-0212-00.pdf',drawings:[{num:'ROV-0311-D-0212-00',title:'CWDM Blue 8HP Module Assembly',file:'manuals/drawings/ROV-0311-D-0212-00.pdf'},{num:'ROV-0311-D-0200-90',title:'Pod Bottomside Network',file:'manuals/drawings/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf'}], detail:'RED band: 1470, 1490, 1510, 1530, 1550, 1570, 1590, 1610nm. Single-mode 6-way fibre penetrator to surface'},
       {name:'Band Splitter — ROV-0311-D-0210', detail:'COM/RED/BLUE splitter. RED stays in control chassis; BLUE passes to payload chassis via energy chain'},
       {name:'Sixnet 9-Port Gigabit Switch — SLX-10MG-1', detail:'Bottomside Ethernet network switch'},
-      {name:'Gyro Cover Plate — EQP952-0203-DR-PD-55011',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55011.pdf', detail:'Houses IXBlue Octans Nano gyro. RS-232 CH2 + 24VDC. Connected via CON60 on backplane'},
+      {name:'Gyro Cover Plate — EQP952-0203-DR-PD-55011',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55011.pdf',drawings:[{num:'EQP952-0203-DR-PD-55011',title:'Ethernet Gyro Cover Plate Assembly',file:'manuals/drawings/EQP952-0203-DR-PD-55011.pdf'},{num:'EQP952-0203-DR-PD-55017',title:'Control Chassis Wiring Diagram',file:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf'}], detail:'Houses IXBlue Octans Nano gyro. RS-232 CH2 + 24VDC. Connected via CON60 on backplane'},
       {name:'24V Unregulated Supply — ROV-0311-D-0208',drawingFile:'manuals/drawings/ROV-0311-D-0208-00 Pod valve pack unregulated supply.pdf', detail:'Unregulated 24V supply module for VP1 and VP2 valve packs'},
       {name:'System Backplane Breakout — PCB-0197',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55001.pdf', detail:'Main chassis backplane distribution board'},
     ]
@@ -816,9 +864,9 @@ const POD_ZONES = {
       {name:'Generic Interface PCB — PCB-0115',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf', detail:'General I/O interface for payload sensor connections — backplane CON 5'},
       {name:'Payload Chassis Backplane — PCB-0169',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55002.pdf', detail:'Main backplane for payload PCB stack'},
       {name:'Relay & Housekeeping PCB — PCB-0163', detail:'Relay switching and system monitoring'},
-      {name:'155MHz Fibre Optic I/F — PCB-0186 (1370nm)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf', detail:'155MHz fibre interface for payload data — BLUE CWDM band'},
+      {name:'155MHz Fibre Optic I/F — PCB-0186 (1370nm)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf',drawings:[{num:'EQP952-0203-DR-PD-55016',title:'Payload Chassis Wiring Diagram',file:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf'},{num:'EQP952-0203-DR-PD-55002',title:'Payload Chassis Assembly',file:'manuals/drawings/EQP952-0203-DR-PD-55002.pdf'}], detail:'155MHz fibre interface for payload data — BLUE CWDM band'},
       {name:'CWDM Assembly BLUE — ROV-0311-D-0212',drawingFile:'manuals/drawings/ROV-0311-D-0212-00.pdf', detail:'BLUE band: 1270, 1290, 1310, 1330, 1350, 1370, 1390, 1410nm — payload comms to surface'},
-      {name:'Sixnet 10-Port Gigabit Switch',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf', detail:'10-port managed Ethernet switch for payload network. E1/E2/E4 ports used for survey equipment'},
+      {name:'Sixnet 10-Port Gigabit Switch',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf',drawings:[{num:'EQP952-0203-DR-PD-55016',title:'Payload Chassis Wiring Diagram',file:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf'},{num:'ROV-0311-D-0200-90',title:'Pod Bottomside Network',file:'manuals/drawings/ROV-0311-D-0200-90 Pod bottomside network 1 of 1.pdf'}], detail:'10-port managed Ethernet switch for payload network. E1/E2/E4 ports used for survey equipment'},
       {name:'RS232 Module — PCB-0032', detail:'Serial comms module for payload instruments'},
       {name:'SFP Ethernet Module ×2 (MRV)', detail:'MRV Layer 1 fibre Ethernet media converters (1290nm and 1370nm data slots)'},
       {name:'Optical Transceivers ×4', detail:'1310nm, 1330nm, 1390nm, 1410nm — BLUE CWDM optical modules'},
@@ -895,17 +943,70 @@ function showChassisDetail(zone, z){
   cd.classList.add('visible');
   // Render the chassis SVG
   buildChassisSVG(zone, z);
-  // Update sidebar with card list
-  const cardHtml = z.cards.map(c =>
-    `<div class="draw-item" onclick="openDoc('${(c.drawingFile||'').replace(/'/g,"\\'")}')">
+  // Update sidebar — cards listed, click opens AI card info panel
+  const cardHtml = z.cards.map((c,i) =>
+    `<div class="draw-item" onclick="openCardInfo('${zone}',${i})" style="cursor:pointer;">
       <div class="draw-num">${c.name}</div>
       <div class="draw-title">${c.detail}</div>
-      ${c.drawingFile ? '<div class="draw-open">↗ OPEN DRAWING</div>' : ''}
+      <div class="draw-open">▶ VIEW DETAILS + AI DESCRIPTION</div>
     </div>`
   ).join('');
   document.getElementById('list-drawings').innerHTML =
-    `<div style="padding:8px 16px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;">${z.title}</div>` + cardHtml;
+    `<div style="padding:8px 16px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;">${z.title} — click card for details</div>` + cardHtml;
   showTab('drawings');
+}
+
+let currentCardZone = '';
+let currentCardIdx  = 0;
+
+function openCardInfo(zone, cardIdx){
+  const z = POD_ZONES[zone];
+  const c = z.cards[cardIdx];
+  currentCardZone = zone;
+  currentCardIdx  = cardIdx;
+  document.getElementById('card-info-crumb').textContent = z.title + '  ›  ' + c.name;
+  document.getElementById('card-ai-name').textContent = c.name;
+  document.getElementById('card-ai-pcb').textContent = c.detail;
+  document.getElementById('card-ai-text').className = 'loading';
+  document.getElementById('card-ai-text').textContent = 'Searching technical manuals…';
+  const drawHtml = (c.drawings||[]).map(d =>
+    `<div class="ci-draw-item" onclick="openDoc('${d.file.replace(/'/g,"\\'")}')">
+      <div class="ci-draw-num">${d.num}</div>
+      <div class="ci-draw-title">${d.title}</div>
+      <div class="ci-draw-open">↗ OPEN IN NEW TAB</div>
+    </div>`
+  ).join('') || '<div style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);padding:8px 0;">No drawings mapped yet</div>';
+  document.getElementById('card-draw-list').innerHTML = drawHtml;
+  document.getElementById('card-info-panel').classList.add('visible');
+  fetchCardDescription(c.name, c.detail, zone);
+}
+
+async function fetchCardDescription(cardName, cardDetail, zone){
+  const chassis = zone === 'control_chassis' ? 'control chassis (55001)' : 'payload chassis (55002)';
+  const prompt = `You are a technical reference for the Hercules MK3 ROV electronics pod. Describe the following component in 3-4 clear paragraphs for a subsea engineer. Cover: what it does, how it interfaces with other cards/systems, key fault indicators or common issues, and any important operational notes.\n\nComponent: ${cardName}\nContext: ${cardDetail}\nLocation: ${chassis}, Hercules MK3 ROV Electronics Pod, Subsea 7 Seven Oceanic\n\nRespond in plain prose, no headings or bullet points.`;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:600,
+        system:'You are a technical reference assistant for the Hercules MK3 ROV. Provide accurate, practical component descriptions for subsea engineers. Be concise and technically precise. Plain prose only, no headings.',
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Description not available.';
+    document.getElementById('card-ai-text').className = '';
+    document.getElementById('card-ai-text').textContent = text;
+  } catch(e) {
+    document.getElementById('card-ai-text').className = '';
+    document.getElementById('card-ai-text').textContent = 'Could not load description — check network connection.';
+  }
+}
+
+function cardInfoBack(){
+  document.getElementById('card-info-panel').classList.remove('visible');
 }
 
 function chassisBack(){
@@ -986,37 +1087,77 @@ function buildChassisSVG(zone, z){
     <!-- Cards -->
     ${cardSVG}
 
-    <!-- LEFT: Penetrator ring oval -->
-    <g class="pen-ring-link" onclick="window.open('${ringFile}','_blank')" style="cursor:pointer;">
-      <ellipse cx="100" cy="${svgH/2}" rx="52" ry="80"
-        fill="rgba(20,25,35,0.85)" stroke="${ringAccent}" stroke-width="2"/>
-      <!-- CB plate -->
-      <rect x="76" y="${svgH/2-90}" width="46" height="14" rx="2"
-        fill="rgba(42,48,64,0.9)" stroke="${ringAccent}" stroke-width="0.8"/>
-      <text x="99" y="${svgH/2-80}" font-family="'IBM Plex Mono',monospace" font-size="6.5"
-        fill="${ringAccent}" text-anchor="middle">CB PLATE</text>
-      <!-- Penetrator holes (decorative) -->
-      <circle cx="88"  cy="${svgH/2-55}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
-      <circle cx="112" cy="${svgH/2-55}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
-      <circle cx="80"  cy="${svgH/2-35}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
-      <circle cx="120" cy="${svgH/2-35}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
-      <circle cx="78"  cy="${svgH/2-12}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
-      <circle cx="122" cy="${svgH/2-12}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
-      <circle cx="78"  cy="${svgH/2+12}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
-      <circle cx="122" cy="${svgH/2+12}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
-      <circle cx="80"  cy="${svgH/2+35}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
-      <circle cx="120" cy="${svgH/2+35}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
-      <!-- Fibre pen (larger) -->
-      <circle cx="100" cy="${svgH/2+55}" r="9" fill="none" stroke="${ringAccent}" stroke-width="1.5"/>
-      <text x="100" cy="${svgH/2+55}" y="${svgH/2+58}" font-family="'IBM Plex Mono',monospace"
-        font-size="5.5" fill="${ringAccent}" text-anchor="middle">6-WAY</text>
-      <!-- Labels -->
-      <text x="100" y="${svgH/2+80}" font-family="'IBM Plex Mono',monospace" font-size="8.5"
-        fill="${ringAccent}" text-anchor="middle">${ringNum}</text>
-      <text x="100" y="${svgH/2+92}" font-family="'IBM Plex Mono',monospace" font-size="7"
-        fill="${ringAccent}" text-anchor="middle">${ringLabel}</text>
-      <text x="100" y="${svgH/2+104}" font-family="'IBM Plex Mono',monospace" font-size="8"
-        fill="${ringAccent}" text-anchor="middle">↗ OPEN GA</text>
+    <!-- LEFT: Penetrator ring — circular face-on view matching actual drawing -->
+    <!-- Ring positioned at left, centered vertically on chassis -->
+    <g class="pen-ring-link" onclick="window.open('${ringFile}','_blank')" style="cursor:pointer;" transform="translate(100,${svgH/2})">
+      <!-- Outer ring body (annulus) -->
+      <circle r="88" fill="rgba(18,22,32,0.95)" stroke="${ringAccent}" stroke-width="2.5"/>
+      <circle r="58" fill="rgba(10,12,18,0.8)" stroke="${ringAccent}" stroke-width="1.5"/>
+      <!-- Inner clear aperture -->
+      <circle r="50" fill="rgba(8,10,15,0.9)" stroke="${ringAccent}" stroke-width="0.5" stroke-dasharray="3,3"/>
+      <!-- Cross hairs (like the drawing) -->
+      <line x1="-50" y1="0" x2="50" y2="0" stroke="${ringAccent}" stroke-width="0.4" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="0" y1="-50" x2="0" y2="50" stroke="${ringAccent}" stroke-width="0.4" stroke-dasharray="4,4" opacity="0.3"/>
+
+      <!-- Connectors arranged around circumference (r=75 from centre) -->
+      <!-- Each connector = octagonal body like actual Burton connectors in drawing -->
+      <!-- 16 connector positions, matching the control ring layout -->
+      <!-- Top cluster (cameras 1-4 in groups) -->
+      ${[
+        {a:-72,  label:'CAM 1', big:false},
+        {a:-54,  label:'CAM 2', big:false},
+        {a:-36,  label:'CAM 3', big:false},
+        {a:-18,  label:'CAM 4', big:false},
+        {a:0,    label:'CAM 5', big:false},
+        {a:18,   label:'CAM 6', big:false},
+        {a:36,   label:'CAM 7', big:false},
+        {a:54,   label:'CAM 8', big:false},
+        {a:90,   label:'TCU',   big:true},
+        {a:108,  label:'DEPTH', big:false},
+        {a:126,  label:'ALT',   big:false},
+        {a:144,  label:'VP1',   big:false},
+        {a:162,  label:'VP2',   big:false},
+        {a:180,  label:'COMP',  big:false},
+        {a:-108, label:'T4',    big:false},
+        {a:-126, label:'GYRO',  big:false},
+        {a:-144, label:'SONAR', big:false},
+        {a:-162, label:'RESP',  big:false},
+        {a:72,   label:'LIGHT', big:false},
+      ].map(p => {
+        const rad = p.a * Math.PI/180;
+        const R = 74;
+        const cx = Math.round(Math.sin(rad)*R);
+        const cy = Math.round(-Math.cos(rad)*R);
+        const sz = p.big ? 9 : 7;
+        const lx = Math.round(Math.sin(rad)*(R+16));
+        const ly = Math.round(-Math.cos(rad)*(R+16));
+        return \`<g>
+          <polygon points="\${[-1,0,1,0].map((_,i) => {const a2=rad+(i*Math.PI/2-Math.PI/4); return (cx+sz*0.6*Math.cos(a2))+','+(cy+sz*0.6*Math.sin(a2));}).join(' ')}" 
+            fill="rgba(42,52,68,0.9)" stroke="\${p.big?'#e8a44a':ringAccent}" stroke-width="\${p.big?1.4:1}"/>
+          <circle cx="\${cx}" cy="\${cy}" r="\${sz*0.38}" fill="none" stroke="\${ringAccent}" stroke-width="0.7"/>
+          <text x="\${lx}" y="\${ly+3}" font-family="'IBM Plex Mono',monospace" font-size="5"
+            fill="\${p.big?'#e8a44a':ringAccent}" text-anchor="middle" opacity="0.85">\${p.label}</text>
+        </g>\`;
+      }).join('')}
+
+      <!-- Fibre penetrator (6-way, bottom) -->
+      <g transform="translate(0,76)">
+        <circle r="10" fill="rgba(80,40,20,0.3)" stroke="#c06030" stroke-width="1.5"/>
+        <circle r="6" fill="none" stroke="#c06030" stroke-width="0.8"/>
+        <text y="-14" font-family="'IBM Plex Mono',monospace" font-size="5.5" fill="#c06030" text-anchor="middle">FIBRE</text>
+        <text y="-7" font-family="'IBM Plex Mono',monospace" font-size="4.5" fill="#904020" text-anchor="middle">6-WAY</text>
+      </g>
+
+      <!-- Earth stud -->
+      <g transform="translate(0,56)">
+        <circle r="4" fill="rgba(42,48,64,0.9)" stroke="${ringAccent}" stroke-width="1"/>
+        <text y="10" font-family="'IBM Plex Mono',monospace" font-size="4.5" fill="${ringAccent}" text-anchor="middle" opacity="0.6">EARTH</text>
+      </g>
+
+      <!-- Ring label -->
+      <text y="105" font-family="'IBM Plex Mono',monospace" font-size="9" fill="${ringAccent}" text-anchor="middle" font-weight="bold">${ringNum}</text>
+      <text y="117" font-family="'IBM Plex Mono',monospace" font-size="7" fill="${ringAccent}" text-anchor="middle">${ringLabel}</text>
+      <text y="129" font-family="'IBM Plex Mono',monospace" font-size="8" fill="${ringAccent}" text-anchor="middle">↗ OPEN GA</text>
     </g>
 
     <!-- RIGHT: Fan end -->
