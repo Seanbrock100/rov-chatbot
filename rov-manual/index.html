@@ -584,95 +584,111 @@ const POD_ZONES = {
     title: 'Control Chassis — EQP952-0203-DR-PD-55001',
     drawing: 'EQP952-0203-DR-PD-55001',
     file: 'manuals/drawings/EQP952-0203-DR-PD-55001.pdf',
-    body: 'The Control Chassis houses the primary vehicle control electronics. Power: PSU1 (SLE124), PSU2 (SLE112), PSU3 (MAX315), PSU4–7 (MAX124). Serial channels CH1–10 route via 155MHz fibre interface and CWDM RED band (1470–1610nm). Camera video routes through Video MUX PCB; camera 24V power is fed from the camera PSU via backplane (not through penetrator). Wiring diagram: EQP952-0203-DR-PD-55017.',
+    body: 'The Control Chassis (55001) houses primary vehicle control electronics. PSU1 (SLE124), PSU2 (SLE112), PSU3 (MAX315), PSU4–7 (MAX124 ×4). Camera 24V is supplied by the Camera PSU via backplane — NOT through the penetrator ring. Coax video routes via the Video MUX PCB. Serial channels CH1–10 via 155MHz fibre. CWDM RED band (1470–1610nm) to surface. Wiring diagram: EQP952-0203-DR-PD-55017.',
     cards: [
       {name:'PSU 1 — SLE124', detail:'Primary 24V DC power supply — main control chassis rail'},
       {name:'PSU 2 — SLE112', detail:'24V DC secondary power supply'},
       {name:'PSU 3 — MAX315', detail:'Power supply unit — sensor and instrument supply'},
       {name:'PSU 4–7 — MAX124 ×4', detail:'24V DC auxiliary power supply units'},
-      {name:'Video MUX PCB — PCB-0124', detail:'Coax video multiplexer for CAM 1–8. Cameras use 8-pin Mini Burton (5929-0207-PE04). Signal: Y+C coax. Power via backplane camera PSU'},
-      {name:'Camera Control PCB — PCB-0161', detail:'Camera power control — iris, focus, zoom. Backplane CON 75–81'},
-      {name:'Relay & Housekeeping PCB 1 — PCB-0163', detail:'Camera power relay switching — backplane CON 31–37'},
-      {name:'Relay & Housekeeping PCB 2 — PCB-0163', detail:'Auxiliary power relay switching — backplane CON 45–51'},
-      {name:'Thruster Control Unit PCB — PCB-0162', detail:'TCU control card — backplane CON 66–72. Drives servo valves SV1–8 via penetrator CON28/CON29'},
+      {name:'Camera PSU ×2', detail:'Dedicated 24V supply for camera heads. Fed via backplane connectors — NOT through penetrator ring'},
+      {name:'Video MUX PCB — PCB-0124', detail:'Coax video multiplexer for CAM 1–8. Uses 8-pin Mini Burton (5929-0207-PE04). Signal: SIGNAL(Y), SIGNAL(C), FOCUS HI/LO. Power from camera PSU via backplane'},
+      {name:'Camera Control PCB — PCB-0161', detail:'Camera iris, focus, zoom control — backplane CON 75–81'},
+      {name:'Relay & HK PCB 1 — PCB-0163 (Camera Power)', detail:'Camera power relay switching — backplane CON 31–37'},
+      {name:'Relay & HK PCB 2 — PCB-0163 (Auxiliaries)', detail:'Auxiliary power relay switching — backplane CON 45–51'},
+      {name:'Thruster Control Unit PCB — PCB-0162', detail:'TCU servo valve control card — backplane CON 66–72. Drives SV1–8 servo valves via control ring CON28/CON29'},
       {name:'155MHz Fibre Optic I/F — PCB-0186 (1530nm)', detail:'Serial channel fibre interface — carries CH1–10 serial data within CWDM RED band'},
-      {name:'CWDM Assembly (RED) — ROV-0311-D-0212', detail:'RED band CWDM: 1470, 1490, 1510, 1530, 1550, 1570, 1590, 1610nm. Single-mode 6-way fibre penetrator to surface'},
-      {name:'Band Splitter — ROV-0311-D-0210', detail:'COM/RED/BLUE band splitter. RED stays in control chassis; BLUE passes to payload chassis via energy chain'},
-      {name:'Sixnet 9-Port Gigabit Switch — SLX-10MG-1', detail:'Bottomside Ethernet network switch. Connects to topside via CWDM fibre'},
-      {name:'Gyro Cover Plate — EQP952-0203-DR-PD-55011', detail:'Houses IXBlue Octans Nano gyro. RS-232 CH2 + 24VDC supply. Connected via CON60 on backplane'},
+      {name:'CWDM Assembly RED — ROV-0311-D-0212', detail:'RED band: 1470, 1490, 1510, 1530, 1550, 1570, 1590, 1610nm. Single-mode 6-way fibre penetrator to surface'},
+      {name:'Band Splitter — ROV-0311-D-0210', detail:'COM/RED/BLUE splitter. RED stays in control chassis; BLUE passes to payload chassis via energy chain'},
+      {name:'Sixnet 9-Port Gigabit Switch — SLX-10MG-1', detail:'Bottomside Ethernet network switch'},
+      {name:'Gyro Cover Plate — EQP952-0203-DR-PD-55011', detail:'Houses IXBlue Octans Nano gyro. RS-232 CH2 + 24VDC. Connected via CON60 on backplane'},
+      {name:'24V Unregulated Supply — ROV-0311-D-0208', detail:'Unregulated 24V supply module for VP1 and VP2 valve packs'},
+      {name:'System Backplane Breakout — PCB-0197', detail:'Main chassis backplane distribution board'},
     ]
   },
   payload_chassis: {
     title: 'Payload Chassis — EQP952-0203-DR-PD-55002',
     drawing: 'EQP952-0203-DR-PD-55002',
     file: 'manuals/drawings/EQP952-0203-DR-PD-55002.pdf',
-    body: 'The Payload Chassis handles mission and survey equipment interfaces. CWDM BLUE band (1270–1410nm) optical transceivers provide high-bandwidth comms. Sixnet 10-port Gigabit switch manages all payload Ethernet including the Atlas manipulator (Ethernet ports E1/E2/E4). Payload penetrator ring: EQP952-0203-DR-PD-55004. This chassis is project-configurable.',
+    body: 'The Payload Chassis (55002) handles mission and survey equipment interfaces. CWDM BLUE band (1270–1410nm). Sixnet 10-port Gigabit switch manages payload Ethernet. Atlas manipulator (Ethernet CH10) connects through payload ring 55004. Remaining channels are project-configurable for survey payloads. Wiring diagram: EQP952-0203-DR-PD-55016.',
     cards: [
-      {name:'PSU 1 — SLE124', detail:'Primary 24V DC for payload chassis'},
-      {name:'PSU 2 — MAX315', detail:'Secondary power supply — instrument rail'},
-      {name:'PSU 3–8 — MAX124 ×6', detail:'24V DC auxiliary supply units'},
-      {name:'Generic Interface PCB — PCB-0115', detail:'Dual generic interface board — general I/O for payload sensors and tooling expansion ports'},
-      {name:'Payload Chassis Backplane — PCB-0169', detail:'Main backplane — routes all power and data between payload cards'},
-      {name:'Relay & Housekeeping PCB — PCB-0163', detail:'Payload relay switching and system monitoring'},
-      {name:'155MHz Fibre Optic I/F — PCB-0186 (1370nm)', detail:'Payload fibre interface PCB — carries payload serial data channels'},
-      {name:'CWDM Assembly (BLUE) — ROV-0311-D-0212', detail:'BLUE band CWDM: 1270, 1290, 1310, 1330, 1350, 1370, 1390, 1410nm. Received from control chassis via energy chain'},
-      {name:'Optical Transceivers — 1290, 1330, 1370, 1410nm', detail:'MRV single-mode SFP transceivers. Payload fibre for high-bandwidth data to surface'},
-      {name:'Sixnet 10-Port Gigabit Switch', detail:'Payload Ethernet master CH1–10. Atlas manipulator connects via Ethernet CH9 (port E1) and CH11 (port E4)'},
-      {name:'RS232 Module — PCB-0032', detail:'Serial comms module for payload instruments and expansion'},
-      {name:'Auxiliary Relays 1–4', detail:'115V AC and 24V DC relay switching for payload tooling'},
+      {name:'PSU 1 — SLE124', detail:'Main 24V PSU for payload chassis'},
+      {name:'PSU 2 — MAX315', detail:'Secondary PSU'},
+      {name:'PSU 3–8 — MAX124 ×6', detail:'Six additional 24V PSU modules'},
+      {name:'Generic Interface PCB — PCB-0115', detail:'General I/O interface for payload sensor connections — backplane CON 5'},
+      {name:'Payload Chassis Backplane — PCB-0169', detail:'Main backplane for payload PCB stack'},
+      {name:'Relay & Housekeeping PCB — PCB-0163', detail:'Relay switching and system monitoring'},
+      {name:'155MHz Fibre Optic I/F — PCB-0186 (1370nm)', detail:'155MHz fibre interface for payload data — BLUE CWDM band'},
+      {name:'CWDM Assembly BLUE — ROV-0311-D-0212', detail:'BLUE band: 1270, 1290, 1310, 1330, 1350, 1370, 1390, 1410nm — payload comms to surface'},
+      {name:'Sixnet 10-Port Gigabit Switch', detail:'10-port managed Ethernet switch for payload network. E1/E2/E4 ports used for survey equipment'},
+      {name:'RS232 Module — PCB-0032', detail:'Serial comms module for payload instruments'},
+      {name:'SFP Ethernet Module ×2 (MRV)', detail:'MRV Layer 1 fibre Ethernet media converters (1290nm and 1370nm data slots)'},
+      {name:'Optical Transceivers ×4', detail:'1310nm, 1330nm, 1390nm, 1410nm — BLUE CWDM optical modules'},
+      {name:'Fan Tray', detail:'Chassis cooling — 24V fan assembly'},
     ]
   },
   control_ring: {
     title: 'Control Penetrator Ring — EQP952-0203-DR-PD-55003',
     drawing: 'EQP952-0203-DR-PD-55003',
     file: 'manuals/drawings/EQP952-0203-DR-PD-55003.pdf',
-    body: 'The Control Penetrator Ring (supersedes ROV-0311-D-0203 series) carries all cable entries for the control chassis. 8 coax camera feeds, all vehicle serial instruments (CH1–10), TCU servo valves, valve packs 1 & 2, lighting, compensators, and the main CWDM fibre to surface.',
+    body: 'The Control Penetrator Ring (55003) carries all vehicle control, camera, and sensor connections. Cameras 1–8 use 8-pin Mini Burton connectors — coax video (Y/C), 24V (from Camera PSU via backplane), focus Hi/Lo. Serial CH1–10 route all instrument data. TCU servo valve signals also exit through this ring. Supersedes ROV-0311-D-0203 series.',
     cards: [
-      {name:'CAM 1 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO. Video to MUX PCB. Power from camera PSU backplane'},
-      {name:'CAM 2 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
-      {name:'CAM 3 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
-      {name:'CAM 4 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
-      {name:'CAM 5 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
-      {name:'CAM 6 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
-      {name:'CAM 7 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
-      {name:'CAM 8 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
-      {name:'TCU — CON28 + CON29', detail:'Thruster control: servo valves SV1–8 (CON28 pin 1–16), HPU pressure, TCU water ingress. 12-pin Burton 5507-2412-PE04'},
-      {name:'MANIP — CH1 RS232', detail:'T4 manipulator serial control + 24V. Burton 5507-2006-PE04'},
-      {name:'SONAR — CH3 RS232', detail:'Tritech scanning sonar serial + 24V. Burton 5507-2006-PE04'},
-      {name:'RESPONDER — CH4 TTL', detail:'USBL transponder/responder TTL. Burton 5507-2006-PE04'},
-      {name:'DEPTH — CH5 RS232', detail:'Digiquartz depth/pressure sensor serial + 24V. Main ROV depth reading. Burton 5507-2006-PE04'},
-      {name:'ALT/DVL — CH6 RS232', detail:'Altimeter and Doppler Velocity Log serial + 24V. Burton 5507-2006-PE04'},
-      {name:'VP1 — CH7 RS485', detail:'Valve Pack 1 serial (RS485) + 24V unregulated. Burton 5507-2006-PE04'},
-      {name:'VP2 — CH8 RS485', detail:'Valve Pack 2 serial (RS485) + 24V unregulated. Burton 5507-2006-PE04'},
-      {name:'LIGHTS — CH9 RS232 + 110V AC', detail:'Lighting JB serial CH9 + 110V AC supply (L+N). Burton 5507-2006-PE04'},
-      {name:'TOOLING — CH10 RS232', detail:'Tooling serial channel + valve coax signals. For additional tooling packages'},
-      {name:'COMPS — CON20 (×4)', detail:'4 × compensator analogue pressure sensors. Analogue signal from hydraulic compensators'},
-      {name:'HPU/TERM SENSORS — CON12', detail:'HPU bearing housing PT100 temp, hydraulic temp, motor temp HI, water ingress signals'},
-      {name:'CWDM FIBRE — 6-way penetrator', detail:'Single-mode fibre. Carries full CWDM RED band (1470–1610nm) to surface via umbilical'},
+      {name:'CAM 1–8 ×8 (Mini Burton 8-pin)', detail:'5929-0207-PE04 each. SIGNAL(Y), SIGNAL(C) coax, +24V, 0V, FOCUS HI, FOCUS LO, SCREEN, N/C. 24V from Camera PSU via backplane, video via Video MUX PCB'},
+      {name:'T4 MANIPULATOR — CH1 RS232', detail:'Burton 5507-2006-PE04 — RS232 TX/RX + 24V + 0V + SCN'},
+      {name:'GYRO — CH2 RS232', detail:'Burton 5507-2006-PE04 — RS232 TX/RX + 24V + 0V + SCN to Octans Nano'},
+      {name:'TRITECH SONAR — CH3 RS232', detail:'Burton 5507-2006-PE04 — RS232 TX/RX + 24V + 0V + SCN'},
+      {name:'RESPONDER — CH4 TTL', detail:'Burton 5507-2006-PE04 — TTL TX/RX + 24V + 0V + SCN'},
+      {name:'DIGIQUARTZ DEPTH — CH5 RS232', detail:'Burton 5507-2006-PE04 — RS232 TX/RX + 24V + 0V + SCN. Primary ROV depth sensor'},
+      {name:'ALTIMETER/DVL — CH6 RS232', detail:'Burton 5507-2006-PE04 — RS232 TX/RX + 24V + 0V + SCN'},
+      {name:'VALVE PACK 1 — CH7 RS485', detail:'Burton 5507-2006-PE04 — RS485+/- + 24V unreg + 0V unreg + SCN'},
+      {name:'VALVE PACK 2 — CH8 RS485', detail:'Burton 5507-2006-PE04 — RS485+/- + 24V unreg + 0V unreg + SCN'},
+      {name:'LIGHT JB — CH9 RS232', detail:'5-way — RS232 TX/RX + 110Vac L/N ×2 + COAX HI/SC ×2. Lighting JB comms and AC power'},
+      {name:'TOOLING — CH10 RS232', detail:'CON 2, 24-pin — V1–V8 HI/LO servo signals + 24V inst + 0V + HPU pressure + TCU WI'},
+      {name:'TCU (12-pin Burton)', detail:'5507-2412-PE04 — SV+1 to SV+8 / SV-1 to SV-8 servo valve signals + 24V inst + HPU press + TCU WI (CON 28/29)'},
+      {name:'COMPENSATORS', detail:'6-way — COMP 1–4 analogue 0–10V pressure sensors + 24V + 0V. Hydraulic compensator sensors'},
+      {name:'HPU/TERM SENSORS', detail:'6-way — PT100 motor/winding/hyd temps + HPU trip signal + WI from HPU and termination can'},
+      {name:'CWDM FIBRE RED (6-way)', detail:'Single-mode 6-way fibre penetrator — RED CWDM band 1470/1490/1510/1530/1550/1570/1590/1610nm topside'},
     ]
   },
   payload_ring: {
     title: 'Payload Penetrator Ring — EQP952-0203-DR-PD-55004',
     drawing: 'EQP952-0203-DR-PD-55004',
     file: 'manuals/drawings/EQP952-0203-DR-PD-55004.pdf',
-    body: 'The Payload Penetrator Ring (supersedes ROV-0311-D-0204 series) provides cable entries for survey and mission equipment. Primarily project-configurable. Standard fit includes Atlas manipulator Ethernet, PHINS/INS, responder, and analogue/digital expansion I/O.',
+    body: 'The Payload Penetrator Ring (55004) carries project-configurable mission equipment connections. Atlas manipulator uses CH10 (RS232 + 24V HP 10A). Remaining serial channels and 24V supplies are available for project-specific payload equipment — sonars, DVL, ROV nav, survey instruments. Supersedes ROV-0311-D-0204 series.',
     cards: [
-      {name:'Atlas Manip — Ethernet CH9 + CH11', detail:'Atlas/Schilling manipulator via Sixnet ports E1 and E4. Burton 5999-1692-E006. 24V HP 10A on CH10 (CB13/CB14)'},
-      {name:'PHINS / INS — Ethernet E2', detail:'PHINS inertial navigation. 24V from CB13/CB14. CAT5 to Sixnet port E2. Burton 5999-1800-E006'},
-      {name:'Responder — CON45', detail:'Payload responder: common, charge, trigger, +24V RESP, 0V RESP. Analogue TTL'},
-      {name:'Aux Relay Outputs ×4', detail:'115V AC and 24V DC switched outputs for payload tooling via aux relays 1–4'},
-      {name:'Serial Expansion CH1–10', detail:'Serial expansion for payload instruments — RS232/TTL/RS422 via Generic Interface PCB'},
-      {name:'Analogue I/O — CON40–45', detail:'Analogue inputs (0–10V, ±10V, PT100) and outputs (0–10V) for payload sensors'},
-      {name:'Digital I/O', detail:'Digital inputs/outputs for payload control via backplane expansion connectors'},
-      {name:'Pod Water Ingress — CON19', detail:'Payload pod water ingress detector + spare payload WI input'},
+      {name:'CH10 — ATLAS MANIPULATOR', detail:'Burton 5507-2006-PE04 — RS232 TX/RX + 24V HP 10A + 0V + SCN. Atlas/Schilling manipulator via Aleron VP interface'},
+      {name:'CH2 — 24V HP 10A', detail:'Burton 5507-2006-PE04 — High-power 24V (10A) project supply'},
+      {name:'CH9 — 115V AC', detail:'Burton 5507-2008-PE04 — 115V AC for AC-powered payload tools'},
+      {name:'CH1, CH3–CH8 — Project Reserved', detail:'RS232 serial channels + 24V supplies for project payload equipment (e.g. sonars, Doppler, ROV nav instruments, PHINS)'},
+      {name:'SENSORS & CONTROL 24V', detail:'Available ports for future tooling additions — project-configurable'},
+      {name:'PAYLOAD WATER INGRESS', detail:'Water ingress detector for payload pod section — monitored by Relay & HK PCB (CON19)'},
+      {name:'ETHERNET ×2', detail:'CAT5 from Sixnet switch ports E1/E2/E4 — for survey equipment such as PHINS INS'},
+      {name:'CWDM FIBRE BLUE', detail:'Fibre penetrator — BLUE band 1270/1290/1310/1330/1350/1370/1390/1410nm payload comms topside'},
     ]
   }
 };
 
-function podZoneClick(zone){
+function openMenu(){
   document.getElementById('menu-panel').classList.remove('collapsed');
   document.getElementById('photo-wrap').classList.add('active');
   document.getElementById('rov-prompt').style.opacity='0';
+}
+function podZoneClick(zone){
+  const z = POD_ZONES[zone];
+  if(!z) return;
+  l3DrawingFile = z.file;
+  document.getElementById('l3-tt-title').textContent = z.title;
+  document.getElementById('l3-tt-body').textContent = z.body;
+  document.getElementById('l3-tt-num').textContent = z.drawing;
+  const cardHtml = z.cards.map(c =>
+    '<div class="draw-item"><div class="draw-num">' + c.name + '</div><div class="draw-title">' + c.detail + '</div></div>'
+  ).join('');
+  document.getElementById('list-drawings').innerHTML =
+    '<div style="padding:8px 16px 4px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;">' + z.title + '</div>' + cardHtml;
+  const tt = document.getElementById('l3-tooltip');
+  tt.style.left = '20px';
+  tt.style.top  = '60px';
+  tt.classList.add('visible');
+  showTab('drawings');
 }
 function closeMenu(){
   document.getElementById('menu-panel').classList.add('collapsed');
