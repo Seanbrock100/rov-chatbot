@@ -7,20 +7,16 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0b0e16;--surface:#13171f;--border:#1e2330;--border2:#2a3040;
-  --amber:#e8a44a;--amber-dim:#7a5018;--text:#ddd8cc;--text-dim:#6a7080;
-  --text-mid:#9a9890;--blue:#3a6080;
-}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+:root{--bg:#0b0e16;--surface:#13171f;--border:#1e2330;--border2:#2a3040;--amber:#e8a44a;--amber-dim:#7a5018;--text:#ddd8cc;--text-dim:#6a7080;--text-mid:#9a9890;--blue:#3a6080;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
 #hdr{border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;background:#090c13;flex-shrink:0;}
 .htitle{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#f0ece0;letter-spacing:-.01em;}
 .badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;padding:2px 8px;border-radius:2px;border:1px solid var(--amber);color:var(--amber);background:rgba(232,164,74,.08);}
 .hsub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.1em;margin-top:3px;}
-.hright{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);text-align:right;line-height:1.8;}
-#main{flex:1;display:flex;overflow:hidden;}
+.hright{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);text-align:right;line-height:1.8;}
+#main{flex:1;display:flex;overflow:hidden;min-height:0;}
 #rov-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;position:relative;border-right:1px solid var(--border);}
-.rov-prompt{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--amber);text-align:center;margin-bottom:18px;animation:pulse 2.5s ease-in-out infinite;}
+.rov-prompt{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--amber);text-align:center;margin-bottom:18px;animation:pulse 2.5s ease-in-out infinite;transition:opacity .3s;}
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
 #photo-wrap{position:relative;cursor:pointer;border-radius:6px;overflow:hidden;border:1px solid var(--border2);transition:border-color .2s,box-shadow .2s;max-width:700px;width:100%;}
 #photo-wrap:hover{border-color:var(--amber);box-shadow:0 0 32px rgba(232,164,74,.12);}
@@ -63,7 +59,6 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 </style>
 </head>
 <body>
-
 <div id="hdr">
   <div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
@@ -74,120 +69,63 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   </div>
   <div class="hright">
     Hercules MK3 ROV Technical Reference<br>
-    <span style="font-size:9px;color:#2a3040">BUILD: %%BUILD_DATE%%</span>
+    <span style="font-size:9px;color:#2a3040">BUILD: 09 Apr 2026 13:46 UTC</span>
   </div>
 </div>
-
 <div id="main">
-
   <div id="rov-panel">
-    <div class="rov-prompt" id="rov-prompt">▶ CLICK ROV TO OPEN SYSTEM MENU</div>
+    <div class="rov-prompt" id="rov-prompt">&#9654; CLICK ROV TO OPEN SYSTEM MENU</div>
     <div id="photo-wrap" onclick="openMenu()">
       <div id="ph-placeholder">
-        <div class="ph-icon">🤿</div>
+        <div class="ph-icon">&#128064;</div>
         <div class="ph-text">
           ROV OVERVIEW PHOTO — PENDING<br>
           Save photo as <strong>photos/rov_overview.jpg</strong> alongside index.html<br>
-          Remove this block and uncomment the img tag below
+          then replace this block with:<br>
+          <strong>&lt;img id="rov-img" src="photos/rov_overview.jpg" alt="Hercules MK3"&gt;</strong>
         </div>
       </div>
-      <!-- <img id="rov-img" src="photos/rov_overview.jpg" alt="Hercules MK3 ROV"> -->
     </div>
     <div class="rov-lbl">HERCULES MK3 &nbsp;·&nbsp; HE15 / HE30 &nbsp;·&nbsp; SEVEN OCEANIC</div>
-
     <div id="content-pane">
-      <button class="c-back" onclick="closeContent()">← BACK TO ROV</button>
+      <button class="c-back" onclick="closeContent()">&#8592; BACK TO ROV</button>
       <div class="c-title" id="c-title"></div>
       <div class="c-group" id="c-group"></div>
       <div class="c-hold">
         <div class="c-hold-badge">LAYER 2 — PENDING LAYER 1 REVIEW</div>
         <div class="c-hold-title" id="c-hold-name"></div>
-        <div class="c-hold-detail">Layer 1 navigation confirmed.<br>Drill-down content built here after sign-off.</div>
+        <div class="c-hold-detail">Layer 1 navigation structure confirmed.<br>Drawings, manuals and drill-down content<br>will be built here after sign-off.</div>
       </div>
     </div>
   </div>
-
   <div id="menu-panel" class="collapsed">
     <div id="menu-hdr">
       <div class="mtitle">Select System</div>
-      <button class="mclose" onclick="closeMenu()">✕ CLOSE</button>
+      <button class="mclose" onclick="closeMenu()">&#10005; CLOSE</button>
     </div>
     <div id="menu-body">
-
       <div class="grp-lbl">Vehicle Systems</div>
-      <div class="mitem" onclick="sel('Electronics Pod','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Electronics Pod</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('TCU — Thruster Control Unit','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">TCU — Thruster Control Unit</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('HPU — Hydraulic Power Unit','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">HPU — Hydraulic Power Unit</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Valve Packs (1, 2, 3, Aleron)','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Valve Packs (1, 2, 3, Aleron)</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Thrusters','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Thrusters</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('ROV Lights','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">ROV Lights</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('ROV Term Can','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">ROV Term Can</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Frame &amp; Structure','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Frame &amp; Structure</span><span class="iarrow">›</span></div>
-
+      <div class="mitem" onclick="selectItem('Electronics Pod','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Electronics Pod</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('TCU — Thruster Control Unit','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">TCU — Thruster Control Unit</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('HPU — Hydraulic Power Unit','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">HPU — Hydraulic Power Unit</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('Valve Packs (1, 2, 3, Aleron)','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Valve Packs (1, 2, 3, Aleron)</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('Thrusters','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Thrusters</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('ROV Lights','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">ROV Lights</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('ROV Term Can','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">ROV Term Can</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('Frame &amp; Structure','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Frame &amp; Structure</span><span class="iarrow">›</span></div>
       <div class="grp-lbl">Manipulators</div>
-      <div class="mitem" onclick="sel('T4 Manipulator','MANIPULATORS')"><div class="idot"></div><span class="iname">T4 Manipulator</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Atlas Manipulator','MANIPULATORS')"><div class="idot"></div><span class="iname">Atlas Manipulator</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Pan &amp; Tilt','MANIPULATORS')"><div class="idot"></div><span class="iname">Pan &amp; Tilt</span><span class="iarrow">›</span></div>
-
+      <div class="mitem" onclick="selectItem('T4 Manipulator','MANIPULATORS')"><div class="idot"></div><span class="iname">T4 Manipulator</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('Atlas Manipulator','MANIPULATORS')"><div class="idot"></div><span class="iname">Atlas Manipulator</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('Pan &amp; Tilt','MANIPULATORS')"><div class="idot"></div><span class="iname">Pan &amp; Tilt</span><span class="iarrow">›</span></div>
       <div class="grp-lbl">TMS — Tether Management System</div>
-      <div class="mitem" onclick="sel('TMS Overview','TMS')"><div class="idot"></div><span class="iname">TMS Overview</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('TMS H15','TMS')"><div class="idot"></div><span class="iname">TMS H15</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('TMS H30','TMS')"><div class="idot"></div><span class="iname">TMS H30</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('TMS Topside','TMS')"><div class="idot"></div><span class="iname">TMS Topside</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('TMS Protection Frame','TMS')"><div class="idot"></div><span class="iname">TMS Protection Frame</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Stationary Term Can','TMS')"><div class="idot"></div><span class="iname">Stationary Term Can</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Rotary Term Can','TMS')"><div class="idot"></div><span class="iname">Rotary Term Can</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Tether','TMS')"><div class="idot"></div><span class="iname">Tether</span><span class="iarrow">›</span></div>
-
-      <div class="grp-lbl">LARS — Launch &amp; Recovery System</div>
-      <div class="mitem" onclick="sel('LARS Overview','LARS')"><div class="idot"></div><span class="iname">LARS Overview</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('MacArtney Umbilical Winch','LARS')"><div class="idot"></div><span class="iname">MacArtney Umbilical Winch</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('LCC Winch','LARS')"><div class="idot"></div><span class="iname">LCC Winch</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Latch Beam','LARS')"><div class="idot"></div><span class="iname">Latch Beam</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Latch Beam Winches','LARS')"><div class="idot"></div><span class="iname">Latch Beam Winches</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Cursor','LARS')"><div class="idot"></div><span class="iname">Cursor</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Moonpool Doors','LARS')"><div class="idot"></div><span class="iname">Moonpool Doors</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Service Winch','LARS')"><div class="idot"></div><span class="iname">Service Winch</span><span class="iarrow">›</span></div>
-
-      <div class="grp-lbl">Topside</div>
-      <div class="mitem" onclick="sel('Control Console','TOPSIDE')"><div class="idot"></div><span class="iname">Control Console</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Control Room','TOPSIDE')"><div class="idot"></div><span class="iname">Control Room</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('PDU — Power Distribution Unit','TOPSIDE')"><div class="idot"></div><span class="iname">PDU — Power Distribution Unit</span><span class="iarrow">›</span></div>
-
-      <div class="grp-lbl">Reference</div>
-      <div class="mitem" onclick="sel('Longline Drawings','REFERENCE')"><div class="idot"></div><span class="iname">Longline Drawings</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('Cables Index','REFERENCE')"><div class="idot"></div><span class="iname">Cables Index</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('All Drawings — Search','REFERENCE')"><div class="idot"></div><span class="iname">All Drawings — Search</span><span class="iarrow">›</span></div>
-
-    </div>
-  </div>
-
-</div>
-
-<script>
-function openMenu(){
-  document.getElementById('menu-panel').classList.remove('collapsed');
-  document.getElementById('photo-wrap').classList.add('active');
-  document.getElementById('rov-prompt').style.opacity='0';
-}
-function closeMenu(){
-  document.getElementById('menu-panel').classList.add('collapsed');
-  document.getElementById('photo-wrap').classList.remove('active');
-  document.getElementById('rov-prompt').style.opacity='1';
-  closeContent();
-}
-function sel(name,group){
-  document.getElementById('c-title').textContent=name;
-  document.getElementById('c-group').textContent=group;
-  document.getElementById('c-hold-name').textContent=name;
-  document.getElementById('content-pane').classList.add('visible');
-}
-function closeContent(){
-  document.getElementById('content-pane').classList.remove('visible');
-}
-</script>
-</body>
-</html>
+      <div class="mitem" onclick="selectItem('TMS Overview','TMS')"><div class="idot"></div><span class="iname">TMS Overview</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('TMS H15','TMS')"><div class="idot"></div><span class="iname">TMS H15</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('TMS H30','TMS')"><div class="idot"></div><span class="iname">TMS H30</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('TMS Topside','TMS')"><div class="idot"></div><span class="iname">TMS Topside</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('TMS Protection Frame','TMS')"><div class="idot"></div><span class="iname">TMS Protection Frame</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('Stationary Term Can','TMS')"><div class="idot"></div><span class="iname">Stationary Term Can</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('Rotary Term Can','TMS')"><div class="idot"></div><span class="iname">Rotary Term Can</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="selectItem('Tether','TMS')"><div class="idot"></div><span class="iname">Tether</span><span class="iarrow">›</span></div>
       <div class="grp-lbl">LARS — Launch &amp; Recovery System</div>
       <div class="mitem" onclick="selectItem('LARS Overview','LARS')"><div class="idot"></div><span class="iname">LARS Overview</span><span class="iarrow">›</span></div>
       <div class="mitem" onclick="selectItem('MacArtney Umbilical Winch','LARS')"><div class="idot"></div><span class="iname">MacArtney Umbilical Winch</span><span class="iarrow">›</span></div>
@@ -197,12 +135,10 @@ function closeContent(){
       <div class="mitem" onclick="selectItem('Cursor','LARS')"><div class="idot"></div><span class="iname">Cursor</span><span class="iarrow">›</span></div>
       <div class="mitem" onclick="selectItem('Moonpool Doors','LARS')"><div class="idot"></div><span class="iname">Moonpool Doors</span><span class="iarrow">›</span></div>
       <div class="mitem" onclick="selectItem('Service Winch','LARS')"><div class="idot"></div><span class="iname">Service Winch</span><span class="iarrow">›</span></div>
-
       <div class="grp-lbl">Topside</div>
       <div class="mitem" onclick="selectItem('Control Console','TOPSIDE')"><div class="idot"></div><span class="iname">Control Console</span><span class="iarrow">›</span></div>
       <div class="mitem" onclick="selectItem('Control Room','TOPSIDE')"><div class="idot"></div><span class="iname">Control Room</span><span class="iarrow">›</span></div>
       <div class="mitem" onclick="selectItem('PDU — Power Distribution Unit','TOPSIDE')"><div class="idot"></div><span class="iname">PDU — Power Distribution Unit</span><span class="iarrow">›</span></div>
-
       <div class="grp-lbl">Reference</div>
       <div class="mitem" onclick="selectItem('Longline Drawings','REFERENCE')"><div class="idot"></div><span class="iname">Longline Drawings</span><span class="iarrow">›</span></div>
       <div class="mitem" onclick="selectItem('Cables Index','REFERENCE')"><div class="idot"></div><span class="iname">Cables Index</span><span class="iarrow">›</span></div>
@@ -210,28 +146,11 @@ function closeContent(){
     </div>
   </div>
 </div>
-
 <script>
-function openMenu(){
-  document.getElementById('menu-panel').classList.remove('collapsed');
-  document.getElementById('photo-wrap').classList.add('active');
-  document.getElementById('rov-prompt').style.opacity='0';
-}
-function closeMenu(){
-  document.getElementById('menu-panel').classList.add('collapsed');
-  document.getElementById('photo-wrap').classList.remove('active');
-  document.getElementById('rov-prompt').style.opacity='1';
-  closeContent();
-}
-function selectItem(name,group){
-  document.getElementById('c-title').textContent=name;
-  document.getElementById('c-group').textContent=group;
-  document.getElementById('c-hold-name').textContent=name;
-  document.getElementById('content-pane').classList.add('visible');
-}
-function closeContent(){
-  document.getElementById('content-pane').classList.remove('visible');
-}
+function openMenu(){document.getElementById('menu-panel').classList.remove('collapsed');document.getElementById('photo-wrap').classList.add('active');document.getElementById('rov-prompt').style.opacity='0';}
+function closeMenu(){document.getElementById('menu-panel').classList.add('collapsed');document.getElementById('photo-wrap').classList.remove('active');document.getElementById('rov-prompt').style.opacity='1';closeContent();}
+function selectItem(name,group){document.getElementById('c-title').textContent=name;document.getElementById('c-group').textContent=group;document.getElementById('c-hold-name').textContent=name;document.getElementById('content-pane').classList.add('visible');}
+function closeContent(){document.getElementById('content-pane').classList.remove('visible');}
 </script>
 </body>
 </html>
