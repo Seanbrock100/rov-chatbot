@@ -170,115 +170,282 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
               <span style="cursor:pointer;color:var(--amber)" onclick="window.open('manuals/drawings/EQP952-0203-DR-PD-55000.pdf','_blank')">↗ OPEN FULL DRAWING</span>
             </div>
             <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px;height:calc(100% - 32px);">
-              <svg id="pod-ga-svg" viewBox="0 0 700 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:100%;overflow:visible;">
-                <!-- Background grid -->
-                <defs>
-                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e2330" stroke-width="0.5"/>
-                  </pattern>
-                  <filter id="glow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                    <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
-                </defs>
-                <rect width="700" height="420" fill="url(#grid)"/>
+              <svg id="pod-ga-svg" viewBox="0 0 820 500" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:100%;overflow:visible;">
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1e28" stroke-width="0.4"/>
+    </pattern>
+  </defs>
+  <rect width="820" height="500" fill="url(#grid)"/>
+  <text x="410" y="16" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6a7080" text-anchor="middle" letter-spacing="1.5">HERCULES MK3 — ELECTRONICS POD — SCHEMATIC  ·  REF 55000 / 55001 / 55002</text>
 
-                <!-- Title block -->
-                <text x="350" y="22" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#6a7080" text-anchor="middle" letter-spacing="2">HERCULES MK3 — ELECTRONICS POD — SCHEMATIC OVERVIEW</text>
+  <!-- ═══════════════════════════════════════════════════════
+       CONTROL CHASSIS (55001) — TOP CHASSIS
+       Layout (left→right per drawing):
+         LEFT END: Penetrator ring 55003 (oval flange, CB plate)
+         CARD BAY: PSU col | 155MHz I/F | Relay×2 | TCU | Cam Ctrl
+         CENTRE-RIGHT: PSU 3–7 col + Sensors/Ctrl 24V + Camera 24V
+         RIGHT END: Gyro cover plate + D-sub connectors
+  ═══════════════════════════════════════════════════════ -->
 
-                <!-- ── POD OUTER SHELL ── -->
-                <rect x="80" y="50" width="540" height="280" rx="12" fill="none" stroke="#2a3040" stroke-width="2"/>
-                <text x="350" y="68" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#3a4050" text-anchor="middle" letter-spacing="1">POD PRESSURE HOUSING — ROV-0311-D-0205-00</text>
+  <!-- Outer chassis body -->
+  <rect x="140" y="32" width="628" height="192" rx="5" fill="rgba(58,96,128,0.06)" stroke="#3a6080" stroke-width="1.5"/>
 
-                <!-- ── CONTROL CHASSIS (left) ── clickable zone -->
-                <g id="zone-control" class="pod-zone" onclick="podZoneClick('control_chassis')" style="cursor:pointer;">
-                  <rect x="100" y="80" width="230" height="220" rx="6" fill="rgba(58,96,128,0.08)" stroke="#3a6080" stroke-width="1.5" class="zone-rect"/>
-                  <text x="215" y="102" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#3a6080" text-anchor="middle" letter-spacing="1">CONTROL CHASSIS</text>
-                  <text x="215" y="114" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#2a4050" text-anchor="middle">EQP952-0203-DR-PD-55001</text>
-                  <!-- PSU row -->
-                  <rect x="112" y="122" width="206" height="22" rx="3" fill="rgba(58,96,128,0.15)" stroke="#3a5060" stroke-width="1"/>
-                  <text x="215" y="137" font-family="'IBM Plex Sans',sans-serif" font-size="9" fill="#9a9890" text-anchor="middle">PSU 1–7  (SLE112 / SLE124)</text>
-                  <!-- PCB stack -->
-                  <rect x="112" y="150" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="160" y="162" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">TCU Control PCB</text>
-                  <rect x="112" y="169" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="160" y="181" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Relay &amp; HK PCB</text>
-                  <rect x="112" y="188" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="160" y="200" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Camera Control PCB</text>
-                  <rect x="112" y="207" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="160" y="219" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Video Amplifier PCB</text>
-                  <!-- Right col PCBs -->
-                  <rect x="215" y="150" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="263" y="162" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">CWDM Band Splitter</text>
-                  <rect x="215" y="169" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="263" y="181" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">150MHz Fibre I/F</text>
-                  <rect x="215" y="188" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="263" y="200" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Video MUX Backplane</text>
-                  <rect x="215" y="207" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="263" y="219" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Fibre Transceiver 1590nm</text>
-                  <!-- Gyro -->
-                  <rect x="112" y="232" width="97" height="16" rx="2" fill="rgba(42,96,64,0.3)" stroke="#2a6040" stroke-width="1"/>
-                  <text x="160" y="244" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#4a9060" text-anchor="middle">Octans Nano Gyro</text>
-                  <rect x="215" y="232" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="263" y="244" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">TTL Data Module</text>
-                  <!-- Click indicator -->
-                  <text x="215" y="275" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#3a6080" text-anchor="middle" class="zone-cta">▶ CLICK TO EXPLORE</text>
-                </g>
+  <!-- LEFT END — penetrator ring oval flange (Section E-E) -->
+  <!-- Oval housing -->
+  <ellipse cx="108" cy="128" rx="40" ry="68" fill="rgba(20,25,35,0.8)" stroke="#3a6080" stroke-width="1.5"/>
+  <!-- CB plate strip at top of oval -->
+  <rect x="86" y="64" width="42" height="12" rx="2" fill="rgba(42,48,64,0.9)" stroke="#3a5070" stroke-width="1"/>
+  <text x="107" y="73" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#4a6080" text-anchor="middle">CB PLATE</text>
+  <!-- Two PSU blocks visible in end view -->
+  <rect x="88" y="82" width="38" height="28" rx="2" fill="rgba(42,80,64,0.3)" stroke="#2a5040" stroke-width="1"/>
+  <text x="107" y="99" font-family="'IBM Plex Sans',sans-serif" font-size="7" fill="#4a7050" text-anchor="middle">PSU</text>
+  <rect x="88" y="114" width="38" height="28" rx="2" fill="rgba(42,80,64,0.3)" stroke="#2a5040" stroke-width="1"/>
+  <text x="107" y="131" font-family="'IBM Plex Sans',sans-serif" font-size="7" fill="#4a7050" text-anchor="middle">PSU</text>
+  <!-- Backplane connector strip at bottom of oval -->
+  <rect x="84" y="176" width="48" height="7" rx="1" fill="rgba(58,96,128,0.3)" stroke="#3a6080" stroke-width="0.8"/>
+  <!-- Ring label -->
+  <text x="107" y="158" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#e8a44a" text-anchor="middle">55003</text>
+  <text x="107" y="168" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#a06820" text-anchor="middle">CTRL RING</text>
 
-                <!-- ── PAYLOAD CHASSIS (right) ── clickable zone -->
-                <g id="zone-payload" class="pod-zone" onclick="podZoneClick('payload_chassis')" style="cursor:pointer;">
-                  <rect x="370" y="80" width="230" height="220" rx="6" fill="rgba(120,80,160,0.06)" stroke="#6a4080" stroke-width="1.5" class="zone-rect"/>
-                  <text x="485" y="102" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6a4080" text-anchor="middle" letter-spacing="1">PAYLOAD CHASSIS</text>
-                  <text x="485" y="114" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#4a3060" text-anchor="middle">EQP952-0203-DR-PD-55002</text>
-                  <!-- PSU row -->
-                  <rect x="382" y="122" width="206" height="22" rx="3" fill="rgba(106,64,128,0.15)" stroke="#5a3070" stroke-width="1"/>
-                  <text x="485" y="137" font-family="'IBM Plex Sans',sans-serif" font-size="9" fill="#9a9890" text-anchor="middle">PSU 1  (MAX124 / MAX315)</text>
-                  <!-- PCB stack -->
-                  <rect x="382" y="150" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="430" y="162" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Generic Interface PCB</text>
-                  <rect x="382" y="169" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="430" y="181" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Payload Backplane</text>
-                  <rect x="382" y="188" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="430" y="200" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Relay &amp; HK PCB</text>
-                  <rect x="382" y="207" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="430" y="219" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">155MHz Fibre I/F</text>
-                  <!-- Right col -->
-                  <rect x="485" y="150" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="533" y="162" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">CWDM 1270–1410nm</text>
-                  <rect x="485" y="169" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="533" y="181" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">10-Port Gbit Switch</text>
-                  <rect x="485" y="188" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="533" y="200" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">RS232 Module</text>
-                  <rect x="485" y="207" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="533" y="219" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">SFP Ethernet Module</text>
-                  <rect x="382" y="232" width="200" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
-                  <text x="482" y="244" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Optical Transceivers 1290/1330/1370/1410nm</text>
-                  <text x="485" y="275" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#6a4080" text-anchor="middle" class="zone-cta">▶ CLICK TO EXPLORE</text>
-                </g>
+  <!-- Clickable zone over the penetrator ring -->
+  <g id="zone-ctrl-ring" class="pod-zone" onclick="podZoneClick('control_ring')" style="cursor:pointer;">
+    <ellipse cx="108" cy="128" rx="40" ry="68" fill="transparent" stroke="#e8a44a" stroke-width="1" stroke-dasharray="4,3" class="zone-rect"/>
+    <text x="107" y="192" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#e8a44a" text-anchor="middle" class="zone-cta">▶ CLICK</text>
+  </g>
 
-                <!-- ── CENTRE DIVIDER ── -->
-                <line x1="350" y1="85" x2="350" y2="295" stroke="#1e2330" stroke-width="1" stroke-dasharray="4,4"/>
+  <!-- CARD BAY — left section of chassis -->
+  <!-- PSU 1 + 2 stacked vertically on leftmost column -->
+  <rect x="148" y="40" width="38" height="176" rx="2" fill="rgba(42,80,64,0.18)" stroke="#2a5040" stroke-width="0.8"/>
+  <text x="167" y="54" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#4a8060" text-anchor="middle">PSU 1</text>
+  <text x="167" y="63" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#3a6050" text-anchor="middle">SLE124</text>
+  <line x1="148" y1="72" x2="186" y2="72" stroke="#2a5040" stroke-width="0.5"/>
+  <text x="167" y="84" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#4a8060" text-anchor="middle">PSU 2</text>
+  <text x="167" y="93" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#3a6050" text-anchor="middle">SLE112</text>
+  <line x1="148" y1="100" x2="186" y2="100" stroke="#2a5040" stroke-width="0.5"/>
+  <text x="167" y="112" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#4a8060" text-anchor="middle">PSU 3</text>
+  <text x="167" y="121" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#3a6050" text-anchor="middle">MAX315</text>
+  <line x1="148" y1="128" x2="186" y2="128" stroke="#2a5040" stroke-width="0.5"/>
+  <text x="167" y="143" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#4a8060" text-anchor="middle">PSU</text>
+  <text x="167" y="153" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#4a8060" text-anchor="middle">4–7</text>
+  <text x="167" y="163" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#3a6050" text-anchor="middle">MAX124</text>
+  <text x="167" y="172" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#3a6050" text-anchor="middle">×4</text>
+  <text x="167" y="207" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#2a4030" text-anchor="middle">PSU COL</text>
 
-                <!-- ── PENETRATOR RINGS (bottom) ── -->
-                <!-- Control ring — bottom left -->
-                <g id="zone-ctrl-ring" class="pod-zone" onclick="podZoneClick('control_ring')" style="cursor:pointer;">
-                  <ellipse cx="195" cy="360" rx="80" ry="32" fill="rgba(232,164,74,0.06)" stroke="#e8a44a" stroke-width="1.5" class="zone-rect"/>
-                  <text x="195" y="355" font-family="'IBM Plex Mono',monospace" font-size="8.5" fill="#e8a44a" text-anchor="middle" letter-spacing="1">CONTROL RING</text>
-                  <text x="195" y="367" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#a06820" text-anchor="middle">55003  ▶ CLICK</text>
-                  <!-- connecting line to chassis -->
-                  <line x1="195" y1="328" x2="215" y2="300" stroke="#e8a44a" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>
-                </g>
-                <!-- Payload ring — bottom right -->
-                <g id="zone-pay-ring" class="pod-zone" onclick="podZoneClick('payload_ring')" style="cursor:pointer;">
-                  <ellipse cx="505" cy="360" rx="80" ry="32" fill="rgba(106,64,128,0.1)" stroke="#9a60c0" stroke-width="1.5" class="zone-rect"/>
-                  <text x="505" y="355" font-family="'IBM Plex Mono',monospace" font-size="8.5" fill="#9a60c0" text-anchor="middle" letter-spacing="1">PAYLOAD RING</text>
-                  <text x="505" y="367" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#6a4080" text-anchor="middle">55004  ▶ CLICK</text>
-                  <line x1="505" y1="328" x2="485" y2="300" stroke="#9a60c0" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>
-                </g>
+  <!-- PCB cards — horizontal stacked rows -->
+  <rect x="192" y="40" width="176" height="24" rx="2" fill="rgba(42,48,64,0.75)" stroke="#2a3040" stroke-width="1"/>
+  <text x="280" y="56" font-family="'IBM Plex Sans',sans-serif" font-size="8.5" fill="#9a9890" text-anchor="middle">155MHz Fibre Optic I/F  ·  1530nm</text>
 
-                <!-- Bottom label -->
-                <text x="350" y="408" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#2a3040" text-anchor="middle" letter-spacing="1">CLICK ANY ZONE TO DRILL DOWN — DRAWINGS OPEN IN NEW TAB</text>
-              </svg>
+  <rect x="192" y="68" width="176" height="24" rx="2" fill="rgba(42,48,64,0.75)" stroke="#2a3040" stroke-width="1"/>
+  <text x="280" y="84" font-family="'IBM Plex Sans',sans-serif" font-size="8.5" fill="#9a9890" text-anchor="middle">Relay &amp; HK PCB 1  (Camera Power)</text>
+
+  <rect x="192" y="96" width="176" height="24" rx="2" fill="rgba(42,48,64,0.75)" stroke="#2a3040" stroke-width="1"/>
+  <text x="280" y="112" font-family="'IBM Plex Sans',sans-serif" font-size="8.5" fill="#9a9890" text-anchor="middle">Relay &amp; HK PCB 2  (Auxiliaries)</text>
+
+  <rect x="192" y="124" width="176" height="24" rx="2" fill="rgba(42,48,64,0.75)" stroke="#2a3040" stroke-width="1"/>
+  <text x="280" y="140" font-family="'IBM Plex Sans',sans-serif" font-size="8.5" fill="#9a9890" text-anchor="middle">TCU Control PCB  ·  PCB-0162</text>
+
+  <rect x="192" y="152" width="176" height="24" rx="2" fill="rgba(42,48,64,0.75)" stroke="#2a3040" stroke-width="1"/>
+  <text x="280" y="168" font-family="'IBM Plex Sans',sans-serif" font-size="8.5" fill="#9a9890" text-anchor="middle">Camera Control PCB  ·  PCB-0161</text>
+
+  <!-- CENTRE-RIGHT section: Sensors/Ctrl + Camera PSU + CWDM -->
+  <rect x="374" y="40" width="88" height="24" rx="2" fill="rgba(42,48,64,0.6)" stroke="#2a3040" stroke-width="1"/>
+  <text x="418" y="56" font-family="'IBM Plex Sans',sans-serif" font-size="8" fill="#7a7870" text-anchor="middle">Sensors &amp; Ctrl 24V</text>
+  <rect x="374" y="68" width="88" height="24" rx="2" fill="rgba(42,48,64,0.6)" stroke="#2a3040" stroke-width="1"/>
+  <text x="418" y="84" font-family="'IBM Plex Sans',sans-serif" font-size="8" fill="#7a7870" text-anchor="middle">Sensors &amp; Ctrl 24V</text>
+  <rect x="374" y="96" width="88" height="24" rx="2" fill="rgba(42,96,48,0.25)" stroke="#2a6030" stroke-width="1"/>
+  <text x="418" y="112" font-family="'IBM Plex Sans',sans-serif" font-size="8" fill="#6a9060" text-anchor="middle">Camera 24V  PSU</text>
+  <rect x="374" y="124" width="88" height="24" rx="2" fill="rgba(42,96,48,0.25)" stroke="#2a6030" stroke-width="1"/>
+  <text x="418" y="140" font-family="'IBM Plex Sans',sans-serif" font-size="8" fill="#6a9060" text-anchor="middle">Camera 24V  PSU</text>
+  <rect x="374" y="152" width="88" height="24" rx="2" fill="rgba(42,48,64,0.6)" stroke="#2a3040" stroke-width="1"/>
+  <text x="418" y="162" font-family="'IBM Plex Sans',sans-serif" font-size="7" fill="#7a7870" text-anchor="middle">Video MUX</text>
+  <text x="418" y="172" font-family="'IBM Plex Sans',sans-serif" font-size="7" fill="#7a7870" text-anchor="middle">PCB-0124</text>
+
+  <!-- CWDM RED + Band Splitter -->
+  <rect x="468" y="40" width="90" height="55" rx="2" fill="rgba(80,30,20,0.2)" stroke="#804020" stroke-width="1"/>
+  <text x="513" y="57" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#c06030" text-anchor="middle">CWDM RED</text>
+  <text x="513" y="68" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#904020" text-anchor="middle">ROV-0311-D-0212</text>
+  <text x="513" y="80" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#704020" text-anchor="middle">1470–1610nm</text>
+  <text x="513" y="90" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#704020" text-anchor="middle">to surface</text>
+
+  <rect x="468" y="100" width="90" height="36" rx="2" fill="rgba(60,40,20,0.2)" stroke="#604020" stroke-width="1"/>
+  <text x="513" y="115" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#a06030" text-anchor="middle">BAND SPLITTER</text>
+  <text x="513" y="127" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#704020" text-anchor="middle">ROV-0311-D-0210</text>
+
+  <rect x="468" y="140" width="90" height="36" rx="2" fill="rgba(42,48,64,0.6)" stroke="#2a3040" stroke-width="1"/>
+  <text x="513" y="155" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#7a7870" text-anchor="middle">SIXNET 9-PORT</text>
+  <text x="513" y="166" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#5a5850" text-anchor="middle">SLX-10MG-1</text>
+
+  <!-- RIGHT END — Section F-F: Gyro cover + D-sub connectors + fans -->
+  <rect x="564" y="32" width="196" height="192" rx="4" fill="rgba(30,35,48,0.4)" stroke="#2a3040" stroke-width="1"/>
+  <!-- Gyro cover plate -->
+  <rect x="572" y="40" width="90" height="50" rx="2" fill="rgba(42,80,64,0.25)" stroke="#2a6040" stroke-width="1"/>
+  <text x="617" y="62" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#5a9070" text-anchor="middle">GYRO COVER</text>
+  <text x="617" y="73" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#3a7050" text-anchor="middle">EQP952-55011</text>
+  <text x="617" y="83" font-family="'IBM Plex Sans',sans-serif" font-size="6.5" fill="#3a6050" text-anchor="middle">Octans Nano</text>
+  <!-- D-sub connectors (4 off) -->
+  <rect x="572" y="98" width="90" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#3a4050" stroke-width="0.8"/>
+  <text x="617" y="108" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#5a5870" text-anchor="middle">D-SUB ×4 (25-way)</text>
+  <rect x="572" y="115" width="90" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#3a4050" stroke-width="0.8"/>
+  <text x="617" y="125" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#5a5870" text-anchor="middle">PCB-0197 Breakout</text>
+  <!-- Fan assembly (3 fans) -->
+  <rect x="668" y="40" width="84" height="176" rx="3" fill="rgba(25,30,42,0.5)" stroke="#2a3040" stroke-width="0.8"/>
+  <circle cx="710" cy="88" r="22" fill="none" stroke="#3a4050" stroke-width="1.2"/>
+  <circle cx="710" cy="88" r="8" fill="none" stroke="#3a4050" stroke-width="0.8"/>
+  <circle cx="710" cy="148" r="22" fill="none" stroke="#3a4050" stroke-width="1.2"/>
+  <circle cx="710" cy="148" r="8" fill="none" stroke="#3a4050" stroke-width="0.8"/>
+  <text x="710" y="188" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#3a4050" text-anchor="middle">FANS ×3</text>
+
+  <!-- Backplane connector strip along bottom of control chassis -->
+  <rect x="148" y="216" width="480" height="6" rx="1" fill="rgba(58,96,128,0.25)" stroke="#3a6080" stroke-width="0.8"/>
+  <text x="388" y="222" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#3a6080" text-anchor="middle">CONTROL CHASSIS BACKPLANE — PCB-0168</text>
+
+  <!-- Control chassis label + clickable zone -->
+  <g id="zone-control" class="pod-zone" onclick="podZoneClick('control_chassis')" style="cursor:pointer;">
+    <rect x="140" y="32" width="628" height="192" rx="5" fill="transparent" stroke="transparent" class="zone-rect"/>
+    <text x="400" y="242" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#3a6080" text-anchor="middle">CONTROL CHASSIS  ·  EQP952-0203-DR-PD-55001</text>
+    <text x="400" y="254" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#3a6080" text-anchor="middle" class="zone-cta">▶ CLICK CHASSIS TO VIEW CARD LIST &amp; OPEN DRAWING</text>
+  </g>
+
+  <!-- Divider between chassis -->
+  <line x1="140" y1="262" x2="768" y2="262" stroke="#2a3040" stroke-width="1" stroke-dasharray="5,4"/>
+  <!-- Energy chain -->
+  <rect x="748" y="248" width="20" height="28" rx="3" fill="rgba(42,48,64,0.7)" stroke="#4a5060" stroke-width="1"/>
+  <text x="758" y="258" font-family="'IBM Plex Mono',monospace" font-size="5.5" fill="#4a5060" text-anchor="middle">ENGY</text>
+  <text x="758" y="267" font-family="'IBM Plex Mono',monospace" font-size="5.5" fill="#4a5060" text-anchor="middle">CHAIN</text>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PAYLOAD CHASSIS (55002) — BOTTOM CHASSIS
+       Layout (left→right per drawing):
+         LEFT END: Penetrator ring 55004 (same oval flange, CB plate)
+         PSU BANK: 24V/1a–1d + PSU 2(MAX315) + PSU 3–6 col
+         CARD BAY: Payload Ctrl PCB | 155MHz PCB | Generic I/F PCB
+         RIGHT: 10-slot fibre module cage (MOD 1–10) + Sixnet switch
+  ═══════════════════════════════════════════════════════ -->
+
+  <!-- Outer chassis body -->
+  <rect x="140" y="274" width="628" height="192" rx="5" fill="rgba(106,64,128,0.05)" stroke="#6a4080" stroke-width="1.5"/>
+
+  <!-- LEFT END — payload penetrator ring oval (Section E-E style) -->
+  <ellipse cx="108" cy="370" rx="40" ry="68" fill="rgba(20,25,35,0.8)" stroke="#6a4080" stroke-width="1.5"/>
+  <!-- CB plate strip -->
+  <rect x="86" y="306" width="42" height="12" rx="2" fill="rgba(42,48,64,0.9)" stroke="#503070" stroke-width="1"/>
+  <text x="107" y="315" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#604080" text-anchor="middle">CB PLATE</text>
+  <!-- Two PSU blocks visible in end view -->
+  <rect x="88" y="324" width="38" height="28" rx="2" fill="rgba(64,42,80,0.3)" stroke="#503060" stroke-width="1"/>
+  <text x="107" y="341" font-family="'IBM Plex Sans',sans-serif" font-size="7" fill="#7a5090" text-anchor="middle">PSU</text>
+  <rect x="88" y="356" width="38" height="28" rx="2" fill="rgba(64,42,80,0.3)" stroke="#503060" stroke-width="1"/>
+  <text x="107" y="373" font-family="'IBM Plex Sans',sans-serif" font-size="7" fill="#7a5090" text-anchor="middle">PSU</text>
+  <!-- Backplane connector strip -->
+  <rect x="84" y="418" width="48" height="7" rx="1" fill="rgba(106,64,128,0.3)" stroke="#6a4080" stroke-width="0.8"/>
+  <!-- Ring label -->
+  <text x="107" y="400" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9a60c0" text-anchor="middle">55004</text>
+  <text x="107" y="410" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#6a4090" text-anchor="middle">PYLD RING</text>
+
+  <!-- Clickable zone over payload penetrator ring -->
+  <g id="zone-pay-ring" class="pod-zone" onclick="podZoneClick('payload_ring')" style="cursor:pointer;">
+    <ellipse cx="108" cy="370" rx="40" ry="68" fill="transparent" stroke="#9a60c0" stroke-width="1" stroke-dasharray="4,3" class="zone-rect"/>
+    <text x="107" y="434" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#9a60c0" text-anchor="middle" class="zone-cta">▶ CLICK</text>
+  </g>
+
+  <!-- PSU BANK — left column (24V/1a–d + PSU2) matching 55002 layout -->
+  <rect x="148" y="282" width="38" height="176" rx="2" fill="rgba(64,42,80,0.18)" stroke="#503060" stroke-width="0.8"/>
+  <text x="167" y="296" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#7a5090" text-anchor="middle">24V/1a</text>
+  <line x1="148" y1="303" x2="186" y2="303" stroke="#503060" stroke-width="0.5"/>
+  <text x="167" y="318" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#7a5090" text-anchor="middle">24V/1b</text>
+  <line x1="148" y1="326" x2="186" y2="326" stroke="#503060" stroke-width="0.5"/>
+  <text x="167" y="338" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#5a4070" text-anchor="middle">PSU 2</text>
+  <text x="167" y="347" font-family="'IBM Plex Mono',monospace" font-size="5.5" fill="#503060" text-anchor="middle">MAX315</text>
+  <line x1="148" y1="354" x2="186" y2="354" stroke="#503060" stroke-width="0.5"/>
+  <text x="167" y="366" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#7a5090" text-anchor="middle">PSU 3–6</text>
+  <text x="167" y="375" font-family="'IBM Plex Mono',monospace" font-size="5.5" fill="#503060" text-anchor="middle">MAX124 ×4</text>
+  <line x1="148" y1="382" x2="186" y2="382" stroke="#503060" stroke-width="0.5"/>
+  <text x="167" y="394" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#7a5090" text-anchor="middle">24V/1c</text>
+  <line x1="148" y1="402" x2="186" y2="402" stroke="#503060" stroke-width="0.5"/>
+  <text x="167" y="416" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#7a5090" text-anchor="middle">24V/1d</text>
+  <text x="167" y="449" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#402050" text-anchor="middle">PSU COL</text>
+
+  <!-- CARD BAY — three cards stacked (Payload Ctrl / 155MHz / Generic I/F) -->
+  <rect x="192" y="282" width="176" height="56" rx="2" fill="rgba(42,48,64,0.75)" stroke="#2a3040" stroke-width="1"/>
+  <text x="280" y="308" font-family="'IBM Plex Sans',sans-serif" font-size="8.5" fill="#9a9890" text-anchor="middle">Payload Backplane</text>
+  <text x="280" y="322" font-family="'IBM Plex Sans',sans-serif" font-size="8" fill="#7a7870" text-anchor="middle">PCB-0169-D-0001-00</text>
+  <text x="280" y="333" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a6860" text-anchor="middle">Relay &amp; HK PCB · PCB-0163</text>
+
+  <rect x="192" y="342" width="176" height="36" rx="2" fill="rgba(42,48,64,0.75)" stroke="#2a3040" stroke-width="1"/>
+  <text x="280" y="358" font-family="'IBM Plex Sans',sans-serif" font-size="8.5" fill="#9a9890" text-anchor="middle">155MHz Fibre I/F  ·  1370nm</text>
+  <text x="280" y="372" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#7a7870" text-anchor="middle">PCB-0186-D-0001-00</text>
+
+  <rect x="192" y="382" width="176" height="36" rx="2" fill="rgba(42,48,64,0.75)" stroke="#2a3040" stroke-width="1"/>
+  <text x="280" y="398" font-family="'IBM Plex Sans',sans-serif" font-size="8.5" fill="#9a9890" text-anchor="middle">Generic Interface PCB</text>
+  <text x="280" y="412" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#7a7870" text-anchor="middle">PCB-0115-D-0001-00</text>
+
+  <!-- CENTRE section: RS232 module + PSU2 signal -->
+  <rect x="374" y="282" width="88" height="36" rx="2" fill="rgba(42,48,64,0.6)" stroke="#2a3040" stroke-width="1"/>
+  <text x="418" y="298" font-family="'IBM Plex Sans',sans-serif" font-size="8" fill="#7a7870" text-anchor="middle">RS232 Module</text>
+  <text x="418" y="311" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#5a5850" text-anchor="middle">PCB-0032</text>
+
+  <!-- CWDM BLUE wavelength label -->
+  <rect x="374" y="322" width="88" height="56" rx="2" fill="rgba(20,30,80,0.2)" stroke="#303080" stroke-width="1"/>
+  <text x="418" y="338" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#6060c0" text-anchor="middle">CWDM BLUE</text>
+  <text x="418" y="350" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#404090" text-anchor="middle">1270–1410nm</text>
+  <text x="418" y="362" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#404090" text-anchor="middle">ROV-0311-D-0212</text>
+  <text x="418" y="372" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#303070" text-anchor="middle">to surface</text>
+
+  <!-- RIGHT section: MOD 1–10 fibre cage (Part Section C-C from drawing) -->
+  <!-- Cage outer frame -->
+  <rect x="468" y="282" width="130" height="176" rx="3" fill="rgba(50,30,70,0.15)" stroke="#6a4080" stroke-width="1.2"/>
+  <text x="533" y="296" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#6a4080" text-anchor="middle">FIBRE OPTIC MODULE CAGE</text>
+  <text x="533" y="305" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#503060" text-anchor="middle">PART SECTION C-C</text>
+  <!-- Left column MOD 6–10 -->
+  <rect x="472" y="310" width="60" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#4a3060" stroke-width="0.8"/>
+  <text x="502" y="321" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9a60c0" text-anchor="middle">MOD 6 · 1270nm</text>
+  <rect x="472" y="327" width="60" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#4a3060" stroke-width="0.8"/>
+  <text x="502" y="338" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9a60c0" text-anchor="middle">MOD 7 · 1290nm</text>
+  <rect x="472" y="344" width="60" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#4a3060" stroke-width="0.8"/>
+  <text x="502" y="355" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9a60c0" text-anchor="middle">MOD 8 · 1310nm</text>
+  <rect x="472" y="361" width="60" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#4a3060" stroke-width="0.8"/>
+  <text x="502" y="372" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9a60c0" text-anchor="middle">MOD 9 · 1330nm</text>
+  <rect x="472" y="378" width="60" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#4a3060" stroke-width="0.8"/>
+  <text x="502" y="389" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9a60c0" text-anchor="middle">MOD10 · 1350nm</text>
+  <!-- Right column MOD 1–5 -->
+  <rect x="535" y="310" width="59" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#4a3060" stroke-width="0.8"/>
+  <text x="564" y="321" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9a60c0" text-anchor="middle">MOD 5 · 1370nm</text>
+  <rect x="535" y="327" width="59" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#4a3060" stroke-width="0.8"/>
+  <text x="564" y="338" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9a60c0" text-anchor="middle">MOD 4 · 1390nm</text>
+  <rect x="535" y="344" width="59" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#4a3060" stroke-width="0.8"/>
+  <text x="564" y="355" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9a60c0" text-anchor="middle">MOD 3 · 1410nm</text>
+  <rect x="535" y="361" width="59" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#4a3060" stroke-width="0.8"/>
+  <text x="564" y="372" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9060b0" text-anchor="middle">MOD 2 · SFP</text>
+  <rect x="535" y="378" width="59" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#4a3060" stroke-width="0.8"/>
+  <text x="564" y="389" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#9060b0" text-anchor="middle">MOD 1 · SFP</text>
+  <!-- 155MHz PCB below cage -->
+  <rect x="472" y="396" width="122" height="20" rx="1" fill="rgba(42,48,64,0.6)" stroke="#3a3050" stroke-width="0.8"/>
+  <text x="533" y="410" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#5a5870" text-anchor="middle">155MHz I/F · PCB-0186</text>
+
+  <!-- Sixnet 10-Port Switch + fans at far right -->
+  <rect x="604" y="282" width="152" height="192" rx="3" fill="rgba(25,30,42,0.45)" stroke="#2a3040" stroke-width="1"/>
+  <rect x="610" y="290" width="90" height="52" rx="2" fill="rgba(42,48,64,0.6)" stroke="#3a4050" stroke-width="0.8"/>
+  <text x="655" y="308" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#5a5870" text-anchor="middle">SIXNET 10-PORT</text>
+  <text x="655" y="320" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#4a4860" text-anchor="middle">GIGABIT SWITCH</text>
+  <text x="655" y="332" font-family="'IBM Plex Mono',monospace" font-size="6.5" fill="#3a3850" text-anchor="middle">E1/E2/E4 survey</text>
+  <!-- Fans -->
+  <circle cx="706" cy="330" r="22" fill="none" stroke="#3a4050" stroke-width="1.2"/>
+  <circle cx="706" cy="330" r="8" fill="none" stroke="#3a4050" stroke-width="0.8"/>
+  <circle cx="706" cy="390" r="22" fill="none" stroke="#3a4050" stroke-width="1.2"/>
+  <circle cx="706" cy="390" r="8" fill="none" stroke="#3a4050" stroke-width="0.8"/>
+  <text x="706" y="442" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#3a4050" text-anchor="middle">FANS</text>
+
+  <!-- Backplane connector strip -->
+  <rect x="148" y="460" width="480" height="6" rx="1" fill="rgba(106,64,128,0.25)" stroke="#6a4080" stroke-width="0.8"/>
+  <text x="388" y="466" font-family="'IBM Plex Mono',monospace" font-size="6" fill="#6a4080" text-anchor="middle">PAYLOAD CHASSIS BACKPLANE — PCB-0169</text>
+
+  <!-- Payload chassis label + clickable zone -->
+  <g id="zone-payload" class="pod-zone" onclick="podZoneClick('payload_chassis')" style="cursor:pointer;">
+    <rect x="140" y="274" width="628" height="192" rx="5" fill="transparent" stroke="transparent" class="zone-rect"/>
+    <text x="400" y="480" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6a4080" text-anchor="middle">PAYLOAD CHASSIS  ·  EQP952-0203-DR-PD-55002</text>
+    <text x="400" y="492" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#6a4080" text-anchor="middle" class="zone-cta">▶ CLICK CHASSIS TO VIEW CARD LIST &amp; OPEN DRAWING</text>
+  </g>
+</svg>
             </div>
           </div>
 
