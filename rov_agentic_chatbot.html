@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ROV Manual Chatbot — Agentic</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
@@ -928,7 +929,7 @@ async function extractTextFromPDF(file) {
     reader.onload = async (e) => {
       try {
         const typedArray = new Uint8Array(e.target.result);
-        const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+        const pdfjsLib = window.pdfjsLib;
         pdfjsLib.GlobalWorkerOptions.workerSrc =
           'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         const pdf = await pdfjsLib.getDocument({data: typedArray}).promise;
