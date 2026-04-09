@@ -72,8 +72,29 @@ python3 embed_manual.py --pdf "/full/path/to/manual.pdf" --name "Display Name"
 Hercules Mk3, NIC-OPS-010 Seven Oceanic Databook, ROV Master Knowledge v2,
 Seven Oceanic ROV Handbook, TMA01030 Interface systems, TMA01031 Control system
 
-**Still to embed:** Bowman heat exchanger, SMD Valve packs, IXBlue Octans Nano Gyro,
-LARS TMA01071, Winch H15/H30 manuals, Control Room Sixnet manuals, tcu.pdf, Cardev filter
+**Manuals already embedded (12):**
+011-8239, Atlas7r Manual, Model914-X-Series, Aleron VP, H15-GA TMA01028, Hercules MK3 Lighting JB,
+Hercules Mk3, NIC-OPS-010 Seven Oceanic Databook, ROV Master Knowledge v2,
+Seven Oceanic ROV Handbook, TMA01030 Interface systems, TMA01031 Control system
+
+**Still to embed (priority order):**
+1. TMA01029 — H30 GA Top Level & Schematics Manual
+2. Bowman heat exchanger/ (4 PDFs — hydraulic oil cooler)
+3. SMD Valve packs/ (6 PDFs — AC3332, NG3, NG6, proportional valve packs)
+4. IXBlue Octans Nano Gyro/ (gyro setup and specs — Herc Octans Nano Gyro Settings 03-05-2023)
+5. tcu/tcu.pdf (confirm not duplicate of existing TCU content before embedding)
+6. Cardev/CardevFilter.PDF (HPU hydraulic return filter)
+7. Control Room/Six net/ (Sixnet switch manuals)
+8. Control Room/Joystick/ (joystick manuals)
+9. Control Room/DataVideo DN700 Manual/
+10. Control Room/Serve Switch Uno CX switcher/
+11. Control Room/Survey Monitors/
+12. Lars/ — TMA01071 LARS tech manual
+13. Winch/H15/ and Winch/H30/ — winch manuals
+14. Munk Crane ROV Hanger/ (Munk Crane + Munk Crane remote — 2 manuals)
+15. ROV Lights/ folder
+16. AleronVpSoftware/ folder
+17. 120HP ROV Hydraulic Soft Start ModificationsTPR03280
 
 ---
 
@@ -102,7 +123,31 @@ python3 /Users/seanbrock/index_drawings.py --folder "Subfolder/Name"
 - Pod Changes/ (10 mod sketches — EQP952-0203-DR-PD-54xxx, ROV-0311-D-0203/0204, with supersedes flags)
 - POD Drawing post update 2025/ (12 — EQP952-0203-DR-PD-55xxx, current versions)
 
-**Still to index:** Control Room/Console wiring, Lars/Latch Beam, Winch/H15, Winch/H30
+**Already indexed (~172 drawings):**
+- Herc Drawings/Herc15-30-MK III Drawings (~77 — ROV-0311, HCV-0015, PDU series)
+- Cables/ folder (73 cable drawings — CAB-xxxx, ROV cables, camera, gyro, laser etc.)
+- Pod Changes/ (10 mod sketches — EQP952-0203-DR-PD-54xxx, ROV-0311-D-0203/0204, with supersedes flags)
+- POD Drawing post update 2025/ (12 — EQP952-0203-DR-PD-55xxx, current versions)
+
+**Still to index (priority order):**
+1. HCV-0015/ (new folder added Apr 2026)
+2. PDU-009-D-0016-90/ (new — PDU wiring diagram)
+3. ROV-300-D-0420-90/ (new — TCU wiring diagram)
+4. ROV-0305-D-0470/ (new — high flow valve pack GA)
+5. ROV-311/ (new — lighting JB / electronics pod drawings)
+6. Pan & Tilt/ (new — pan & tilt camera drawings)
+7. Control Room/Console wiring and Panels/
+8. Lars/Latch Beam/
+9. Lars/Latch beam winch/
+10. Winch/H15/
+11. Winch/H30/
+12. TMS/H15/
+13. TMS/H30/
+14. TMS/topside/
+15. TMS/protection frame/
+16. TMS/Topside Upgrade/
+17. Longline Drawings/ (top-level folder)
+18. TMS/Longline Drawings/ (TMS subfolder)
 
 **Key behaviour:** Skips already-indexed files. Pod Changes tagged with supersedes context.
 Uses pdftoppm to rasterise before Claude vision.
@@ -265,4 +310,4 @@ nohup python3 /tmp/ingest_handover.py > /tmp/handover_log.txt 2>&1 &
 
 ---
 
-*Last updated: April 2026*
+*Last updated: 09 April 2026 — full Drive audit completed, embed and index backlogs updated*
