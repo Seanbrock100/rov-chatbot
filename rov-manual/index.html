@@ -579,104 +579,97 @@ let activeTab = 'drawings';
 let currentKey = '';
 let l3DrawingFile = '';
 
-// Pod zone data — what each clickable area on 55000 reveals
 const POD_ZONES = {
   control_chassis: {
     title: 'Control Chassis — EQP952-0203-DR-PD-55001',
     drawing: 'EQP952-0203-DR-PD-55001',
     file: 'manuals/drawings/EQP952-0203-DR-PD-55001.pdf',
-    body: 'The Control Chassis houses the primary vehicle control electronics including PSUs 1–7, the TCU control PCB, camera control, relay & housekeeping, CWDM band splitter, and the Octans Nano gyro. Wiring diagram: EQP952-0203-DR-PD-55017.',
+    body: 'The Control Chassis houses the primary vehicle control electronics. Power: PSU1 (SLE124), PSU2 (SLE112), PSU3 (MAX315), PSU4–7 (MAX124). Serial channels CH1–10 route via 155MHz fibre interface and CWDM RED band (1470–1610nm). Camera video routes through Video MUX PCB; camera 24V power is fed from the camera PSU via backplane (not through penetrator). Wiring diagram: EQP952-0203-DR-PD-55017.',
     cards: [
-      {name:'PSU 1–7', detail:'SLE112 / SLE124 — Main power supply units for control chassis'},
-      {name:'TCU Control PCB', detail:'Thruster control interface — receives commands from surface'},
-      {name:'Relay & Housekeeping PCB', detail:'System monitoring, relay switching, aux control functions'},
-      {name:'Camera Control PCB', detail:'Camera switching, iris, focus, zoom control'},
-      {name:'Video Amplifier PCB', detail:'Video signal amplification and distribution'},
-      {name:'Video MUX Backplane', detail:'Video multiplexer backplane — routes camera feeds'},
-      {name:'150MHz Fibre Optic I/F', detail:'High-speed fibre interface for data transmission'},
-      {name:'CWDM Band Splitter', detail:'Splits COM/RED/BLUE wavelength bands for fibre comms'},
-      {name:'Fibre Transceiver 1590nm', detail:'Single-mode transceiver — topside comms carrier wavelength'},
-      {name:'TTL Data Module', detail:'TTL serial data interface module'},
-      {name:'Octans Nano Gyro', detail:'OTG64 — provides heading, pitch, roll and heave data'},
+      {name:'PSU 1 — SLE124', detail:'Primary 24V DC power supply — main control chassis rail'},
+      {name:'PSU 2 — SLE112', detail:'24V DC secondary power supply'},
+      {name:'PSU 3 — MAX315', detail:'Power supply unit — sensor and instrument supply'},
+      {name:'PSU 4–7 — MAX124 ×4', detail:'24V DC auxiliary power supply units'},
+      {name:'Video MUX PCB — PCB-0124', detail:'Coax video multiplexer for CAM 1–8. Cameras use 8-pin Mini Burton (5929-0207-PE04). Signal: Y+C coax. Power via backplane camera PSU'},
+      {name:'Camera Control PCB — PCB-0161', detail:'Camera power control — iris, focus, zoom. Backplane CON 75–81'},
+      {name:'Relay & Housekeeping PCB 1 — PCB-0163', detail:'Camera power relay switching — backplane CON 31–37'},
+      {name:'Relay & Housekeeping PCB 2 — PCB-0163', detail:'Auxiliary power relay switching — backplane CON 45–51'},
+      {name:'Thruster Control Unit PCB — PCB-0162', detail:'TCU control card — backplane CON 66–72. Drives servo valves SV1–8 via penetrator CON28/CON29'},
+      {name:'155MHz Fibre Optic I/F — PCB-0186 (1530nm)', detail:'Serial channel fibre interface — carries CH1–10 serial data within CWDM RED band'},
+      {name:'CWDM Assembly (RED) — ROV-0311-D-0212', detail:'RED band CWDM: 1470, 1490, 1510, 1530, 1550, 1570, 1590, 1610nm. Single-mode 6-way fibre penetrator to surface'},
+      {name:'Band Splitter — ROV-0311-D-0210', detail:'COM/RED/BLUE band splitter. RED stays in control chassis; BLUE passes to payload chassis via energy chain'},
+      {name:'Sixnet 9-Port Gigabit Switch — SLX-10MG-1', detail:'Bottomside Ethernet network switch. Connects to topside via CWDM fibre'},
+      {name:'Gyro Cover Plate — EQP952-0203-DR-PD-55011', detail:'Houses IXBlue Octans Nano gyro. RS-232 CH2 + 24VDC supply. Connected via CON60 on backplane'},
     ]
   },
   payload_chassis: {
     title: 'Payload Chassis — EQP952-0203-DR-PD-55002',
     drawing: 'EQP952-0203-DR-PD-55002',
     file: 'manuals/drawings/EQP952-0203-DR-PD-55002.pdf',
-    body: 'The Payload Chassis handles mission equipment interfaces including payload PSU, CWDM optical transceivers (1270–1410nm), Gigabit Ethernet switch, RS232 module, and the generic interface PCB for tooling and sensor connectivity.',
+    body: 'The Payload Chassis handles mission and survey equipment interfaces. CWDM BLUE band (1270–1410nm) optical transceivers provide high-bandwidth comms. Sixnet 10-port Gigabit switch manages all payload Ethernet including the Atlas manipulator (Ethernet ports E1/E2/E4). Payload penetrator ring: EQP952-0203-DR-PD-55004. This chassis is project-configurable.',
     cards: [
-      {name:'PSU 1 (MAX124 / MAX315)', detail:'Payload chassis power supply unit'},
-      {name:'Generic Interface PCB', detail:'PCB-0115-D-0001-00 — general I/O interface for payload systems'},
-      {name:'Payload Chassis Backplane', detail:'PCB-0169-D-0001-00 — main backplane for payload PCB stack'},
-      {name:'Relay & Housekeeping PCB', detail:'PCB-0163-D-0001-00 — relay switching and system monitoring'},
-      {name:'155MHz Fibre Optic I/F', detail:'PCB-0186-D-0001-00 — fibre interface board for payload data'},
-      {name:'CWDM 1270–1410nm', detail:'Optical transceiver module — Blue band (1270/1290/1310/1330/1350/1370/1390/1410nm)'},
-      {name:'10-Port Gigabit Switch', detail:'SLX-10MG-1 — managed Ethernet switch for bottomside network'},
-      {name:'RS232 Module', detail:'PCB-0032-D-0001-00 — serial comms module for instruments'},
-      {name:'SFP Ethernet Module', detail:'MRV Layer 1 SFP — fibre Ethernet media converter'},
-      {name:'Optical Transceivers ×4', detail:'1290nm, 1330nm, 1370nm, 1410nm — Blue CWDM band carriers'},
+      {name:'PSU 1 — SLE124', detail:'Primary 24V DC for payload chassis'},
+      {name:'PSU 2 — MAX315', detail:'Secondary power supply — instrument rail'},
+      {name:'PSU 3–8 — MAX124 ×6', detail:'24V DC auxiliary supply units'},
+      {name:'Generic Interface PCB — PCB-0115', detail:'Dual generic interface board — general I/O for payload sensors and tooling expansion ports'},
+      {name:'Payload Chassis Backplane — PCB-0169', detail:'Main backplane — routes all power and data between payload cards'},
+      {name:'Relay & Housekeeping PCB — PCB-0163', detail:'Payload relay switching and system monitoring'},
+      {name:'155MHz Fibre Optic I/F — PCB-0186 (1370nm)', detail:'Payload fibre interface PCB — carries payload serial data channels'},
+      {name:'CWDM Assembly (BLUE) — ROV-0311-D-0212', detail:'BLUE band CWDM: 1270, 1290, 1310, 1330, 1350, 1370, 1390, 1410nm. Received from control chassis via energy chain'},
+      {name:'Optical Transceivers — 1290, 1330, 1370, 1410nm', detail:'MRV single-mode SFP transceivers. Payload fibre for high-bandwidth data to surface'},
+      {name:'Sixnet 10-Port Gigabit Switch', detail:'Payload Ethernet master CH1–10. Atlas manipulator connects via Ethernet CH9 (port E1) and CH11 (port E4)'},
+      {name:'RS232 Module — PCB-0032', detail:'Serial comms module for payload instruments and expansion'},
+      {name:'Auxiliary Relays 1–4', detail:'115V AC and 24V DC relay switching for payload tooling'},
     ]
   },
   control_ring: {
     title: 'Control Penetrator Ring — EQP952-0203-DR-PD-55003',
     drawing: 'EQP952-0203-DR-PD-55003',
     file: 'manuals/drawings/EQP952-0203-DR-PD-55003.pdf',
-    body: 'The Control Penetrator Ring provides watertight cable entries for the control chassis systems including thrusters, lights, cameras, T4 manipulator, HPU sensors, VP1 & VP2 serial control, and CWDM fibre. Current drawing supersedes ROV-0311-D-0203 series.',
+    body: 'The Control Penetrator Ring (supersedes ROV-0311-D-0203 series) carries all cable entries for the control chassis. 8 coax camera feeds, all vehicle serial instruments (CH1–10), TCU servo valves, valve packs 1 & 2, lighting, compensators, and the main CWDM fibre to surface.',
     cards: [
-      {name:'THRUSTERS', detail:'110V AC power to all eight thruster motor controllers'},
-      {name:'CWDM FIBRE', detail:'Single-mode fibre — carries all CWDM wavelengths topside'},
-      {name:'LIGHTS', detail:'24VDC and PWM control for LED light heads'},
-      {name:'CAMERAS', detail:'Coaxial video feeds for forward and zoom cameras'},
-      {name:'T4 MANIPULATOR', detail:'110V AC power and serial control to T4 junction box'},
-      {name:'HPU SENSORS', detail:'PT100 temperature sensors and water ingress detector from HPU'},
-      {name:'VP 1 & 2 SERIAL', detail:'24VDC unregulated + serial control to valve packs 1 and 2'},
+      {name:'CAM 1 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO. Video to MUX PCB. Power from camera PSU backplane'},
+      {name:'CAM 2 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
+      {name:'CAM 3 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
+      {name:'CAM 4 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
+      {name:'CAM 5 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
+      {name:'CAM 6 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
+      {name:'CAM 7 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
+      {name:'CAM 8 — 8-pin Mini Burton', detail:'Coax video (Y+C), 24V power, focus HI/LO'},
+      {name:'TCU — CON28 + CON29', detail:'Thruster control: servo valves SV1–8 (CON28 pin 1–16), HPU pressure, TCU water ingress. 12-pin Burton 5507-2412-PE04'},
+      {name:'MANIP — CH1 RS232', detail:'T4 manipulator serial control + 24V. Burton 5507-2006-PE04'},
+      {name:'SONAR — CH3 RS232', detail:'Tritech scanning sonar serial + 24V. Burton 5507-2006-PE04'},
+      {name:'RESPONDER — CH4 TTL', detail:'USBL transponder/responder TTL. Burton 5507-2006-PE04'},
+      {name:'DEPTH — CH5 RS232', detail:'Digiquartz depth/pressure sensor serial + 24V. Main ROV depth reading. Burton 5507-2006-PE04'},
+      {name:'ALT/DVL — CH6 RS232', detail:'Altimeter and Doppler Velocity Log serial + 24V. Burton 5507-2006-PE04'},
+      {name:'VP1 — CH7 RS485', detail:'Valve Pack 1 serial (RS485) + 24V unregulated. Burton 5507-2006-PE04'},
+      {name:'VP2 — CH8 RS485', detail:'Valve Pack 2 serial (RS485) + 24V unregulated. Burton 5507-2006-PE04'},
+      {name:'LIGHTS — CH9 RS232 + 110V AC', detail:'Lighting JB serial CH9 + 110V AC supply (L+N). Burton 5507-2006-PE04'},
+      {name:'TOOLING — CH10 RS232', detail:'Tooling serial channel + valve coax signals. For additional tooling packages'},
+      {name:'COMPS — CON20 (×4)', detail:'4 × compensator analogue pressure sensors. Analogue signal from hydraulic compensators'},
+      {name:'HPU/TERM SENSORS — CON12', detail:'HPU bearing housing PT100 temp, hydraulic temp, motor temp HI, water ingress signals'},
+      {name:'CWDM FIBRE — 6-way penetrator', detail:'Single-mode fibre. Carries full CWDM RED band (1470–1610nm) to surface via umbilical'},
     ]
   },
   payload_ring: {
     title: 'Payload Penetrator Ring — EQP952-0203-DR-PD-55004',
     drawing: 'EQP952-0203-DR-PD-55004',
     file: 'manuals/drawings/EQP952-0203-DR-PD-55004.pdf',
-    body: 'The Payload Penetrator Ring provides watertight cable entries for mission and survey equipment including Atlas manipulator, DVL/altimeter, Octans gyro, USBL responder, Digiquartz depth sensor, VP3, sonar, and HP comms. Supersedes ROV-0311-D-0204 series.',
+    body: 'The Payload Penetrator Ring (supersedes ROV-0311-D-0204 series) provides cable entries for survey and mission equipment. Primarily project-configurable. Standard fit includes Atlas manipulator Ethernet, PHINS/INS, responder, and analogue/digital expansion I/O.',
     cards: [
-      {name:'ATLAS MANIPULATOR', detail:'110V AC and Ethernet control to Atlas/Schilling via Aleron VP'},
-      {name:'DVL / ALTIMETER', detail:'RS-232 serial and 24VDC for Doppler Velocity Log and altimeter'},
-      {name:'OCTANS GYRO', detail:'RS-232 and 24VDC supply to IXBlue Octans Nano gyro'},
-      {name:'USBL RESPONDER', detail:'Acoustic transducer cable for USBL subsea positioning'},
-      {name:'DIGIQUARTZ DEPTH', detail:'RS-232 serial and 24VDC to Digiquartz pressure sensor'},
-      {name:'VP 3 HIGH FLOW', detail:'24VDC unregulated + serial to valve pack 3 (high flow)'},
-      {name:'TRITECH SONAR', detail:'Coaxial video and RS-232 for Tritech scanning sonar'},
-      {name:'HP COMMS 1045nm', detail:'High-power 1045nm laser for bottomside Ethernet trunk'},
+      {name:'Atlas Manip — Ethernet CH9 + CH11', detail:'Atlas/Schilling manipulator via Sixnet ports E1 and E4. Burton 5999-1692-E006. 24V HP 10A on CH10 (CB13/CB14)'},
+      {name:'PHINS / INS — Ethernet E2', detail:'PHINS inertial navigation. 24V from CB13/CB14. CAT5 to Sixnet port E2. Burton 5999-1800-E006'},
+      {name:'Responder — CON45', detail:'Payload responder: common, charge, trigger, +24V RESP, 0V RESP. Analogue TTL'},
+      {name:'Aux Relay Outputs ×4', detail:'115V AC and 24V DC switched outputs for payload tooling via aux relays 1–4'},
+      {name:'Serial Expansion CH1–10', detail:'Serial expansion for payload instruments — RS232/TTL/RS422 via Generic Interface PCB'},
+      {name:'Analogue I/O — CON40–45', detail:'Analogue inputs (0–10V, ±10V, PT100) and outputs (0–10V) for payload sensors'},
+      {name:'Digital I/O', detail:'Digital inputs/outputs for payload control via backplane expansion connectors'},
+      {name:'Pod Water Ingress — CON19', detail:'Payload pod water ingress detector + spare payload WI input'},
     ]
   }
 };
 
 function podZoneClick(zone){
-  const z = POD_ZONES[zone];
-  if(!z) return;
-  l3DrawingFile = z.file;
-  document.getElementById('l3-tt-title').textContent = z.title;
-  document.getElementById('l3-tt-body').textContent = z.body;
-  document.getElementById('l3-tt-num').textContent = z.drawing;
-  // Update sidebar with card list
-  const cardHtml = z.cards.map(c =>
-    `<div class="draw-item">
-      <div class="draw-num">${c.name}</div>
-      <div class="draw-title">${c.detail}</div>
-    </div>`
-  ).join('');
-  document.getElementById('list-drawings').innerHTML =
-    `<div style="padding:8px 16px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;">${z.title}</div>` + cardHtml;
-  // Show tooltip near centre of viewer
-  const tt = document.getElementById('l3-tooltip');
-  tt.style.left = '20px';
-  tt.style.top  = '60px';
-  tt.classList.add('visible');
-  // Highlight active tab
-  showTab('drawings');
-}
-
-function openMenu(){
   document.getElementById('menu-panel').classList.remove('collapsed');
   document.getElementById('photo-wrap').classList.add('active');
   document.getElementById('rov-prompt').style.opacity='0';
