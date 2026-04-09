@@ -9,7 +9,7 @@ CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-ANTHROPIC_KEY    = os.environ.get('ANTHRIPIC_KEY', '').strip()
+ANTHROPIC_KEY    = os.environ.get('ANTHROPIC_KEY', '').strip()
 VOYAGE_KEY       = os.environ.get('VOYAGE_KEY', '').strip()
 SUPABASE_URL     = os.environ.get('SUPABASE_URL', '').strip()
 SUPABASE_ANON    = os.environ.get('SUPABASE_ANON', '').strip()
