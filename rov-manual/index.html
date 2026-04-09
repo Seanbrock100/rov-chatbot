@@ -1031,176 +1031,165 @@ function buildChassisSVG(zone, z){
   const accentDim = isControl ? 'rgba(58,96,128,0.08)' : 'rgba(106,64,128,0.06)';
   const ringAccent = isControl ? '#e8a44a' : '#9a60c0';
 
-  // Build card rows from z.cards
   const cards = z.cards;
-  const ROW_H = 22;
-  const COL_W = 440;
-  const X0 = 180;
-  const Y0 = 30;
+  const ROW_H = 26;
+  const COL_W = 420;
+  const X0 = 210;
+  const Y0 = 28;
   const GAP = 4;
+  const svgH = Math.max(480, cards.length * (ROW_H + GAP) + Y0 + 60);
 
+  svg.setAttribute('viewBox', '0 0 900 ' + svgH);
+
+  // Build card rows using string concat (no nested template literals)
   let cardSVG = '';
-  cards.forEach((c, i) => {
+  for (let i = 0; i < cards.length; i++) {
+    const c = cards[i];
     const y = Y0 + i * (ROW_H + GAP);
-    const file = c.drawingFile || '';
-    const onclick = file ? `window.open('${file.replace(/'/g,"\\'")}','_blank')` : '';
-    const cursor = file ? 'cursor:pointer;' : '';
-    const hoverStroke = file ? accent : '#2a3040';
-    cardSVG += `
-      <g class="cd-card" onclick="${onclick}" style="${cursor}">
-        <rect x="${X0}" y="${y}" width="${COL_W}" height="${ROW_H}" rx="3"
-          fill="rgba(42,48,64,0.75)" stroke="${hoverStroke}" stroke-width="${file ? 1.2 : 0.8}"/>
-        <text x="${X0+10}" y="${y+10}" font-family="'IBM Plex Mono',monospace" font-size="8.5" fill="#9a9890">${escSVG(c.name)}</text>
-        <text x="${X0+10}" y="${y+19}" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a6860">${escSVG(c.detail)}</text>
-        ${file ? `<text class="cd-arrow" x="${X0+COL_W-14}" y="${y+14}">↗</text>` : ''}
-      </g>`;
-  });
+    const hasFile = !!(c.drawingFile || (c.drawings && c.drawings.length));
+    const fillCol = hasFile ? 'rgba(42,52,70,0.85)' : 'rgba(36,42,58,0.7)';
+    const strokeCol = hasFile ? accent : '#2a3040';
+    const sw = hasFile ? '1.2' : '0.8';
+    const safeIdx = i;
+    const onclick = 'openCardInfo(\'' + zone + '\',' + safeIdx + ')';
+    cardSVG += '<g onclick="' + onclick + '" style="cursor:pointer;">';
+    cardSVG += '<rect x="' + X0 + '" y="' + y + '" width="' + COL_W + '" height="' + ROW_H + '" rx="3"';
+    cardSVG += ' fill="' + fillCol + '" stroke="' + strokeCol + '" stroke-width="' + sw + '"';
+    cardSVG += ' onmouseenter="this.setAttribute(\'fill\',\'rgba(232,164,74,0.12)\');this.setAttribute(\'stroke\',\'#e8a44a\')"';
+    cardSVG += ' onmouseleave="this.setAttribute(\'fill\',\'' + fillCol + '\');this.setAttribute(\'stroke\',\'' + strokeCol + '\')"';
+    cardSVG += '/>';
+    cardSVG += '<text x="' + (X0 + 10) + '" y="' + (y + 12) + '"';
+    cardSVG += ' font-family="\'IBM Plex Mono\',monospace" font-size="9" fill="#c0b8a8"';
+    cardSVG += ' style="pointer-events:none;">' + escSVG(c.name) + '</text>';
+    cardSVG += '<text x="' + (X0 + 10) + '" y="' + (y + 22) + '"';
+    cardSVG += ' font-family="\'IBM Plex Sans\',sans-serif" font-size="7.5" fill="#6a6860"';
+    cardSVG += ' style="pointer-events:none;">' + escSVG(c.detail.substring(0, 75)) + (c.detail.length > 75 ? '…' : '') + '</text>';
+    if (hasFile) {
+      cardSVG += '<text x="' + (X0 + COL_W - 8) + '" y="' + (y + 16) + '"';
+      cardSVG += ' font-family="\'IBM Plex Mono\',monospace" font-size="9" fill="' + accent + '"';
+      cardSVG += ' text-anchor="end" style="pointer-events:none;">↗</text>';
+    }
+    cardSVG += '</g>';
+  }
 
-  const totalH = cards.length * (ROW_H + GAP) + Y0 + 20;
-  const svgH = Math.max(420, totalH);
+  // Penetrator ring — circular face-on matching actual drawing
+  // Connectors arranged around circumference at R=74
+  const connectors = isControl
+    ? [
+        {a:-72,  lbl:'CAM 1'}, {a:-54,  lbl:'CAM 2'}, {a:-36,  lbl:'CAM 3'},
+        {a:-18,  lbl:'CAM 4'}, {a:0,    lbl:'CAM 5'}, {a:18,   lbl:'CAM 6'},
+        {a:36,   lbl:'CAM 7'}, {a:54,   lbl:'CAM 8'}, {a:72,   lbl:'LIGHT'},
+        {a:108,  lbl:'DEPTH'}, {a:126,  lbl:'ALT'},   {a:144,  lbl:'VP1'},
+        {a:162,  lbl:'VP2'},   {a:180,  lbl:'COMP'},  {a:-108, lbl:'T4'},
+        {a:-126, lbl:'GYRO'},  {a:-144, lbl:'SONAR'}, {a:-162, lbl:'RESP'},
+        {a:90,   lbl:'TCU', big:true}
+      ]
+    : [
+        {a:0,   lbl:'CH10\nATLAS',big:true},
+        {a:30,  lbl:'CH2\n24V'},  {a:60,  lbl:'CH9\n115V'},
+        {a:90,  lbl:'CH1'}, {a:120, lbl:'CH3'}, {a:150, lbl:'CH4'},
+        {a:180, lbl:'CH5'}, {a:-150,lbl:'CH6'}, {a:-120,lbl:'CH7'},
+        {a:-90, lbl:'CH8'}, {a:-60, lbl:'ETH1'},{a:-30, lbl:'ETH2'},
+        {a:-20, lbl:'WI'},  {a:20,  lbl:'ETH3'}
+      ];
 
-  // Update viewBox to fit
-  svg.setAttribute('viewBox', `0 0 900 ${svgH}`);
+  const RCX = 105;
+  const RCY = Math.round(svgH / 2);
+  let ringInner = '';
+  // Background circles
+  ringInner += '<circle cx="' + RCX + '" cy="' + RCY + '" r="90" fill="rgba(12,16,24,0.95)" stroke="' + ringAccent + '" stroke-width="3"/>';
+  ringInner += '<circle cx="' + RCX + '" cy="' + RCY + '" r="60" fill="rgba(8,10,16,0.9)" stroke="' + ringAccent + '" stroke-width="1.5"/>';
+  ringInner += '<circle cx="' + RCX + '" cy="' + RCY + '" r="52" fill="rgba(6,8,14,0.9)" stroke="' + ringAccent + '" stroke-width="0.5" stroke-dasharray="3,3"/>';
+  // Crosshairs
+  ringInner += '<line x1="' + (RCX-52) + '" y1="' + RCY + '" x2="' + (RCX+52) + '" y2="' + RCY + '" stroke="' + ringAccent + '" stroke-width="0.4" stroke-dasharray="4,4" opacity="0.25"/>';
+  ringInner += '<line x1="' + RCX + '" y1="' + (RCY-52) + '" x2="' + RCX + '" y2="' + (RCY+52) + '" stroke="' + ringAccent + '" stroke-width="0.4" stroke-dasharray="4,4" opacity="0.25"/>';
 
-  svg.innerHTML = `
-    <defs>
-      <pattern id="cdgrid" width="20" height="20" patternUnits="userSpaceOnUse">
-        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1e28" stroke-width="0.4"/>
-      </pattern>
-    </defs>
-    <rect width="900" height="${svgH}" fill="url(#cdgrid)"/>
+  const R = 74;
+  for (let i = 0; i < connectors.length; i++) {
+    const p = connectors[i];
+    const rad = p.a * Math.PI / 180;
+    const cx = Math.round(RCX + Math.sin(rad) * R);
+    const cy = Math.round(RCY - Math.cos(rad) * R);
+    const sz = p.big ? 11 : 8;
+    const lx = Math.round(RCX + Math.sin(rad) * (R + 17));
+    const ly = Math.round(RCY - Math.cos(rad) * (R + 17));
+    const sc = p.big ? '#e8a44a' : ringAccent;
+    const lbl = (p.lbl || '').replace(/\n/g, ' ');
+    // Octagonal connector body
+    const pts = [];
+    for (let k = 0; k < 8; k++) {
+      const a2 = k * Math.PI / 4;
+      pts.push((cx + sz * 0.55 * Math.cos(a2)).toFixed(1) + ',' + (cy + sz * 0.55 * Math.sin(a2)).toFixed(1));
+    }
+    ringInner += '<polygon points="' + pts.join(' ') + '" fill="rgba(40,50,65,0.9)" stroke="' + sc + '" stroke-width="' + (p.big ? 1.5 : 1) + '"/>';
+    ringInner += '<circle cx="' + cx + '" cy="' + cy + '" r="' + Math.round(sz*0.35) + '" fill="none" stroke="' + sc + '" stroke-width="0.8"/>';
+    ringInner += '<text x="' + lx + '" y="' + (ly + 3) + '" font-family="\'IBM Plex Mono\',monospace" font-size="5" fill="' + sc + '" text-anchor="middle" opacity="0.9">' + escSVG(lbl) + '</text>';
+  }
 
-    <!-- Chassis outer body -->
-    <rect x="170" y="20" width="460" height="${svgH-40}" rx="5"
-      fill="${accentDim}" stroke="${accent}" stroke-width="1.5"/>
+  // Earth stud
+  const earthY = RCY + 53;
+  ringInner += '<circle cx="' + RCX + '" cy="' + earthY + '" r="5" fill="rgba(42,48,64,0.9)" stroke="' + ringAccent + '" stroke-width="1"/>';
+  ringInner += '<text x="' + RCX + '" y="' + (earthY + 13) + '" font-family="\'IBM Plex Mono\',monospace" font-size="4.5" fill="' + ringAccent + '" text-anchor="middle" opacity="0.6">EARTH</text>';
 
-    <!-- Column header -->
-    <text x="${X0+COL_W/2}" y="16" font-family="'IBM Plex Mono',monospace" font-size="8"
-      fill="${accent}" text-anchor="middle" letter-spacing="1">${escSVG(z.drawing)} — CLICK CARD TO OPEN DRAWING</text>
+  // Fibre pen (RED wavelengths)
+  const fibreY = RCY - 56;
+  ringInner += '<circle cx="' + RCX + '" cy="' + fibreY + '" r="10" fill="rgba(80,40,20,0.35)" stroke="#c06030" stroke-width="1.8"/>';
+  ringInner += '<circle cx="' + RCX + '" cy="' + fibreY + '" r="5" fill="none" stroke="#c06030" stroke-width="0.8"/>';
+  ringInner += '<text x="' + RCX + '" y="' + (fibreY - 14) + '" font-family="\'IBM Plex Mono\',monospace" font-size="5.5" fill="#c06030" text-anchor="middle">FIBRE 6-WAY</text>';
 
-    <!-- Backplane strip along bottom -->
-    <rect x="${X0}" y="${svgH-30}" width="${COL_W}" height="6" rx="1"
-      fill="rgba(58,96,128,0.2)" stroke="${accent}" stroke-width="0.8"/>
-    <text x="${X0+COL_W/2}" y="${svgH-22}" font-family="'IBM Plex Mono',monospace" font-size="6"
-      fill="${accent}" text-anchor="middle">CHASSIS BACKPLANE</text>
+  // Ring labels
+  ringInner += '<text x="' + RCX + '" y="' + (RCY + 108) + '" font-family="\'IBM Plex Mono\',monospace" font-size="9.5" fill="' + ringAccent + '" text-anchor="middle" font-weight="bold">' + ringNum + '</text>';
+  ringInner += '<text x="' + RCX + '" y="' + (RCY + 121) + '" font-family="\'IBM Plex Mono\',monospace" font-size="7" fill="' + ringAccent + '" text-anchor="middle">' + ringLabel + '</text>';
+  ringInner += '<text x="' + RCX + '" y="' + (RCY + 134) + '" font-family="\'IBM Plex Mono\',monospace" font-size="8" fill="' + ringAccent + '" text-anchor="middle">↗ OPEN GA</text>';
 
-    <!-- Cards -->
-    ${cardSVG}
+  const ringGroup = '<g onclick="window.open(\'' + ringFile + '\',\'_blank\')" style="cursor:pointer;">' + ringInner + '</g>';
 
-    <!-- LEFT: Penetrator ring — circular face-on view matching actual drawing -->
-    <!-- Ring positioned at left, centered vertically on chassis -->
-    <g class="pen-ring-link" onclick="window.open('${ringFile}','_blank')" style="cursor:pointer;" transform="translate(100,${svgH/2})">
-      <!-- Outer ring body (annulus) -->
-      <circle r="88" fill="rgba(18,22,32,0.95)" stroke="${ringAccent}" stroke-width="2.5"/>
-      <circle r="58" fill="rgba(10,12,18,0.8)" stroke="${ringAccent}" stroke-width="1.5"/>
-      <!-- Inner clear aperture -->
-      <circle r="50" fill="rgba(8,10,15,0.9)" stroke="${ringAccent}" stroke-width="0.5" stroke-dasharray="3,3"/>
-      <!-- Cross hairs (like the drawing) -->
-      <line x1="-50" y1="0" x2="50" y2="0" stroke="${ringAccent}" stroke-width="0.4" stroke-dasharray="4,4" opacity="0.3"/>
-      <line x1="0" y1="-50" x2="0" y2="50" stroke="${ringAccent}" stroke-width="0.4" stroke-dasharray="4,4" opacity="0.3"/>
+  // Fan end
+  const fanX = 660;
+  let fanSVG = '<rect x="' + fanX + '" y="20" width="130" height="' + (svgH-40) + '" rx="4" fill="rgba(22,27,38,0.5)" stroke="#2a3040" stroke-width="1"/>';
+  const fanCY1 = Math.round(svgH * 0.32);
+  const fanCY2 = Math.round(svgH * 0.68);
+  fanSVG += '<circle cx="' + (fanX+65) + '" cy="' + fanCY1 + '" r="32" fill="none" stroke="#3a4050" stroke-width="1.5"/>';
+  fanSVG += '<circle cx="' + (fanX+65) + '" cy="' + fanCY1 + '" r="12" fill="none" stroke="#3a4050" stroke-width="1"/>';
+  fanSVG += '<circle cx="' + (fanX+65) + '" cy="' + fanCY2 + '" r="32" fill="none" stroke="#3a4050" stroke-width="1.5"/>';
+  fanSVG += '<circle cx="' + (fanX+65) + '" cy="' + fanCY2 + '" r="12" fill="none" stroke="#3a4050" stroke-width="1"/>';
+  fanSVG += '<text x="' + (fanX+65) + '" y="' + (svgH-28) + '" font-family="\'IBM Plex Mono\',monospace" font-size="8" fill="#3a4050" text-anchor="middle">FANS</text>';
 
-      <!-- Connectors arranged around circumference (r=75 from centre) -->
-      <!-- Each connector = octagonal body like actual Burton connectors in drawing -->
-      <!-- 16 connector positions, matching the control ring layout -->
-      <!-- Top cluster (cameras 1-4 in groups) -->
-      ${[
-        {a:-72,  label:'CAM 1', big:false},
-        {a:-54,  label:'CAM 2', big:false},
-        {a:-36,  label:'CAM 3', big:false},
-        {a:-18,  label:'CAM 4', big:false},
-        {a:0,    label:'CAM 5', big:false},
-        {a:18,   label:'CAM 6', big:false},
-        {a:36,   label:'CAM 7', big:false},
-        {a:54,   label:'CAM 8', big:false},
-        {a:90,   label:'TCU',   big:true},
-        {a:108,  label:'DEPTH', big:false},
-        {a:126,  label:'ALT',   big:false},
-        {a:144,  label:'VP1',   big:false},
-        {a:162,  label:'VP2',   big:false},
-        {a:180,  label:'COMP',  big:false},
-        {a:-108, label:'T4',    big:false},
-        {a:-126, label:'GYRO',  big:false},
-        {a:-144, label:'SONAR', big:false},
-        {a:-162, label:'RESP',  big:false},
-        {a:72,   label:'LIGHT', big:false},
-      ].map(p => {
-        const rad = p.a * Math.PI/180;
-        const R = 74;
-        const cx = Math.round(Math.sin(rad)*R);
-        const cy = Math.round(-Math.cos(rad)*R);
-        const sz = p.big ? 9 : 7;
-        const lx = Math.round(Math.sin(rad)*(R+16));
-        const ly = Math.round(-Math.cos(rad)*(R+16));
-        return \`<g>
-          <polygon points="\${[-1,0,1,0].map((_,i) => {const a2=rad+(i*Math.PI/2-Math.PI/4); return (cx+sz*0.6*Math.cos(a2))+','+(cy+sz*0.6*Math.sin(a2));}).join(' ')}" 
-            fill="rgba(42,52,68,0.9)" stroke="\${p.big?'#e8a44a':ringAccent}" stroke-width="\${p.big?1.4:1}"/>
-          <circle cx="\${cx}" cy="\${cy}" r="\${sz*0.38}" fill="none" stroke="\${ringAccent}" stroke-width="0.7"/>
-          <text x="\${lx}" y="\${ly+3}" font-family="'IBM Plex Mono',monospace" font-size="5"
-            fill="\${p.big?'#e8a44a':ringAccent}" text-anchor="middle" opacity="0.85">\${p.label}</text>
-        </g>\`;
-      }).join('')}
+  // Right end (gyro/D-sub for control, Sixnet for payload)
+  let rightEnd = '<rect x="792" y="20" width="100" height="' + (svgH-40) + '" rx="4" fill="rgba(28,33,46,0.45)" stroke="#2a3040" stroke-width="1"/>';
+  const reY = Math.round(svgH * 0.35);
+  if (isControl) {
+    rightEnd += '<rect x="798" y="' + reY + '" width="88" height="52" rx="3" fill="rgba(42,80,64,0.22)" stroke="#2a6040" stroke-width="1"/>';
+    rightEnd += '<text x="842" y="' + (reY+18) + '" font-family="\'IBM Plex Mono\',monospace" font-size="7.5" fill="#5a9070" text-anchor="middle">GYRO COVER</text>';
+    rightEnd += '<text x="842" y="' + (reY+29) + '" font-family="\'IBM Plex Mono\',monospace" font-size="6.5" fill="#3a7050" text-anchor="middle">EQP952-55011</text>';
+    rightEnd += '<text x="842" y="' + (reY+40) + '" font-family="\'IBM Plex Sans\',sans-serif" font-size="6.5" fill="#3a6050" text-anchor="middle">Octans Nano</text>';
+    const dsY = reY + 60;
+    rightEnd += '<rect x="798" y="' + dsY + '" width="88" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#3a4050" stroke-width="0.8"/>';
+    rightEnd += '<text x="842" y="' + (dsY+10) + '" font-family="\'IBM Plex Mono\',monospace" font-size="6.5" fill="#5a5870" text-anchor="middle">D-SUB x4 25-way</text>';
+    rightEnd += '<rect x="798" y="' + (dsY+18) + '" width="88" height="14" rx="1" fill="rgba(42,48,64,0.7)" stroke="#3a4050" stroke-width="0.8"/>';
+    rightEnd += '<text x="842" y="' + (dsY+28) + '" font-family="\'IBM Plex Mono\',monospace" font-size="6.5" fill="#5a5870" text-anchor="middle">PCB-0197</text>';
+  } else {
+    rightEnd += '<rect x="798" y="' + reY + '" width="88" height="58" rx="3" fill="rgba(50,30,70,0.2)" stroke="#6a4080" stroke-width="1"/>';
+    rightEnd += '<text x="842" y="' + (reY+18) + '" font-family="\'IBM Plex Mono\',monospace" font-size="7.5" fill="#6a4080" text-anchor="middle">SIXNET</text>';
+    rightEnd += '<text x="842" y="' + (reY+30) + '" font-family="\'IBM Plex Mono\',monospace" font-size="7" fill="#503060" text-anchor="middle">10-PORT GBIT</text>';
+    rightEnd += '<text x="842" y="' + (reY+42) + '" font-family="\'IBM Plex Mono\',monospace" font-size="6.5" fill="#3a2050" text-anchor="middle">E1/E2/E4</text>';
+  }
 
-      <!-- Fibre penetrator (6-way, bottom) -->
-      <g transform="translate(0,76)">
-        <circle r="10" fill="rgba(80,40,20,0.3)" stroke="#c06030" stroke-width="1.5"/>
-        <circle r="6" fill="none" stroke="#c06030" stroke-width="0.8"/>
-        <text y="-14" font-family="'IBM Plex Mono',monospace" font-size="5.5" fill="#c06030" text-anchor="middle">FIBRE</text>
-        <text y="-7" font-family="'IBM Plex Mono',monospace" font-size="4.5" fill="#904020" text-anchor="middle">6-WAY</text>
-      </g>
+  // Backplane strip
+  const bpY = svgH - 28;
+  let bpSVG = '<rect x="' + X0 + '" y="' + bpY + '" width="' + COL_W + '" height="6" rx="1" fill="rgba(58,96,128,0.2)" stroke="' + accent + '" stroke-width="0.8"/>';
+  bpSVG += '<text x="' + (X0 + COL_W/2) + '" y="' + (bpY+6) + '" font-family="\'IBM Plex Mono\',monospace" font-size="6" fill="' + accent + '" text-anchor="middle">CHASSIS BACKPLANE</text>';
 
-      <!-- Earth stud -->
-      <g transform="translate(0,56)">
-        <circle r="4" fill="rgba(42,48,64,0.9)" stroke="${ringAccent}" stroke-width="1"/>
-        <text y="10" font-family="'IBM Plex Mono',monospace" font-size="4.5" fill="${ringAccent}" text-anchor="middle" opacity="0.6">EARTH</text>
-      </g>
+  // Header
+  const hdrSVG = '<text x="' + (X0 + COL_W/2) + '" y="18" font-family="\'IBM Plex Mono\',monospace" font-size="8" fill="' + accent + '" text-anchor="middle" letter-spacing="1">' + escSVG(z.drawing) + '  —  CLICK CARD TO VIEW DESCRIPTION</text>';
 
-      <!-- Ring label -->
-      <text y="105" font-family="'IBM Plex Mono',monospace" font-size="9" fill="${ringAccent}" text-anchor="middle" font-weight="bold">${ringNum}</text>
-      <text y="117" font-family="'IBM Plex Mono',monospace" font-size="7" fill="${ringAccent}" text-anchor="middle">${ringLabel}</text>
-      <text y="129" font-family="'IBM Plex Mono',monospace" font-size="8" fill="${ringAccent}" text-anchor="middle">↗ OPEN GA</text>
-    </g>
+  // Grid bg
+  const bgSVG = '<defs><pattern id="cdgrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#181c28" stroke-width="0.4"/></pattern></defs><rect width="900" height="' + svgH + '" fill="url(#cdgrid)"/>';
 
-    <!-- RIGHT: Fan end -->
-    <rect x="640" y="20" width="120" height="${svgH-40}" rx="4"
-      fill="rgba(25,30,42,0.5)" stroke="#2a3040" stroke-width="1"/>
-    <circle cx="700" cy="${svgH/2-60}" r="32" fill="none" stroke="#3a4050" stroke-width="1.5"/>
-    <circle cx="700" cy="${svgH/2-60}" r="12" fill="none" stroke="#3a4050" stroke-width="1"/>
-    <circle cx="700" cy="${svgH/2+60}" r="32" fill="none" stroke="#3a4050" stroke-width="1.5"/>
-    <circle cx="700" cy="${svgH/2+60}" r="12" fill="none" stroke="#3a4050" stroke-width="1"/>
-    <text x="700" y="${svgH-32}" font-family="'IBM Plex Mono',monospace" font-size="8"
-      fill="#3a4050" text-anchor="middle">FANS</text>
+  // Chassis outline
+  const chassisSVG = '<rect x="190" y="22" width="460" height="' + (svgH-44) + '" rx="5" fill="' + accentDim + '" stroke="' + accent + '" stroke-width="1.5"/>';
 
-    <!-- RIGHT-MOST: D-sub / Gyro end -->
-    <rect x="762" y="20" width="126" height="${svgH-40}" rx="4"
-      fill="rgba(30,35,48,0.4)" stroke="#2a3040" stroke-width="1"/>
-    ${isControl ? `
-    <rect x="770" y="${svgH/2-70}" width="110" height="55" rx="3"
-      fill="rgba(42,80,64,0.2)" stroke="#2a6040" stroke-width="1"/>
-    <text x="825" y="${svgH/2-50}" font-family="'IBM Plex Mono',monospace" font-size="8"
-      fill="#5a9070" text-anchor="middle">GYRO COVER</text>
-    <text x="825" y="${svgH/2-38}" font-family="'IBM Plex Mono',monospace" font-size="7"
-      fill="#3a7050" text-anchor="middle">EQP952-55011</text>
-    <text x="825" y="${svgH/2-27}" font-family="'IBM Plex Sans',sans-serif" font-size="7"
-      fill="#3a6050" text-anchor="middle">Octans Nano</text>
-    <rect x="770" y="${svgH/2+0}" width="110" height="14" rx="1"
-      fill="rgba(42,48,64,0.7)" stroke="#3a4050" stroke-width="0.8"/>
-    <text x="825" y="${svgH/2+10}" font-family="'IBM Plex Mono',monospace" font-size="7"
-      fill="#5a5870" text-anchor="middle">D-SUB ×4 (25-way)</text>
-    <rect x="770" y="${svgH/2+18}" width="110" height="14" rx="1"
-      fill="rgba(42,48,64,0.7)" stroke="#3a4050" stroke-width="0.8"/>
-    <text x="825" y="${svgH/2+28}" font-family="'IBM Plex Mono',monospace" font-size="7"
-      fill="#5a5870" text-anchor="middle">PCB-0197 Breakout</text>
-    ` : `
-    <rect x="770" y="${svgH/2-50}" width="110" height="60" rx="3"
-      fill="rgba(50,30,70,0.2)" stroke="#6a4080" stroke-width="1"/>
-    <text x="825" y="${svgH/2-30}" font-family="'IBM Plex Mono',monospace" font-size="8"
-      fill="#6a4080" text-anchor="middle">SIXNET 10-PORT</text>
-    <text x="825" y="${svgH/2-18}" font-family="'IBM Plex Mono',monospace" font-size="7"
-      fill="#503060" text-anchor="middle">GIGABIT SWITCH</text>
-    <text x="825" y="${svgH/2-6}" font-family="'IBM Plex Mono',monospace" font-size="6.5"
-      fill="#3a2050" text-anchor="middle">E1/E2/E4 survey</text>
-    `}
-  `;
+  svg.innerHTML = bgSVG + chassisSVG + hdrSVG + ringGroup + fanSVG + rightEnd + cardSVG + bpSVG;
 }
 
 function escSVG(s){
