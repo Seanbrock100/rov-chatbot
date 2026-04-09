@@ -88,6 +88,26 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .pod-zone:hover .zone-rect{filter:brightness(1.4);}
 .pod-zone .zone-cta{opacity:.5;transition:opacity .2s;}
 .pod-zone:hover .zone-cta{opacity:1;}
+/* CHASSIS DETAIL VIEW */
+#chassis-detail{display:none;width:100%;height:100%;flex-direction:column;background:var(--surface);}
+#chassis-detail.visible{display:flex;}
+#chassis-detail-bar{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0;background:#090c13;}
+.cd-back{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);cursor:pointer;padding:3px 9px;border:1px solid var(--border2);border-radius:2px;background:transparent;transition:all .15s;}
+.cd-back:hover{border-color:var(--amber);color:var(--amber);}
+#chassis-detail-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);letter-spacing:.12em;flex:1;}
+.cd-open-ga{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--blue);cursor:pointer;padding:3px 9px;border:1px solid var(--border2);border-radius:2px;background:transparent;transition:all .15s;}
+.cd-open-ga:hover{border-color:var(--blue);color:#6ab0e0;}
+#chassis-detail-svg-wrap{flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:16px;}
+/* Clickable card in chassis detail SVG */
+.cd-card{cursor:pointer;}
+.cd-card rect{transition:all .15s;}
+.cd-card:hover rect{filter:brightness(1.5);stroke-opacity:1;}
+.cd-card .cd-arrow{opacity:0;transition:opacity .15s;font-size:8px;fill:#e8a44a;}
+.cd-card:hover .cd-arrow{opacity:1;}
+/* Pen ring link button */
+.pen-ring-link{cursor:pointer;}
+.pen-ring-link ellipse{transition:all .15s;}
+.pen-ring-link:hover ellipse{filter:brightness(1.6);}
 /* LAYER 3 TOOLTIP */
 #l3-tooltip{position:absolute;z-index:20;background:#13171f;border:1px solid var(--amber);border-radius:4px;padding:12px 14px;max-width:260px;display:none;pointer-events:none;}
 #l3-tooltip.visible{display:block;}
@@ -449,6 +469,18 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
             </div>
           </div>
 
+          <!-- CHASSIS DETAIL VIEW — shown when user clicks a chassis in pod overview -->
+          <div id="chassis-detail">
+            <div id="chassis-detail-bar">
+              <button class="cd-back" onclick="chassisBack()">← POD OVERVIEW</button>
+              <span id="chassis-detail-title"></span>
+              <button class="cd-open-ga" id="chassis-ga-btn" onclick="chassisOpenGA()">↗ OPEN GA DRAWING</button>
+            </div>
+            <div id="chassis-detail-svg-wrap">
+              <svg id="chassis-detail-svg" viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:100%;overflow:visible;"></svg>
+            </div>
+          </div>
+
           <!-- Standard viewer for non-pod components -->
           <div class="viewer-placeholder" id="viewer-ph">
             <div class="vp-icon">📐</div>
@@ -758,18 +790,18 @@ const POD_ZONES = {
       {name:'PSU 3 — MAX315', detail:'Power supply unit — sensor and instrument supply'},
       {name:'PSU 4–7 — MAX124 ×4', detail:'24V DC auxiliary power supply units'},
       {name:'Camera PSU ×2', detail:'Dedicated 24V supply for camera heads. Fed via backplane connectors — NOT through penetrator ring'},
-      {name:'Video MUX PCB — PCB-0124', detail:'Coax video multiplexer for CAM 1–8. Uses 8-pin Mini Burton (5929-0207-PE04). Signal: SIGNAL(Y), SIGNAL(C), FOCUS HI/LO. Power from camera PSU via backplane'},
-      {name:'Camera Control PCB — PCB-0161', detail:'Camera iris, focus, zoom control — backplane CON 75–81'},
-      {name:'Relay & HK PCB 1 — PCB-0163 (Camera Power)', detail:'Camera power relay switching — backplane CON 31–37'},
-      {name:'Relay & HK PCB 2 — PCB-0163 (Auxiliaries)', detail:'Auxiliary power relay switching — backplane CON 45–51'},
-      {name:'Thruster Control Unit PCB — PCB-0162', detail:'TCU servo valve control card — backplane CON 66–72. Drives SV1–8 servo valves via control ring CON28/CON29'},
-      {name:'155MHz Fibre Optic I/F — PCB-0186 (1530nm)', detail:'Serial channel fibre interface — carries CH1–10 serial data within CWDM RED band'},
-      {name:'CWDM Assembly RED — ROV-0311-D-0212', detail:'RED band: 1470, 1490, 1510, 1530, 1550, 1570, 1590, 1610nm. Single-mode 6-way fibre penetrator to surface'},
+      {name:'Video MUX PCB — PCB-0124',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Coax video multiplexer for CAM 1–8. Uses 8-pin Mini Burton (5929-0207-PE04). Signal: SIGNAL(Y), SIGNAL(C), FOCUS HI/LO. Power from camera PSU via backplane'},
+      {name:'Camera Control PCB — PCB-0161',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Camera iris, focus, zoom control — backplane CON 75–81'},
+      {name:'Relay & HK PCB 1 — PCB-0163 (Camera Power)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Camera power relay switching — backplane CON 31–37'},
+      {name:'Relay & HK PCB 2 — PCB-0163 (Auxiliaries)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Auxiliary power relay switching — backplane CON 45–51'},
+      {name:'Thruster Control Unit PCB — PCB-0162',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'TCU servo valve control card — backplane CON 66–72. Drives SV1–8 servo valves via control ring CON28/CON29'},
+      {name:'155MHz Fibre Optic I/F — PCB-0186 (1530nm)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55017 Control Wiring Diagram.pdf', detail:'Serial channel fibre interface — carries CH1–10 serial data within CWDM RED band'},
+      {name:'CWDM Assembly RED — ROV-0311-D-0212',drawingFile:'manuals/drawings/ROV-0311-D-0212-00.pdf', detail:'RED band: 1470, 1490, 1510, 1530, 1550, 1570, 1590, 1610nm. Single-mode 6-way fibre penetrator to surface'},
       {name:'Band Splitter — ROV-0311-D-0210', detail:'COM/RED/BLUE splitter. RED stays in control chassis; BLUE passes to payload chassis via energy chain'},
       {name:'Sixnet 9-Port Gigabit Switch — SLX-10MG-1', detail:'Bottomside Ethernet network switch'},
-      {name:'Gyro Cover Plate — EQP952-0203-DR-PD-55011', detail:'Houses IXBlue Octans Nano gyro. RS-232 CH2 + 24VDC. Connected via CON60 on backplane'},
-      {name:'24V Unregulated Supply — ROV-0311-D-0208', detail:'Unregulated 24V supply module for VP1 and VP2 valve packs'},
-      {name:'System Backplane Breakout — PCB-0197', detail:'Main chassis backplane distribution board'},
+      {name:'Gyro Cover Plate — EQP952-0203-DR-PD-55011',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55011.pdf', detail:'Houses IXBlue Octans Nano gyro. RS-232 CH2 + 24VDC. Connected via CON60 on backplane'},
+      {name:'24V Unregulated Supply — ROV-0311-D-0208',drawingFile:'manuals/drawings/ROV-0311-D-0208-00 Pod valve pack unregulated supply.pdf', detail:'Unregulated 24V supply module for VP1 and VP2 valve packs'},
+      {name:'System Backplane Breakout — PCB-0197',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55001.pdf', detail:'Main chassis backplane distribution board'},
     ]
   },
   payload_chassis: {
@@ -781,12 +813,12 @@ const POD_ZONES = {
       {name:'PSU 1 — SLE124', detail:'Main 24V PSU for payload chassis'},
       {name:'PSU 2 — MAX315', detail:'Secondary PSU'},
       {name:'PSU 3–8 — MAX124 ×6', detail:'Six additional 24V PSU modules'},
-      {name:'Generic Interface PCB — PCB-0115', detail:'General I/O interface for payload sensor connections — backplane CON 5'},
-      {name:'Payload Chassis Backplane — PCB-0169', detail:'Main backplane for payload PCB stack'},
+      {name:'Generic Interface PCB — PCB-0115',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf', detail:'General I/O interface for payload sensor connections — backplane CON 5'},
+      {name:'Payload Chassis Backplane — PCB-0169',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55002.pdf', detail:'Main backplane for payload PCB stack'},
       {name:'Relay & Housekeeping PCB — PCB-0163', detail:'Relay switching and system monitoring'},
-      {name:'155MHz Fibre Optic I/F — PCB-0186 (1370nm)', detail:'155MHz fibre interface for payload data — BLUE CWDM band'},
-      {name:'CWDM Assembly BLUE — ROV-0311-D-0212', detail:'BLUE band: 1270, 1290, 1310, 1330, 1350, 1370, 1390, 1410nm — payload comms to surface'},
-      {name:'Sixnet 10-Port Gigabit Switch', detail:'10-port managed Ethernet switch for payload network. E1/E2/E4 ports used for survey equipment'},
+      {name:'155MHz Fibre Optic I/F — PCB-0186 (1370nm)',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf', detail:'155MHz fibre interface for payload data — BLUE CWDM band'},
+      {name:'CWDM Assembly BLUE — ROV-0311-D-0212',drawingFile:'manuals/drawings/ROV-0311-D-0212-00.pdf', detail:'BLUE band: 1270, 1290, 1310, 1330, 1350, 1370, 1390, 1410nm — payload comms to surface'},
+      {name:'Sixnet 10-Port Gigabit Switch',drawingFile:'manuals/drawings/EQP952-0203-DR-PD-55016 Paylod Wiring Diagram.pdf', detail:'10-port managed Ethernet switch for payload network. E1/E2/E4 ports used for survey equipment'},
       {name:'RS232 Module — PCB-0032', detail:'Serial comms module for payload instruments'},
       {name:'SFP Ethernet Module ×2 (MRV)', detail:'MRV Layer 1 fibre Ethernet media converters (1290nm and 1370nm data slots)'},
       {name:'Optical Transceivers ×4', detail:'1310nm, 1330nm, 1390nm, 1410nm — BLUE CWDM optical modules'},
@@ -842,20 +874,196 @@ function openMenu(){
 function podZoneClick(zone){
   const z = POD_ZONES[zone];
   if(!z) return;
-  l3DrawingFile = z.file;
-  document.getElementById('l3-tt-title').textContent = z.title;
-  document.getElementById('l3-tt-body').textContent = z.body;
-  document.getElementById('l3-tt-num').textContent = z.drawing;
+  // Penetrator rings: open GA drawing directly
+  if(zone === 'control_ring' || zone === 'payload_ring'){
+    window.open(z.file, '_blank');
+    return;
+  }
+  // Chassis: switch to chassis detail view
+  showChassisDetail(zone, z);
+}
+
+let currentChassisGA = '';
+
+function showChassisDetail(zone, z){
+  currentChassisGA = z.file;
+  document.getElementById('chassis-detail-title').textContent = z.title;
+  document.getElementById('chassis-ga-btn').textContent = '↗ OPEN ' + z.drawing;
+  // Hide pod overview, show chassis detail
+  document.getElementById('pod-ga-viewer').style.display = 'none';
+  const cd = document.getElementById('chassis-detail');
+  cd.classList.add('visible');
+  // Render the chassis SVG
+  buildChassisSVG(zone, z);
+  // Update sidebar with card list
   const cardHtml = z.cards.map(c =>
-    '<div class="draw-item"><div class="draw-num">' + c.name + '</div><div class="draw-title">' + c.detail + '</div></div>'
+    `<div class="draw-item" onclick="openDoc('${(c.drawingFile||'').replace(/'/g,"\\'")}')">
+      <div class="draw-num">${c.name}</div>
+      <div class="draw-title">${c.detail}</div>
+      ${c.drawingFile ? '<div class="draw-open">↗ OPEN DRAWING</div>' : ''}
+    </div>`
   ).join('');
   document.getElementById('list-drawings').innerHTML =
-    '<div style="padding:8px 16px 4px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;">' + z.title + '</div>' + cardHtml;
-  const tt = document.getElementById('l3-tooltip');
-  tt.style.left = '20px';
-  tt.style.top  = '60px';
-  tt.classList.add('visible');
+    `<div style="padding:8px 16px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;">${z.title}</div>` + cardHtml;
   showTab('drawings');
+}
+
+function chassisBack(){
+  document.getElementById('chassis-detail').classList.remove('visible');
+  document.getElementById('pod-ga-viewer').style.display = 'flex';
+  document.getElementById('pod-ga-viewer').style.flexDirection = 'column';
+}
+
+function chassisOpenGA(){
+  if(currentChassisGA) window.open(currentChassisGA, '_blank');
+}
+
+function buildChassisSVG(zone, z){
+  const svg = document.getElementById('chassis-detail-svg');
+  const isControl = (zone === 'control_chassis');
+  const ringFile  = isControl
+    ? 'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'
+    : 'manuals/drawings/EQP952-0203-DR-PD-55004.pdf';
+  const ringNum   = isControl ? '55003' : '55004';
+  const ringLabel = isControl ? 'CONTROL RING' : 'PAYLOAD RING';
+  const accent    = isControl ? '#3a6080' : '#6a4080';
+  const accentDim = isControl ? 'rgba(58,96,128,0.08)' : 'rgba(106,64,128,0.06)';
+  const ringAccent = isControl ? '#e8a44a' : '#9a60c0';
+
+  // Build card rows from z.cards
+  const cards = z.cards;
+  const ROW_H = 22;
+  const COL_W = 440;
+  const X0 = 180;
+  const Y0 = 30;
+  const GAP = 4;
+
+  let cardSVG = '';
+  cards.forEach((c, i) => {
+    const y = Y0 + i * (ROW_H + GAP);
+    const file = c.drawingFile || '';
+    const onclick = file ? `window.open('${file.replace(/'/g,"\\'")}','_blank')` : '';
+    const cursor = file ? 'cursor:pointer;' : '';
+    const hoverStroke = file ? accent : '#2a3040';
+    cardSVG += `
+      <g class="cd-card" onclick="${onclick}" style="${cursor}">
+        <rect x="${X0}" y="${y}" width="${COL_W}" height="${ROW_H}" rx="3"
+          fill="rgba(42,48,64,0.75)" stroke="${hoverStroke}" stroke-width="${file ? 1.2 : 0.8}"/>
+        <text x="${X0+10}" y="${y+10}" font-family="'IBM Plex Mono',monospace" font-size="8.5" fill="#9a9890">${escSVG(c.name)}</text>
+        <text x="${X0+10}" y="${y+19}" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a6860">${escSVG(c.detail)}</text>
+        ${file ? `<text class="cd-arrow" x="${X0+COL_W-14}" y="${y+14}">↗</text>` : ''}
+      </g>`;
+  });
+
+  const totalH = cards.length * (ROW_H + GAP) + Y0 + 20;
+  const svgH = Math.max(420, totalH);
+
+  // Update viewBox to fit
+  svg.setAttribute('viewBox', `0 0 900 ${svgH}`);
+
+  svg.innerHTML = `
+    <defs>
+      <pattern id="cdgrid" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1e28" stroke-width="0.4"/>
+      </pattern>
+    </defs>
+    <rect width="900" height="${svgH}" fill="url(#cdgrid)"/>
+
+    <!-- Chassis outer body -->
+    <rect x="170" y="20" width="460" height="${svgH-40}" rx="5"
+      fill="${accentDim}" stroke="${accent}" stroke-width="1.5"/>
+
+    <!-- Column header -->
+    <text x="${X0+COL_W/2}" y="16" font-family="'IBM Plex Mono',monospace" font-size="8"
+      fill="${accent}" text-anchor="middle" letter-spacing="1">${escSVG(z.drawing)} — CLICK CARD TO OPEN DRAWING</text>
+
+    <!-- Backplane strip along bottom -->
+    <rect x="${X0}" y="${svgH-30}" width="${COL_W}" height="6" rx="1"
+      fill="rgba(58,96,128,0.2)" stroke="${accent}" stroke-width="0.8"/>
+    <text x="${X0+COL_W/2}" y="${svgH-22}" font-family="'IBM Plex Mono',monospace" font-size="6"
+      fill="${accent}" text-anchor="middle">CHASSIS BACKPLANE</text>
+
+    <!-- Cards -->
+    ${cardSVG}
+
+    <!-- LEFT: Penetrator ring oval -->
+    <g class="pen-ring-link" onclick="window.open('${ringFile}','_blank')" style="cursor:pointer;">
+      <ellipse cx="100" cy="${svgH/2}" rx="52" ry="80"
+        fill="rgba(20,25,35,0.85)" stroke="${ringAccent}" stroke-width="2"/>
+      <!-- CB plate -->
+      <rect x="76" y="${svgH/2-90}" width="46" height="14" rx="2"
+        fill="rgba(42,48,64,0.9)" stroke="${ringAccent}" stroke-width="0.8"/>
+      <text x="99" y="${svgH/2-80}" font-family="'IBM Plex Mono',monospace" font-size="6.5"
+        fill="${ringAccent}" text-anchor="middle">CB PLATE</text>
+      <!-- Penetrator holes (decorative) -->
+      <circle cx="88"  cy="${svgH/2-55}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
+      <circle cx="112" cy="${svgH/2-55}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
+      <circle cx="80"  cy="${svgH/2-35}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
+      <circle cx="120" cy="${svgH/2-35}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
+      <circle cx="78"  cy="${svgH/2-12}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
+      <circle cx="122" cy="${svgH/2-12}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
+      <circle cx="78"  cy="${svgH/2+12}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
+      <circle cx="122" cy="${svgH/2+12}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
+      <circle cx="80"  cy="${svgH/2+35}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
+      <circle cx="120" cy="${svgH/2+35}" r="6" fill="none" stroke="${ringAccent}" stroke-width="1.2"/>
+      <!-- Fibre pen (larger) -->
+      <circle cx="100" cy="${svgH/2+55}" r="9" fill="none" stroke="${ringAccent}" stroke-width="1.5"/>
+      <text x="100" cy="${svgH/2+55}" y="${svgH/2+58}" font-family="'IBM Plex Mono',monospace"
+        font-size="5.5" fill="${ringAccent}" text-anchor="middle">6-WAY</text>
+      <!-- Labels -->
+      <text x="100" y="${svgH/2+80}" font-family="'IBM Plex Mono',monospace" font-size="8.5"
+        fill="${ringAccent}" text-anchor="middle">${ringNum}</text>
+      <text x="100" y="${svgH/2+92}" font-family="'IBM Plex Mono',monospace" font-size="7"
+        fill="${ringAccent}" text-anchor="middle">${ringLabel}</text>
+      <text x="100" y="${svgH/2+104}" font-family="'IBM Plex Mono',monospace" font-size="8"
+        fill="${ringAccent}" text-anchor="middle">↗ OPEN GA</text>
+    </g>
+
+    <!-- RIGHT: Fan end -->
+    <rect x="640" y="20" width="120" height="${svgH-40}" rx="4"
+      fill="rgba(25,30,42,0.5)" stroke="#2a3040" stroke-width="1"/>
+    <circle cx="700" cy="${svgH/2-60}" r="32" fill="none" stroke="#3a4050" stroke-width="1.5"/>
+    <circle cx="700" cy="${svgH/2-60}" r="12" fill="none" stroke="#3a4050" stroke-width="1"/>
+    <circle cx="700" cy="${svgH/2+60}" r="32" fill="none" stroke="#3a4050" stroke-width="1.5"/>
+    <circle cx="700" cy="${svgH/2+60}" r="12" fill="none" stroke="#3a4050" stroke-width="1"/>
+    <text x="700" y="${svgH-32}" font-family="'IBM Plex Mono',monospace" font-size="8"
+      fill="#3a4050" text-anchor="middle">FANS</text>
+
+    <!-- RIGHT-MOST: D-sub / Gyro end -->
+    <rect x="762" y="20" width="126" height="${svgH-40}" rx="4"
+      fill="rgba(30,35,48,0.4)" stroke="#2a3040" stroke-width="1"/>
+    ${isControl ? `
+    <rect x="770" y="${svgH/2-70}" width="110" height="55" rx="3"
+      fill="rgba(42,80,64,0.2)" stroke="#2a6040" stroke-width="1"/>
+    <text x="825" y="${svgH/2-50}" font-family="'IBM Plex Mono',monospace" font-size="8"
+      fill="#5a9070" text-anchor="middle">GYRO COVER</text>
+    <text x="825" y="${svgH/2-38}" font-family="'IBM Plex Mono',monospace" font-size="7"
+      fill="#3a7050" text-anchor="middle">EQP952-55011</text>
+    <text x="825" y="${svgH/2-27}" font-family="'IBM Plex Sans',sans-serif" font-size="7"
+      fill="#3a6050" text-anchor="middle">Octans Nano</text>
+    <rect x="770" y="${svgH/2+0}" width="110" height="14" rx="1"
+      fill="rgba(42,48,64,0.7)" stroke="#3a4050" stroke-width="0.8"/>
+    <text x="825" y="${svgH/2+10}" font-family="'IBM Plex Mono',monospace" font-size="7"
+      fill="#5a5870" text-anchor="middle">D-SUB ×4 (25-way)</text>
+    <rect x="770" y="${svgH/2+18}" width="110" height="14" rx="1"
+      fill="rgba(42,48,64,0.7)" stroke="#3a4050" stroke-width="0.8"/>
+    <text x="825" y="${svgH/2+28}" font-family="'IBM Plex Mono',monospace" font-size="7"
+      fill="#5a5870" text-anchor="middle">PCB-0197 Breakout</text>
+    ` : `
+    <rect x="770" y="${svgH/2-50}" width="110" height="60" rx="3"
+      fill="rgba(50,30,70,0.2)" stroke="#6a4080" stroke-width="1"/>
+    <text x="825" y="${svgH/2-30}" font-family="'IBM Plex Mono',monospace" font-size="8"
+      fill="#6a4080" text-anchor="middle">SIXNET 10-PORT</text>
+    <text x="825" y="${svgH/2-18}" font-family="'IBM Plex Mono',monospace" font-size="7"
+      fill="#503060" text-anchor="middle">GIGABIT SWITCH</text>
+    <text x="825" y="${svgH/2-6}" font-family="'IBM Plex Mono',monospace" font-size="6.5"
+      fill="#3a2050" text-anchor="middle">E1/E2/E4 survey</text>
+    `}
+  `;
+}
+
+function escSVG(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function closeMenu(){
   document.getElementById('menu-panel').classList.add('collapsed');
