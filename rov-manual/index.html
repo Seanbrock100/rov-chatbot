@@ -83,6 +83,11 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .hotspot{position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid var(--amber);background:rgba(232,164,74,.15);cursor:pointer;transform:translate(-50%,-50%);transition:all .2s;display:flex;align-items:center;justify-content:center;}
 .hotspot:hover{background:rgba(232,164,74,.4);box-shadow:0 0 16px rgba(232,164,74,.5);}
 .hotspot-label{position:absolute;font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--amber);white-space:nowrap;top:-18px;left:50%;transform:translateX(-50%);pointer-events:none;background:rgba(9,12,19,.8);padding:1px 4px;border-radius:2px;}
+/* POD GA ZONES */
+.pod-zone .zone-rect{transition:all .2s;}
+.pod-zone:hover .zone-rect{filter:brightness(1.4);}
+.pod-zone .zone-cta{opacity:.5;transition:opacity .2s;}
+.pod-zone:hover .zone-cta{opacity:1;}
 /* LAYER 3 TOOLTIP */
 #l3-tooltip{position:absolute;z-index:20;background:#13171f;border:1px solid var(--amber);border-radius:4px;padding:12px 14px;max-width:260px;display:none;pointer-events:none;}
 #l3-tooltip.visible{display:block;}
@@ -158,25 +163,133 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       </div>
       <div id="l2-body">
         <div id="l2-viewer">
-          <!-- Pod-only penetrator ring tabs — only shown for Electronics Pod -->
-          <div id="pod-viewer-tabs">
-            <button class="pvtab active" id="pvtab-control" onclick="switchPodView('control')">
-              CONTROL PENETRATOR RING
-              <div class="pvtab-sub">EQP952-0203-DR-PD-55003</div>
-            </button>
-            <button class="pvtab" id="pvtab-payload" onclick="switchPodView('payload')">
-              PAYLOAD PENETRATOR RING
-              <div class="pvtab-sub">EQP952-0203-DR-PD-55004</div>
-            </button>
+          <!-- Pod GA viewer — shown only for Electronics Pod -->
+          <div id="pod-ga-viewer" style="display:none;width:100%;height:100%;position:relative;background:var(--surface);overflow:hidden;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);padding:8px 14px;border-bottom:1px solid var(--border);letter-spacing:.1em;display:flex;justify-content:space-between;align-items:center;">
+              <span>EQP952-0203-DR-PD-55000 — ELECTRONICS POD ASSEMBLY</span>
+              <span style="cursor:pointer;color:var(--amber)" onclick="window.open('manuals/drawings/EQP952-0203-DR-PD-55000.pdf','_blank')">↗ OPEN FULL DRAWING</span>
+            </div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px;height:calc(100% - 32px);">
+              <svg id="pod-ga-svg" viewBox="0 0 700 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:100%;overflow:visible;">
+                <!-- Background grid -->
+                <defs>
+                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e2330" stroke-width="0.5"/>
+                  </pattern>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+                <rect width="700" height="420" fill="url(#grid)"/>
+
+                <!-- Title block -->
+                <text x="350" y="22" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#6a7080" text-anchor="middle" letter-spacing="2">HERCULES MK3 — ELECTRONICS POD — SCHEMATIC OVERVIEW</text>
+
+                <!-- ── POD OUTER SHELL ── -->
+                <rect x="80" y="50" width="540" height="280" rx="12" fill="none" stroke="#2a3040" stroke-width="2"/>
+                <text x="350" y="68" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#3a4050" text-anchor="middle" letter-spacing="1">POD PRESSURE HOUSING — ROV-0311-D-0205-00</text>
+
+                <!-- ── CONTROL CHASSIS (left) ── clickable zone -->
+                <g id="zone-control" class="pod-zone" onclick="podZoneClick('control_chassis')" style="cursor:pointer;">
+                  <rect x="100" y="80" width="230" height="220" rx="6" fill="rgba(58,96,128,0.08)" stroke="#3a6080" stroke-width="1.5" class="zone-rect"/>
+                  <text x="215" y="102" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#3a6080" text-anchor="middle" letter-spacing="1">CONTROL CHASSIS</text>
+                  <text x="215" y="114" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#2a4050" text-anchor="middle">EQP952-0203-DR-PD-55001</text>
+                  <!-- PSU row -->
+                  <rect x="112" y="122" width="206" height="22" rx="3" fill="rgba(58,96,128,0.15)" stroke="#3a5060" stroke-width="1"/>
+                  <text x="215" y="137" font-family="'IBM Plex Sans',sans-serif" font-size="9" fill="#9a9890" text-anchor="middle">PSU 1–7  (SLE112 / SLE124)</text>
+                  <!-- PCB stack -->
+                  <rect x="112" y="150" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="160" y="162" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">TCU Control PCB</text>
+                  <rect x="112" y="169" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="160" y="181" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Relay &amp; HK PCB</text>
+                  <rect x="112" y="188" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="160" y="200" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Camera Control PCB</text>
+                  <rect x="112" y="207" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="160" y="219" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Video Amplifier PCB</text>
+                  <!-- Right col PCBs -->
+                  <rect x="215" y="150" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="263" y="162" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">CWDM Band Splitter</text>
+                  <rect x="215" y="169" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="263" y="181" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">150MHz Fibre I/F</text>
+                  <rect x="215" y="188" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="263" y="200" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Video MUX Backplane</text>
+                  <rect x="215" y="207" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="263" y="219" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Fibre Transceiver 1590nm</text>
+                  <!-- Gyro -->
+                  <rect x="112" y="232" width="97" height="16" rx="2" fill="rgba(42,96,64,0.3)" stroke="#2a6040" stroke-width="1"/>
+                  <text x="160" y="244" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#4a9060" text-anchor="middle">Octans Nano Gyro</text>
+                  <rect x="215" y="232" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="263" y="244" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">TTL Data Module</text>
+                  <!-- Click indicator -->
+                  <text x="215" y="275" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#3a6080" text-anchor="middle" class="zone-cta">▶ CLICK TO EXPLORE</text>
+                </g>
+
+                <!-- ── PAYLOAD CHASSIS (right) ── clickable zone -->
+                <g id="zone-payload" class="pod-zone" onclick="podZoneClick('payload_chassis')" style="cursor:pointer;">
+                  <rect x="370" y="80" width="230" height="220" rx="6" fill="rgba(120,80,160,0.06)" stroke="#6a4080" stroke-width="1.5" class="zone-rect"/>
+                  <text x="485" y="102" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6a4080" text-anchor="middle" letter-spacing="1">PAYLOAD CHASSIS</text>
+                  <text x="485" y="114" font-family="'IBM Plex Mono',monospace" font-size="7.5" fill="#4a3060" text-anchor="middle">EQP952-0203-DR-PD-55002</text>
+                  <!-- PSU row -->
+                  <rect x="382" y="122" width="206" height="22" rx="3" fill="rgba(106,64,128,0.15)" stroke="#5a3070" stroke-width="1"/>
+                  <text x="485" y="137" font-family="'IBM Plex Sans',sans-serif" font-size="9" fill="#9a9890" text-anchor="middle">PSU 1  (MAX124 / MAX315)</text>
+                  <!-- PCB stack -->
+                  <rect x="382" y="150" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="430" y="162" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Generic Interface PCB</text>
+                  <rect x="382" y="169" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="430" y="181" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Payload Backplane</text>
+                  <rect x="382" y="188" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="430" y="200" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Relay &amp; HK PCB</text>
+                  <rect x="382" y="207" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="430" y="219" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">155MHz Fibre I/F</text>
+                  <!-- Right col -->
+                  <rect x="485" y="150" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="533" y="162" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">CWDM 1270–1410nm</text>
+                  <rect x="485" y="169" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="533" y="181" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">10-Port Gbit Switch</text>
+                  <rect x="485" y="188" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="533" y="200" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">RS232 Module</text>
+                  <rect x="485" y="207" width="97" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="533" y="219" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">SFP Ethernet Module</text>
+                  <rect x="382" y="232" width="200" height="16" rx="2" fill="rgba(42,48,64,0.8)" stroke="#2a3040" stroke-width="1"/>
+                  <text x="482" y="244" font-family="'IBM Plex Sans',sans-serif" font-size="7.5" fill="#6a7080" text-anchor="middle">Optical Transceivers 1290/1330/1370/1410nm</text>
+                  <text x="485" y="275" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#6a4080" text-anchor="middle" class="zone-cta">▶ CLICK TO EXPLORE</text>
+                </g>
+
+                <!-- ── CENTRE DIVIDER ── -->
+                <line x1="350" y1="85" x2="350" y2="295" stroke="#1e2330" stroke-width="1" stroke-dasharray="4,4"/>
+
+                <!-- ── PENETRATOR RINGS (bottom) ── -->
+                <!-- Control ring — bottom left -->
+                <g id="zone-ctrl-ring" class="pod-zone" onclick="podZoneClick('control_ring')" style="cursor:pointer;">
+                  <ellipse cx="195" cy="360" rx="80" ry="32" fill="rgba(232,164,74,0.06)" stroke="#e8a44a" stroke-width="1.5" class="zone-rect"/>
+                  <text x="195" y="355" font-family="'IBM Plex Mono',monospace" font-size="8.5" fill="#e8a44a" text-anchor="middle" letter-spacing="1">CONTROL RING</text>
+                  <text x="195" y="367" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#a06820" text-anchor="middle">55003  ▶ CLICK</text>
+                  <!-- connecting line to chassis -->
+                  <line x1="195" y1="328" x2="215" y2="300" stroke="#e8a44a" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>
+                </g>
+                <!-- Payload ring — bottom right -->
+                <g id="zone-pay-ring" class="pod-zone" onclick="podZoneClick('payload_ring')" style="cursor:pointer;">
+                  <ellipse cx="505" cy="360" rx="80" ry="32" fill="rgba(106,64,128,0.1)" stroke="#9a60c0" stroke-width="1.5" class="zone-rect"/>
+                  <text x="505" y="355" font-family="'IBM Plex Mono',monospace" font-size="8.5" fill="#9a60c0" text-anchor="middle" letter-spacing="1">PAYLOAD RING</text>
+                  <text x="505" y="367" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#6a4080" text-anchor="middle">55004  ▶ CLICK</text>
+                  <line x1="505" y1="328" x2="485" y2="300" stroke="#9a60c0" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>
+                </g>
+
+                <!-- Bottom label -->
+                <text x="350" y="408" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#2a3040" text-anchor="middle" letter-spacing="1">CLICK ANY ZONE TO DRILL DOWN — DRAWINGS OPEN IN NEW TAB</text>
+              </svg>
+            </div>
           </div>
+
+          <!-- Standard viewer for non-pod components -->
           <div class="viewer-placeholder" id="viewer-ph">
             <div class="vp-icon">📐</div>
             <div class="vp-text">SELECT A DRAWING FROM THE LIST<br>to view it here<br><strong>Click any drawing → opens in new tab</strong><br><span style="color:#3a4050">PDF viewer requires manuals/ folder populated</span></div>
           </div>
           <iframe id="l2-frame" style="display:none"></iframe>
-          <!-- Layer 3 hotspot overlay — pod penetrator rings only -->
-          <div id="l3-overlay"></div>
-          <!-- Layer 3 tooltip -->
+
+          <!-- Layer 3 tooltip (pod zones) -->
           <div id="l3-tooltip">
             <div class="l3-tt-title" id="l3-tt-title"></div>
             <div class="l3-tt-body" id="l3-tt-body"></div>
@@ -464,39 +577,104 @@ const DATA = {
 // ── FUNCTIONS ─────────────────────────────────────────────────────────────────
 let activeTab = 'drawings';
 let currentKey = '';
-let activePodView = 'control';
 let l3DrawingFile = '';
 
-// Pod penetrator ring data for Layer 3 hotspots
-const POD_RINGS = {
-  control: {
-    drawing: 'manuals/drawings/EQP952-0203-DR-PD-55003.pdf',
-    label: 'Control Penetrator Ring — EQP952-0203-DR-PD-55003',
-    hotspots: [
-      {id:'c1', x:28, y:32, label:'THRUSTERS', title:'Thruster Power Supply', body:'Provides 110V AC power to all eight thruster motor controllers via the thruster power distribution module.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
-      {id:'c2', x:48, y:18, label:'CWDM', title:'CWDM Fibre Optic', body:'Single-mode fibre optic penetrator for the CWDM comms system (1270–1410nm wavelengths). Carries all serial, Ethernet, and video channels.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
-      {id:'c3', x:68, y:25, label:'LIGHTS', title:'Lighting Control', body:'24VDC supply and PWM control signal for the LED light heads. Controlled via the lighting interface PCB.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
-      {id:'c4', x:78, y:48, label:'CAMERAS', title:'Camera Video Feed', body:'Coaxial video feeds for the forward and zoom cameras routed through CWDM laser modules at 1310nm and 1390nm.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
-      {id:'c5', x:62, y:70, label:'T4 MANIP', title:'T4 Manipulator Interface', body:'Provides 110V AC power and serial control data to the T4 manipulator junction box. Separate power and signal penetrators.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
-      {id:'c6', x:38, y:76, label:'HPU SENSORS', title:'HPU Sensor Interface', body:'PT100 temperature sensors and water ingress detector signals from the HPU motor housing back to the control chassis.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
-      {id:'c7', x:20, y:58, label:'VP 1 & 2', title:'Valve Pack 1 & 2 Serial', body:'Serial control and 24VDC unregulated supply to VP1 and VP2 hydraulic valve packs. Carries proportional valve control signals.', drawing:'EQP952-0203-DR-PD-55003', file:'manuals/drawings/EQP952-0203-DR-PD-55003.pdf'},
+// Pod zone data — what each clickable area on 55000 reveals
+const POD_ZONES = {
+  control_chassis: {
+    title: 'Control Chassis — EQP952-0203-DR-PD-55001',
+    drawing: 'EQP952-0203-DR-PD-55001',
+    file: 'manuals/drawings/EQP952-0203-DR-PD-55001.pdf',
+    body: 'The Control Chassis houses the primary vehicle control electronics including PSUs 1–7, the TCU control PCB, camera control, relay & housekeeping, CWDM band splitter, and the Octans Nano gyro. Wiring diagram: EQP952-0203-DR-PD-55017.',
+    cards: [
+      {name:'PSU 1–7', detail:'SLE112 / SLE124 — Main power supply units for control chassis'},
+      {name:'TCU Control PCB', detail:'Thruster control interface — receives commands from surface'},
+      {name:'Relay & Housekeeping PCB', detail:'System monitoring, relay switching, aux control functions'},
+      {name:'Camera Control PCB', detail:'Camera switching, iris, focus, zoom control'},
+      {name:'Video Amplifier PCB', detail:'Video signal amplification and distribution'},
+      {name:'Video MUX Backplane', detail:'Video multiplexer backplane — routes camera feeds'},
+      {name:'150MHz Fibre Optic I/F', detail:'High-speed fibre interface for data transmission'},
+      {name:'CWDM Band Splitter', detail:'Splits COM/RED/BLUE wavelength bands for fibre comms'},
+      {name:'Fibre Transceiver 1590nm', detail:'Single-mode transceiver — topside comms carrier wavelength'},
+      {name:'TTL Data Module', detail:'TTL serial data interface module'},
+      {name:'Octans Nano Gyro', detail:'OTG64 — provides heading, pitch, roll and heave data'},
     ]
   },
-  payload: {
-    drawing: 'manuals/drawings/EQP952-0203-DR-PD-55004.pdf',
-    label: 'Payload Penetrator Ring — EQP952-0203-DR-PD-55004',
-    hotspots: [
-      {id:'p1', x:30, y:28, label:'ATLAS MANIP', title:'Atlas Manipulator', body:'110V AC power and Ethernet control to the Atlas/Schilling manipulator via the Aleron VP interface.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
-      {id:'p2', x:52, y:18, label:'DVL/ALT', title:'DVL & Altimeter', body:'Dedicated penetrators for the Doppler Velocity Log and altimeter. RS-232 serial data and 24VDC power.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
-      {id:'p3', x:72, y:30, label:'GYRO', title:'Octans Nano Gyro', body:'RS-232 and 24VDC supply to the IXBlue Octans Nano gyro. Provides heading, pitch, roll, and heave data to the control system.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
-      {id:'p4', x:76, y:52, label:'RESPONDER', title:'USBL Responder', body:'Transducer cable for the USBL transponder/responder. Carries high-frequency acoustic pulses for subsea positioning.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
-      {id:'p5', x:60, y:72, label:'DEPTH', title:'Digiquartz Depth Sensor', body:'RS-232 serial and 24VDC supply to the Digiquartz pressure/depth sensor. High-accuracy depth measurement for the ROV.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
-      {id:'p6', x:36, y:74, label:'VP 3', title:'Valve Pack 3 — High Flow', body:'Serial control and 24VDC unregulated supply to VP3 high flow valve pack. Services tooling and ancillary hydraulic equipment.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
-      {id:'p7', x:20, y:52, label:'SONAR', title:'Tritech Sonar', body:'Coaxial video and RS-232 interface for the Tritech scanning sonar head. Provides subsea mapping and obstacle avoidance data.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
-      {id:'p8', x:48, y:48, label:'COMMS HP', title:'HP Comms 1045nm', body:'High-power 1045nm laser comms penetrator for the Ethernet bottomside network trunk. High-bandwidth vehicle data bus.', drawing:'EQP952-0203-DR-PD-55004', file:'manuals/drawings/EQP952-0203-DR-PD-55004.pdf'},
+  payload_chassis: {
+    title: 'Payload Chassis — EQP952-0203-DR-PD-55002',
+    drawing: 'EQP952-0203-DR-PD-55002',
+    file: 'manuals/drawings/EQP952-0203-DR-PD-55002.pdf',
+    body: 'The Payload Chassis handles mission equipment interfaces including payload PSU, CWDM optical transceivers (1270–1410nm), Gigabit Ethernet switch, RS232 module, and the generic interface PCB for tooling and sensor connectivity.',
+    cards: [
+      {name:'PSU 1 (MAX124 / MAX315)', detail:'Payload chassis power supply unit'},
+      {name:'Generic Interface PCB', detail:'PCB-0115-D-0001-00 — general I/O interface for payload systems'},
+      {name:'Payload Chassis Backplane', detail:'PCB-0169-D-0001-00 — main backplane for payload PCB stack'},
+      {name:'Relay & Housekeeping PCB', detail:'PCB-0163-D-0001-00 — relay switching and system monitoring'},
+      {name:'155MHz Fibre Optic I/F', detail:'PCB-0186-D-0001-00 — fibre interface board for payload data'},
+      {name:'CWDM 1270–1410nm', detail:'Optical transceiver module — Blue band (1270/1290/1310/1330/1350/1370/1390/1410nm)'},
+      {name:'10-Port Gigabit Switch', detail:'SLX-10MG-1 — managed Ethernet switch for bottomside network'},
+      {name:'RS232 Module', detail:'PCB-0032-D-0001-00 — serial comms module for instruments'},
+      {name:'SFP Ethernet Module', detail:'MRV Layer 1 SFP — fibre Ethernet media converter'},
+      {name:'Optical Transceivers ×4', detail:'1290nm, 1330nm, 1370nm, 1410nm — Blue CWDM band carriers'},
+    ]
+  },
+  control_ring: {
+    title: 'Control Penetrator Ring — EQP952-0203-DR-PD-55003',
+    drawing: 'EQP952-0203-DR-PD-55003',
+    file: 'manuals/drawings/EQP952-0203-DR-PD-55003.pdf',
+    body: 'The Control Penetrator Ring provides watertight cable entries for the control chassis systems including thrusters, lights, cameras, T4 manipulator, HPU sensors, VP1 & VP2 serial control, and CWDM fibre. Current drawing supersedes ROV-0311-D-0203 series.',
+    cards: [
+      {name:'THRUSTERS', detail:'110V AC power to all eight thruster motor controllers'},
+      {name:'CWDM FIBRE', detail:'Single-mode fibre — carries all CWDM wavelengths topside'},
+      {name:'LIGHTS', detail:'24VDC and PWM control for LED light heads'},
+      {name:'CAMERAS', detail:'Coaxial video feeds for forward and zoom cameras'},
+      {name:'T4 MANIPULATOR', detail:'110V AC power and serial control to T4 junction box'},
+      {name:'HPU SENSORS', detail:'PT100 temperature sensors and water ingress detector from HPU'},
+      {name:'VP 1 & 2 SERIAL', detail:'24VDC unregulated + serial control to valve packs 1 and 2'},
+    ]
+  },
+  payload_ring: {
+    title: 'Payload Penetrator Ring — EQP952-0203-DR-PD-55004',
+    drawing: 'EQP952-0203-DR-PD-55004',
+    file: 'manuals/drawings/EQP952-0203-DR-PD-55004.pdf',
+    body: 'The Payload Penetrator Ring provides watertight cable entries for mission and survey equipment including Atlas manipulator, DVL/altimeter, Octans gyro, USBL responder, Digiquartz depth sensor, VP3, sonar, and HP comms. Supersedes ROV-0311-D-0204 series.',
+    cards: [
+      {name:'ATLAS MANIPULATOR', detail:'110V AC and Ethernet control to Atlas/Schilling via Aleron VP'},
+      {name:'DVL / ALTIMETER', detail:'RS-232 serial and 24VDC for Doppler Velocity Log and altimeter'},
+      {name:'OCTANS GYRO', detail:'RS-232 and 24VDC supply to IXBlue Octans Nano gyro'},
+      {name:'USBL RESPONDER', detail:'Acoustic transducer cable for USBL subsea positioning'},
+      {name:'DIGIQUARTZ DEPTH', detail:'RS-232 serial and 24VDC to Digiquartz pressure sensor'},
+      {name:'VP 3 HIGH FLOW', detail:'24VDC unregulated + serial to valve pack 3 (high flow)'},
+      {name:'TRITECH SONAR', detail:'Coaxial video and RS-232 for Tritech scanning sonar'},
+      {name:'HP COMMS 1045nm', detail:'High-power 1045nm laser for bottomside Ethernet trunk'},
     ]
   }
 };
+
+function podZoneClick(zone){
+  const z = POD_ZONES[zone];
+  if(!z) return;
+  l3DrawingFile = z.file;
+  document.getElementById('l3-tt-title').textContent = z.title;
+  document.getElementById('l3-tt-body').textContent = z.body;
+  document.getElementById('l3-tt-num').textContent = z.drawing;
+  // Update sidebar with card list
+  const cardHtml = z.cards.map(c =>
+    `<div class="draw-item">
+      <div class="draw-num">${c.name}</div>
+      <div class="draw-title">${c.detail}</div>
+    </div>`
+  ).join('');
+  document.getElementById('list-drawings').innerHTML =
+    `<div style="padding:8px 16px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;">${z.title}</div>` + cardHtml;
+  // Show tooltip near centre of viewer
+  const tt = document.getElementById('l3-tooltip');
+  tt.style.left = '20px';
+  tt.style.top  = '60px';
+  tt.classList.add('visible');
+  // Highlight active tab
+  showTab('drawings');
+}
 
 function openMenu(){
   document.getElementById('menu-panel').classList.remove('collapsed');
@@ -519,71 +697,18 @@ function sel(key, name, group){
   renderList('list-manuals', d.manuals, 'manual');
   resetViewer();
   showTab('drawings');
-  // Pod-specific: show penetrator ring tabs and load control ring by default
+  // Pod-specific: show GA drawing with clickable zones
   const isPod = (key === 'electronics_pod');
-  document.getElementById('pod-viewer-tabs').classList.toggle('visible', isPod);
-  if(isPod){
-    activePodView = 'control';
-    switchPodView('control');
-  }
+  document.getElementById('pod-ga-viewer').style.display = isPod ? 'flex' : 'none';
+  document.getElementById('pod-ga-viewer').style.flexDirection = isPod ? 'column' : '';
+  document.getElementById('viewer-ph').style.display = isPod ? 'none' : 'flex';
   document.getElementById('l2-pane').classList.add('visible');
 }
 function closeL2(){
   document.getElementById('l2-pane').classList.remove('visible');
-  document.getElementById('pod-viewer-tabs').classList.remove('visible');
+  document.getElementById('pod-ga-viewer').style.display = 'none';
   hideL3Tooltip();
   resetViewer();
-}
-function switchPodView(view){
-  activePodView = view;
-  document.querySelectorAll('.pvtab').forEach(t => t.classList.remove('active'));
-  document.getElementById('pvtab-' + view).classList.add('active');
-  const ring = POD_RINGS[view];
-  loadPodDrawing(ring);
-}
-function loadPodDrawing(ring){
-  hideL3Tooltip();
-  const ph = document.getElementById('viewer-ph');
-  const frame = document.getElementById('l2-frame');
-  const overlay = document.getElementById('l3-overlay');
-  // Show drawing note in viewer (iframe blocked for local files)
-  ph.style.display = 'flex';
-  ph.innerHTML = `<div class="vp-icon">📐</div>
-    <div class="vp-text">
-      <strong>${ring.label}</strong><br><br>
-      Open drawing in new tab to view full PDF<br>
-      <span style="color:var(--amber);cursor:pointer;text-decoration:underline" onclick="window.open('${ring.drawing}','_blank')">↗ OPEN DRAWING</span><br><br>
-      <span style="color:#3a4050">Hotspots below are active — hover to inspect penetrators</span>
-    </div>`;
-  frame.style.display = 'none';
-  // Render hotspots
-  overlay.innerHTML = '';
-  overlay.classList.add('visible');
-  ring.hotspots.forEach(hs => {
-    const el = document.createElement('div');
-    el.className = 'hotspot';
-    el.style.left = hs.x + '%';
-    el.style.top = hs.y + '%';
-    el.innerHTML = `<div class="hotspot-label">${hs.label}</div>`;
-    el.addEventListener('click', (e) => { e.stopPropagation(); showL3Tooltip(hs, e); });
-    overlay.appendChild(el);
-  });
-}
-function showL3Tooltip(hs, e){
-  l3DrawingFile = hs.file;
-  const tt = document.getElementById('l3-tooltip');
-  document.getElementById('l3-tt-title').textContent = hs.title;
-  document.getElementById('l3-tt-body').textContent = hs.body;
-  document.getElementById('l3-tt-num').textContent = hs.drawing;
-  // Position tooltip
-  const viewer = document.getElementById('l2-viewer');
-  const vr = viewer.getBoundingClientRect();
-  let tx = e.clientX - vr.left + 16;
-  let ty = e.clientY - vr.top - 20;
-  if(tx + 280 > vr.width) tx = e.clientX - vr.left - 276;
-  tt.style.left = tx + 'px';
-  tt.style.top  = ty + 'px';
-  tt.classList.add('visible');
 }
 function hideL3Tooltip(){
   document.getElementById('l3-tooltip').classList.remove('visible');
