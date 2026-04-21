@@ -58,20 +58,36 @@ def delete_manual(name):
         params={'manual_name': f'eq.{name}'}, timeout=30)
     print(f'  Deleted: {res.status_code}')
 
-def insert_chunks(rows):
-    res = requests.post(f'{SUPABASE_URL}/rest/v1/chunks', headers=sb_headers(),
-        json=rows, timeout=60)
-    if res.status_code not in (200, 201, 204):
-        print(f'  ⚠ Insert error {res.status_code}: {res.text[:200]}')
-    return res.status_code
+def insert_chunks(rows, max_retries=4):
+    for attempt in range(max_retries):
+        try:
+            res = requests.post(f'{SUPABASE_URL}/rest/v1/chunks', headers=sb_headers(),
+                json=rows, timeout=120)
+            if res.status_code not in (200, 201, 204):
+                print(f'  ⚠ Insert error {res.status_code}: {res.text[:200]}')
+            return res.status_code
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            wait = 10 * (2 ** attempt)
+            print(f'  ⚠ Supabase connection error (attempt {attempt+1}/{max_retries}), retrying in {wait}s: {type(e).__name__}')
+            time.sleep(wait)
+    raise RuntimeError(f'Supabase insert still failing after {max_retries} retries')
 
-def voyage_embed(texts, input_type='document'):
-    res = requests.post('https://api.voyageai.com/v1/embeddings',
-        headers={'Authorization': f'Bearer {VOYAGE_KEY}', 'Content-Type': 'application/json'},
-        json={'model': VOYAGE_MODEL, 'input': texts, 'input_type': input_type}, timeout=60)
-    if res.status_code != 200:
-        raise RuntimeError(f'Voyage error {res.status_code}: {res.text[:300]}')
-    return [item['embedding'] for item in res.json()['data']]
+def voyage_embed(texts, input_type='document', max_retries=4):
+    """Embed texts via Voyage AI with exponential-backoff retry on rate limits."""
+    for attempt in range(max_retries):
+        res = requests.post('https://api.voyageai.com/v1/embeddings',
+            headers={'Authorization': f'Bearer {VOYAGE_KEY}', 'Content-Type': 'application/json'},
+            json={'model': VOYAGE_MODEL, 'input': texts, 'input_type': input_type}, timeout=90)
+        if res.status_code == 200:
+            return [item['embedding'] for item in res.json()['data']]
+        elif res.status_code == 429:
+            wait = 10 * (2 ** attempt)   # 10s, 20s, 40s, 80s
+            print(f'\n    ⚠ Voyage rate-limited (attempt {attempt+1}/{max_retries}), waiting {wait}s...',
+                  end=' ', flush=True)
+            time.sleep(wait)
+        else:
+            raise RuntimeError(f'Voyage error {res.status_code}: {res.text[:300]}')
+    raise RuntimeError(f'Voyage API still rate-limited after {max_retries} retries')
 
 def rasterise_page(pdf_path, page_num, dpi, out_dir):
     cmd = ['pdftoppm', '-jpeg', '-r', str(dpi),
@@ -102,21 +118,25 @@ def claude_read_image(image_path, page_num):
         'If this is a blank title page or contains only a border with no technical content, '
         'reply with exactly: BLANK_PAGE'
     )
-    res = requests.post('https://api.anthropic.com/v1/messages',
-        headers={'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01',
-                 'Content-Type': 'application/json'},
-        json={'model': CLAUDE_MODEL, 'max_tokens': 2000, 'messages': [{'role': 'user',
-            'content': [
-                {'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': b64}},
-                {'type': 'text', 'text': prompt}
-            ]}]}, timeout=60)
+    try:
+        res = requests.post('https://api.anthropic.com/v1/messages',
+            headers={'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01',
+                     'Content-Type': 'application/json'},
+            json={'model': CLAUDE_MODEL, 'max_tokens': 2000, 'messages': [{'role': 'user',
+                'content': [
+                    {'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': b64}},
+                    {'type': 'text', 'text': prompt}
+                ]}]}, timeout=120)
+    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
+        print(f'    vision network error: {type(e).__name__}')
+        return ''
     if res.status_code != 200:
         print(f'    vision error {res.status_code}')
         return ''
     text = res.json()['content'][0]['text'].strip()
     return '' if text == 'BLANK_PAGE' else text
 
-def extract_pages(pdf_path):
+def extract_pages(pdf_path, text_only=False):
     pages = []
     pdf = pdfplumber.open(pdf_path)
     total = len(pdf.pages)
@@ -140,11 +160,11 @@ def extract_pages(pdf_path):
     if not image_pages:
         return pages
 
-    if not ANTHROPIC_KEY:
-        print('  ⚠ ANTHROPIC_KEY not set — diagram pages skipped (text-only embed)')
+    if text_only or not ANTHROPIC_KEY:
+        reason = '--text-only flag' if text_only else 'ANTHROPIC_KEY not set'
+        print(f'  ⚠ Diagram pages skipped ({reason})')
         for p in pages:
             if p['method'] == 'pending':
-                p['text'] = f'[Diagram page {p["page_num"]} — vision extraction skipped]'
                 p['method'] = 'skipped'
         return pages
 
@@ -191,7 +211,7 @@ def chunk_pages(pages):
         i += CHUNK_WORDS - CHUNK_OVERLAP
     return chunks
 
-def embed_and_store(pdf_path, manual_name, force=False):
+def embed_and_store(pdf_path, manual_name, force=False, text_only=False):
     print(f'\n{"="*60}\n  Manual: {manual_name}\n  File:   {pdf_path}\n{"="*60}')
 
     missing = [k for k, v in [('VOYAGE_KEY', VOYAGE_KEY), ('SUPABASE_URL', SUPABASE_URL), ('SUPABASE_SERVICE', SUPABASE_SERVICE)] if not v]
@@ -211,7 +231,7 @@ def embed_and_store(pdf_path, manual_name, force=False):
                 return
 
     print('\n[1/4] Extracting (two-pass: text + vision)...')
-    pages = extract_pages(pdf_path)
+    pages = extract_pages(pdf_path, text_only=text_only)
 
     print('\n[2/4] Chunking...')
     chunks = chunk_pages(pages)
@@ -235,7 +255,6 @@ def embed_and_store(pdf_path, manual_name, force=False):
 
     print(f'\n[4/4] Storing in Supabase...')
     rows = [{'manual_name': manual_name, 'chunk_index': c['id'],
-             'start_page': c['start_page'], 'end_page': c['end_page'],
              'page_label': c['page_label'], 'text': c['text'], 'embedding': e}
             for c, e in zip(chunks, embeddings)]
 
@@ -260,6 +279,7 @@ if __name__ == '__main__':
     parser.add_argument('--pdf',           required=True)
     parser.add_argument('--name',          required=True)
     parser.add_argument('--force',         action='store_true')
+    parser.add_argument('--text-only',     action='store_true', help='Skip Claude vision pass for diagram pages')
     parser.add_argument('--voyage-key',    default='')
     parser.add_argument('--anthropic-key', default='')
     parser.add_argument('--supabase-url',  default='')
@@ -275,4 +295,4 @@ if __name__ == '__main__':
         print(f'✗ Not found: {args.pdf}')
         sys.exit(1)
 
-    embed_and_store(args.pdf, args.name, force=args.force)
+    embed_and_store(args.pdf, args.name, force=args.force, text_only=args.text_only)
