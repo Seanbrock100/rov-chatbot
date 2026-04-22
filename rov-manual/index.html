@@ -1215,7 +1215,8 @@ function sel(key, name, group){
   currentKey = key;
   document.getElementById('l2-title').textContent = name;
   document.getElementById('l2-group').textContent = group;
-  document.getElementById('l2-snippet-text').textContent = SNIPPETS[key] || 'Technical overview pending.';
+  const snipEl = document.getElementById('l2-snippet-text');
+  if(snipEl) snipEl.textContent = SNIPPETS[key] || 'Technical overview pending.';
   const d = DATA[key] || {drawings:[], manuals:[]};
   renderList('list-drawings', d.drawings, 'drawing');
   renderList('list-manuals', d.manuals, 'manual');
@@ -1227,6 +1228,7 @@ function sel(key, name, group){
   document.getElementById('pod-ga-viewer').style.flexDirection = isPod ? 'column' : '';
   document.getElementById('viewer-ph').style.display = isPod ? 'none' : 'flex';
   document.getElementById('l2-pane').classList.add('visible');
+  document.getElementById('menu-panel').classList.add('collapsed');
 }
 function closeL2(){
   document.getElementById('l2-pane').classList.remove('visible');
@@ -1265,7 +1267,7 @@ function renderList(elId, items, type){
     return `<div class="draw-item" onclick="openDoc('${file.replace(/'/g,"\\'")}')">
       <div class="draw-num">${num}</div>
       <div class="draw-title">${title}</div>
-      <div class="draw-open">↗ OPEN IN NEW TAB</div>
+      <div class="draw-open">▶ OPEN IN VIEWER TAB</div>
     </div>`;
   }).join('');
 }
@@ -1333,7 +1335,7 @@ function closeTab(id) {
     activateTab(TABS[Math.max(0, idx - 1)].id);
   } else if (!TABS.length) {
     const a = document.getElementById('viewer-tab-content');
-    if (a) a.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:var(--surface);"><div style="font-size:32px;opacity:.2;">\u{1F4D0}</div><div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--text-dim);">Select a drawing from the list or use the chatbot</div></div>';
+    const ov = document.getElementById('tab-overlay'); if (ov) ov.remove();
   }
 }
 
@@ -1356,22 +1358,26 @@ function renderTabStrip() {
 
 function renderTabContent(id) {
   const tab = TABS.find(t => t.id === id);
-  if (!tab) return;
   const area = document.getElementById('viewer-tab-content');
-  if (!area) return;
-
+  if (!tab || !area) return;
+  const old = document.getElementById('tab-overlay');
+  if (old) old.remove();
+  area.style.position = 'relative';
   if (tab.type === 'pdf') {
     CONTEXT.viewerFile = tab.file;
-    const cid = 'pdfcvs_' + tab.id;
-    area.innerHTML =
-      '<div style="width:100%;height:100%;background:#111;display:flex;flex-direction:column;">' +
+    const overlay = document.createElement('div');
+    overlay.id = 'tab-overlay';
+    overlay.style.cssText = 'position:absolute;inset:0;background:#111;display:flex;flex-direction:column;z-index:10;';
+    const cid = 'pdfc_' + tab.id;
+    overlay.innerHTML =
       '<div style="padding:6px 12px;font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;flex-shrink:0;">' +
       '<span>' + escH(tab.label) + '</span>' +
-      '<span style="cursor:pointer;color:var(--amber)" data-pf="' + tab.file + '" onclick="window.open(\'manuals/\'+this.dataset.pf,\'_blank\')">\u2197 FULL PDF</span>' +
+      '<span style="cursor:pointer;color:var(--amber);" data-pf="' + tab.file + '" onclick="window.open(\'manuals/\'+this.dataset.pf,\'_blank\')">\u2197 FULL PDF</span>' +
       '</div>' +
       '<div style="flex:1;overflow-y:auto;display:flex;justify-content:center;padding:10px;">' +
       '<canvas id="' + cid + '" style="max-width:100%;box-shadow:0 2px 20px rgba(0,0,0,.5);"></canvas>' +
-      '</div></div>';
+      '</div>';
+    area.appendChild(overlay);
     if (typeof pdfjsLib !== 'undefined') {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'manuals/pdf.worker.min.js';
       pdfjsLib.getDocument('manuals/' + tab.file).promise
@@ -1380,32 +1386,26 @@ function renderTabContent(id) {
           const c = document.getElementById(cid);
           if (!c) return;
           const vp = page.getViewport({ scale: 1 });
-          const scale = Math.min((area.offsetWidth - 40) / vp.width, 2);
+          const scale = Math.min((overlay.offsetWidth - 40) / vp.width, 2);
           const sv = page.getViewport({ scale });
           c.width = sv.width; c.height = sv.height;
           page.render({ canvasContext: c.getContext('2d'), viewport: sv });
         });
     }
   } else if (tab.type === 'chat') {
+    CONTEXT.viewerFile = '';
+    const overlay = document.createElement('div');
+    overlay.id = 'tab-overlay';
+    overlay.style.cssText = 'position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;';
+    area.appendChild(overlay);
     const existing = document.getElementById('chat-root');
-    if (existing) {
-      area.innerHTML = '';
-      area.appendChild(existing);
-    } else {
-      area.innerHTML =
-        '<div id="chat-root" style="display:flex;flex-direction:column;height:100%;background:var(--bg);">' +
-        '<div id="chat-ctx" style="padding:6px 14px;font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);border-bottom:1px solid var(--border);background:#090c13;flex-shrink:0;letter-spacing:.06em;"></div>' +
-        '<div id="chat-msgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;"></div>' +
-        '<div style="padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;background:#090c13;flex-shrink:0;">' +
-        '<input id="chat-in" type="text" placeholder="Ask about this component..." ' +
-        'style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:8px 12px;font-family:IBM Plex Sans,sans-serif;font-size:12px;color:var(--text);outline:none;" ' +
-        'onkeydown="if(event.key===\'Enter\'){event.preventDefault();sendChat();}">' +
-        '<button onclick="sendChat()" style="background:var(--amber);color:#000;border:none;border-radius:3px;padding:8px 14px;font-family:IBM Plex Mono,monospace;font-size:10px;cursor:pointer;">\u25b6</button>' +
-        '</div></div>';
-      updateChatContextBanner();
-    }
+    if (existing) { overlay.appendChild(existing); }
+    else { buildChatUI(overlay); }
+  } else {
+    CONTEXT.viewerFile = '';
   }
 }
+
 
 function updateChatContextBanner() {
   const b = document.getElementById('chat-ctx');
