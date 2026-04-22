@@ -1287,6 +1287,7 @@ fetch('https://rov-chatbot-production-3d66.up.railway.app/api/config')
     CONFIG.anthropicKey = cfg.anthropicKey;
     CONFIG.supabaseUrl  = cfg.supabaseUrl;
     CONFIG.supabaseAnon = cfg.supabaseAnon;
+    CONFIG.appPassword  = cfg.appPassword || '';
   }).catch(() => console.warn('Config fetch failed — offline mode'));
 
 // ── CONTEXT ────────────────────────────────────────────────────────────────
@@ -1417,6 +1418,20 @@ function updateChatContextBanner() {
     : '\u{1F4CD} Hercules MK3 \u2014 navigate to a component for context';
 }
 
+function buildChatUI(container) {
+  container.innerHTML =
+    '<div id="chat-root" style="display:flex;flex-direction:column;height:100%;background:var(--bg);">' +
+    '<div id="chat-ctx" style="padding:6px 14px;font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);border-bottom:1px solid var(--border);background:#090c13;flex-shrink:0;letter-spacing:.06em;"></div>' +
+    '<div id="chat-msgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;"></div>' +
+    '<div style="padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;background:#090c13;flex-shrink:0;">' +
+    '<input id="chat-in" type="text" placeholder="Ask about this component..." ' +
+    'style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:8px 12px;font-family:IBM Plex Sans,sans-serif;font-size:12px;color:var(--text);outline:none;" ' +
+    'onkeydown="if(event.key===\'Enter\'){event.preventDefault();sendChat();}">' +
+    '<button onclick="sendChat()" style="background:var(--amber);color:#000;border:none;border-radius:3px;padding:8px 14px;font-family:IBM Plex Mono,monospace;font-size:10px;cursor:pointer;letter-spacing:.08em;">\u25b6</button>' +
+    '</div></div>';
+  updateChatContextBanner();
+}
+
 function openChatTab() {
   const ex = TABS.find(t => t.type === 'chat');
   if (ex) { activateTab(ex.id); return; }
@@ -1481,13 +1496,11 @@ async function sendChat() {
       'If a drawing has a local file it can be opened in the viewer.',
       'If corrected by the engineer, acknowledge and ask to save the correction.'
     ].filter(Boolean).join('\n');
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
+    const proxyHeaders = { 'Content-Type': 'application/json' };
+    if (CONFIG.appPassword) proxyHeaders['X-App-Password'] = CONFIG.appPassword;
+    const r = await fetch('https://rov-chatbot-production-3d66.up.railway.app/anthropic/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': CONFIG.anthropicKey,
-        'anthropic-version': '2023-06-01'
-      },
+      headers: proxyHeaders,
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 600,
