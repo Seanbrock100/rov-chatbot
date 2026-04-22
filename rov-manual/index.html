@@ -1057,7 +1057,64 @@ function showChassisDetail(zone, z){
 let currentCardZone = '';
 let currentCardIdx  = 0;
 
-function openCardInfo(zone, cardIdx){
+// Helper: render card drawings in the left sidebar panel.
+// Accepts either {num,title,file} objects (from POD_ZONES) or flat filename strings (from card_index).
+function renderCardDrawingsInSidebar(drawingsOrFiles, cardName){
+  let html = '';
+  if(!drawingsOrFiles || !drawingsOrFiles.length){
+    html = '<div class="list-empty" style="padding:16px;">No drawings mapped for this card yet.<br>Use the chatbot to search for related drawings.</div>';
+  } else {
+    drawingsOrFiles.forEach(d => {
+      let file, num, title;
+      if(typeof d === 'string'){
+        file  = 'manuals/' + d;
+        num   = d.replace(/\.pdf$/i, '');
+        title = num;
+      } else {
+        file  = d.file;
+        num   = d.num;
+        title = d.title;
+      }
+      html += '<div class="draw-item" onclick="openDoc(\'' + file.replace(/'/g,"\\'") + '\')" style="cursor:pointer;">'
+            + '<div class="draw-num">'   + num   + '</div>'
+            + '<div class="draw-title">' + title + '</div>'
+            + '<div class="draw-open">\u25b6 OPEN IN VIEWER TAB</div>'
+            + '</div>';
+    });
+  }
+  document.getElementById('list-drawings').innerHTML =
+    '<div style="padding:8px 16px 4px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;">'
+    + cardName + '</div>' + html;
+}
+
+// Helper: render card drawings in the right column of the card-info-panel overlay.
+function renderCardDrawingsInPanel(drawingsOrFiles){
+  let html = '';
+  if(!drawingsOrFiles || !drawingsOrFiles.length){
+    html = '<div style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);padding:8px 0;">No drawings mapped yet \u2014 use chatbot to find related drawings</div>';
+  } else {
+    drawingsOrFiles.forEach(d => {
+      let file, num, title;
+      if(typeof d === 'string'){
+        file  = 'manuals/' + d;
+        num   = d.replace(/\.pdf$/i, '');
+        title = num;
+      } else {
+        file  = d.file;
+        num   = d.num;
+        title = d.title;
+      }
+      html += '<div class="ci-draw-item" onclick="openDoc(\'' + file.replace(/'/g,"\\'") + '\')">'
+            + '<div class="ci-draw-num">'   + num   + '</div>'
+            + '<div class="ci-draw-title">' + title + '</div>'
+            + '<div class="ci-draw-open">\u2197 OPEN IN VIEWER TAB</div>'
+            + '</div>';
+    });
+  }
+  document.getElementById('card-draw-list').innerHTML = html;
+}
+
+async function openCardInfo(zone, cardIdx){
   const z = POD_ZONES[zone];
   const c = z.cards[cardIdx];
   currentCardZone = zone;
@@ -1068,34 +1125,31 @@ function openCardInfo(zone, cardIdx){
   document.getElementById('card-ai-text').className = 'loading';
   document.getElementById('card-ai-text').textContent = 'Searching technical manuals\u2026';
 
-  // Update SIDEBAR to show drawings for this specific card
-  const cardDrawings = c.drawings || [];
-  const sidebarDrawHtml = cardDrawings.length
-    ? cardDrawings.map(d =>
-        '<div class="draw-item" onclick="openDoc(\'' + d.file.replace(/'/g,"\\'") + '\')" style="cursor:pointer;">'
-        + '<div class="draw-num">' + d.num + '</div>'
-        + '<div class="draw-title">' + d.title + '</div>'
-        + '<div class="draw-open">\u25b6 OPEN IN VIEWER TAB</div>'
-        + '</div>'
-      ).join('')
-    : '<div class="list-empty" style="padding:16px;">No drawings mapped for this card yet.<br>Use the chatbot to search for related drawings.</div>';
-  document.getElementById('list-drawings').innerHTML =
-    '<div style="padding:8px 16px 4px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;">'
-    + c.name + '</div>' + sidebarDrawHtml;
-
-  // The RELATED DRAWINGS column inside the card-info-panel overlay (right column)
-  const drawHtml = cardDrawings.map(d =>
-    '<div class="ci-draw-item" onclick="openDoc(\'' + d.file.replace(/'/g,"\\'") + '\')">'
-    + '<div class="ci-draw-num">' + d.num + '</div>'
-    + '<div class="ci-draw-title">' + d.title + '</div>'
-    + '<div class="ci-draw-open">\u2197 OPEN IN VIEWER TAB</div>'
-    + '</div>'
-  ).join('') || '<div style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);padding:8px 0;">No drawings mapped yet \u2014 use chatbot to find related drawings</div>';
-  document.getElementById('card-draw-list').innerHTML = drawHtml;
+  // Render instantly from POD_ZONES hardcoded drawings (may be overridden below)
+  renderCardDrawingsInSidebar(c.drawings || [], c.name);
+  renderCardDrawingsInPanel(c.drawings || []);
 
   document.getElementById('card-info-panel').classList.add('visible');
   updateContext({card: c.name});
   fetchCardDescription(c.name, c.detail, zone);
+
+  // Async: fetch card_index from Supabase for the full drawing list
+  if(CONFIG.supabaseUrl && CONFIG.supabaseAnon){
+    const cardKey = normKey(zone, c.name);
+    try {
+      const r = await fetch(
+        CONFIG.supabaseUrl + '/rest/v1/card_index?card_key=eq.' + encodeURIComponent(cardKey) + '&limit=1',
+        { headers: { 'apikey': CONFIG.supabaseAnon, 'Authorization': 'Bearer ' + CONFIG.supabaseAnon } }
+      );
+      if(r.ok){
+        const rows = await r.json();
+        if(rows.length > 0 && rows[0].local_files && rows[0].local_files.length){
+          renderCardDrawingsInSidebar(rows[0].local_files, c.name);
+          renderCardDrawingsInPanel(rows[0].local_files);
+        }
+      }
+    } catch(e){ console.warn('card_index fetch failed:', e); }
+  }
 }
 
 function fetchCardDescription(cardName, cardDetail, zone){
