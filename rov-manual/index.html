@@ -1062,19 +1062,37 @@ function openCardInfo(zone, cardIdx){
   const c = z.cards[cardIdx];
   currentCardZone = zone;
   currentCardIdx  = cardIdx;
-  document.getElementById('card-info-crumb').textContent = z.title + '  ›  ' + c.name;
+  document.getElementById('card-info-crumb').textContent = z.title + '  \u203a  ' + c.name;
   document.getElementById('card-ai-name').textContent = c.name;
   document.getElementById('card-ai-pcb').textContent = c.detail;
   document.getElementById('card-ai-text').className = 'loading';
-  document.getElementById('card-ai-text').textContent = 'Searching technical manuals…';
-  const drawHtml = (c.drawings||[]).map(d =>
-    `<div class="ci-draw-item" onclick="openDoc('${d.file.replace(/'/g,"\\'")}')">
-      <div class="ci-draw-num">${d.num}</div>
-      <div class="ci-draw-title">${d.title}</div>
-      <div class="ci-draw-open">↗ OPEN IN NEW TAB</div>
-    </div>`
-  ).join('') || '<div style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);padding:8px 0;">No drawings mapped yet</div>';
+  document.getElementById('card-ai-text').textContent = 'Searching technical manuals\u2026';
+
+  // Update SIDEBAR to show drawings for this specific card
+  const cardDrawings = c.drawings || [];
+  const sidebarDrawHtml = cardDrawings.length
+    ? cardDrawings.map(d =>
+        '<div class="draw-item" onclick="openDoc(\'' + d.file.replace(/'/g,"\\'") + '\')" style="cursor:pointer;">'
+        + '<div class="draw-num">' + d.num + '</div>'
+        + '<div class="draw-title">' + d.title + '</div>'
+        + '<div class="draw-open">\u25b6 OPEN IN VIEWER TAB</div>'
+        + '</div>'
+      ).join('')
+    : '<div class="list-empty" style="padding:16px;">No drawings mapped for this card yet.<br>Use the chatbot to search for related drawings.</div>';
+  document.getElementById('list-drawings').innerHTML =
+    '<div style="padding:8px 16px 4px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--amber-dim);letter-spacing:.15em;">'
+    + c.name + '</div>' + sidebarDrawHtml;
+
+  // The RELATED DRAWINGS column inside the card-info-panel overlay (right column)
+  const drawHtml = cardDrawings.map(d =>
+    '<div class="ci-draw-item" onclick="openDoc(\'' + d.file.replace(/'/g,"\\'") + '\')">'
+    + '<div class="ci-draw-num">' + d.num + '</div>'
+    + '<div class="ci-draw-title">' + d.title + '</div>'
+    + '<div class="ci-draw-open">\u2197 OPEN IN VIEWER TAB</div>'
+    + '</div>'
+  ).join('') || '<div style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);padding:8px 0;">No drawings mapped yet \u2014 use chatbot to find related drawings</div>';
   document.getElementById('card-draw-list').innerHTML = drawHtml;
+
   document.getElementById('card-info-panel').classList.add('visible');
   updateContext({card: c.name});
   fetchCardDescription(c.name, c.detail, zone);
@@ -1105,6 +1123,10 @@ function fetchCardDescription(cardName, cardDetail, zone){
 
 function cardInfoBack(){
   document.getElementById('card-info-panel').classList.remove('visible');
+  // Restore the chassis card list in the sidebar
+  const zone = currentCardZone;
+  const z = POD_ZONES[zone];
+  if(z) showChassisDetail(zone, z);
 }
 
 function chassisBack(){
@@ -1685,6 +1707,9 @@ function showToast(msg) {
 // ── openDoc — uses tabs instead of new windows ────────────────────────────
 function openDoc(file) {
   if (!file) return;
+  // Close card info panel if open — otherwise the viewer tab overlay is hidden behind it
+  const panel = document.getElementById('card-info-panel');
+  if (panel && panel.classList.contains('visible')) panel.classList.remove('visible');
   const fname = file.split('/').pop();
   const label = fname.replace(/\.pdf$/i, '').substring(0, 22);
   openViewerTab(fname, label, 'pdf');
