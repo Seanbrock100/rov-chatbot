@@ -186,9 +186,9 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .draw-item{display:flex;flex-direction:column;gap:3px;padding:9px 16px;cursor:pointer;border-left:2px solid transparent;transition:background .12s;}
 .draw-item:hover{background:rgba(232,164,74,.06);border-left-color:var(--amber);}
 .draw-item:hover .draw-num{color:var(--amber);}
-.draw-num{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.05em;transition:color .12s;}
-.draw-title{font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:var(--text-mid);}
-.draw-open{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--blue);margin-top:2px;}
+.draw-num{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.05em;transition:color .12s;pointer-events:none;}
+.draw-title{font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:var(--text-mid);pointer-events:none;}
+.draw-open{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--blue);margin-top:2px;pointer-events:none;}
 .draw-item:hover .draw-open{color:var(--amber);}
 </style>
 <script src="manuals/pdf.min.js"></script>
@@ -1213,6 +1213,7 @@ function closeMenu(){
 }
 function sel(key, name, group){
   currentKey = key;
+  updateContext({ system: name, component: '', card: '' });
   document.getElementById('l2-title').textContent = name;
   document.getElementById('l2-group').textContent = group;
   const snipEl = document.getElementById('l2-snippet-text');
