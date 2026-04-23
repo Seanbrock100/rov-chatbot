@@ -1628,24 +1628,58 @@ async function sendChat() {
       chatBusy = false; return;
     }
     const ctx = [CONTEXT.system, CONTEXT.component, CONTEXT.card].filter(Boolean).join(' > ') || 'Hercules MK3';
-    const [draws, chunks] = await Promise.all([
-      sbSearchDrawings(msg + ' ' + ctx),
-      sbSearchChunks(msg + ' ' + ctx)
+
+    // Detect signal-path questions — search more broadly than just the current card
+    const pathKeywords = /signal path|how does|how do|penetrator|connector|wavelength|fibre|fiber|wiring|pin|connector|backplane|from.*to|trace|where does|how is.*connected|what connector|what pin|what wavelength|through the/i;
+    const isPathQuestion = pathKeywords.test(msg);
+
+    // For path questions, search with system-level context not just the card
+    const searchCtx = isPathQuestion
+      ? (CONTEXT.system || 'Hercules MK3') + ' ' + msg
+      : msg + ' ' + ctx;
+
+    // For path questions also search key supporting docs regardless of card context
+    const pathExtraSearches = isPathQuestion ? [
+      sbSearchDrawings('penetrator ring ' + (CONTEXT.system || 'pod')),
+      sbSearchChunks('signal path ' + (CONTEXT.card || CONTEXT.component || CONTEXT.system || ''))
+    ] : [Promise.resolve([]), Promise.resolve([])];
+
+    const [draws, chunks, extraDraws, extraChunks] = await Promise.all([
+      sbSearchDrawings(searchCtx),
+      sbSearchChunks(searchCtx),
+      ...pathExtraSearches
     ]);
-    const dCtx = draws.slice(0, 4).map(d =>
+
+    // Merge results, deduplicate by drawing number / chunk id
+    const allDraws = [...draws, ...extraDraws].filter((d, i, arr) =>
+      arr.findIndex(x => x.drawing_number === d.drawing_number) === i
+    ).slice(0, 6);
+    const allChunks = [...chunks, ...extraChunks].filter((c, i, arr) =>
+      arr.findIndex(x => x.id === c.id) === i
+    ).slice(0, 4);
+
+    const dCtx = allDraws.map(d =>
       d.drawing_number + ': ' + d.title + (d.local_file ? ' [file:' + d.local_file + ']' : '')
     ).join('\n');
-    const cCtx = chunks.slice(0, 3).map(c =>
+    const cCtx = allChunks.map(c =>
       '[' + c.manual_name + ' ' + c.page_label + ']\n' + c.text.substring(0, 300)
     ).join('\n---\n');
+    // Inject card description from DESCRIPTIONS if available — gives chatbot the signal path knowledge
+    const cardDescKey = (CONTEXT.zone || '') + '/' + (CONTEXT.card || '').toLowerCase()
+      .replace(/[×]/g,'x').replace(/[–—]/g,'-').replace(/-{2,}/g,'-')
+      .replace(/&/g,'and').replace(/[()]/g,'').replace(/\s+/g,' ').trim();
+    const cardDesc = DESCRIPTIONS && DESCRIPTIONS[cardDescKey] ? DESCRIPTIONS[cardDescKey] : null;
+
     const sysLines = [
       'You are the Hercules MK3 ROV technical assistant on Seven Oceanic (Subsea 7). You are helping a subsea engineer — answer as a systems engineer, not a spec sheet.',
       'PRIORITY: Always answer in terms of signal path and system interaction first. Trace the complete path: source → connector/penetrator → card/PCB → backplane → next stage → uplink/output. Name the actual connectors, drawing numbers, card names, wavelengths, and protocols at each stage.',
       'Only use generic descriptions if the specific path is genuinely unknown. Do not say HD video — the system uses analogue Y/C component video.',
       'Current context: ' + ctx,
+      cardDesc ? 'Known signal path for current component:\n' + cardDesc : '',
       CONTEXT.viewerFile ? 'Drawing open: ' + CONTEXT.viewerFile : '',
       dCtx ? 'Relevant drawings:\n' + dCtx : '',
       cCtx ? 'Relevant manual sections:\n' + cCtx : '',
+      isPathQuestion ? 'This is a signal-path/connectivity question — trace the full path with specific part numbers, connector IDs, and drawing references. Do not say you need more information if it is available above.' : '',
       'Be concise. Use exact drawing numbers. Format drawing refs as DRAWING:[number]|[title].',
       'If a drawing has a local file it can be opened in the viewer.',
       'If corrected by the engineer, acknowledge and ask to save the correction.'
