@@ -217,7 +217,7 @@ async function doSearch() {
     res.innerHTML = chunks.slice(0, 30).map(c => {
       const pg = extractPage(c.page_label);
       const lbl = 'p.' + pg;
-      return '<div class="rc" data-page="' + pg + '" onclick="openTab(' + pg + ',' + JSON.stringify(lbl) + ')">'
+      return '<div class="rc" data-page="' + pg + '" onclick="openTab(' + pg + ',\'' + lbl + '\')">'
         + '<div class="rp">&#128196; ' + esc(c.page_label) + '</div>'
         + '<div class="rt">' + hi(esc(c.text.substring(0, 200)), q) + (c.text.length > 200 ? '...' : '') + '</div>'
         + '<div class="ro">&#9654; Open as tab</div>'
