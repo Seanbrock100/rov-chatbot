@@ -1123,7 +1123,7 @@ function renderCardDrawingsInSidebar(drawingsOrFiles, cardName){
         num   = d.num;
         title = d.title;
       }
-      html += '<div class="draw-item" onclick="openDoc(\'' + file.replace(/'/g,"\\'") + '\',' + (d.page||1) + ')" style="cursor:pointer;">'
+      html += '<div class="draw-item" onclick="openDoc(\'' + file.replace(/'/g,"\\'") + '\',' + (d.page||1) + ',\'' + (title||'').replace(/'/g,"\\'").substring(0,24) + '\')" style="cursor:pointer;">'
             + '<div class="draw-num">'   + num   + '</div>'
             + '<div class="draw-title">' + title + '</div>'
             + '<div class="draw-open">\u25b6 OPEN IN VIEWER TAB</div>'
@@ -1152,7 +1152,7 @@ function renderCardDrawingsInPanel(drawingsOrFiles){
         num   = d.num;
         title = d.title;
       }
-      html += '<div class="ci-draw-item" onclick="openDoc(\'' + file.replace(/'/g,"\\'") + '\')">'
+      html += '<div class="ci-draw-item" onclick="openDoc(\'' + file.replace(/'/g,"\\'") + '\',' + (d.page||1) + ',\'' + (title||'').replace(/'/g,"\\'").substring(0,24) + '\')">'
             + '<div class="ci-draw-num">'   + num   + '</div>'
             + '<div class="ci-draw-title">' + title + '</div>'
             + '<div class="ci-draw-open">\u2197 OPEN IN VIEWER TAB</div>'
@@ -1449,7 +1449,7 @@ function renderList(elId, items, type){
     const title= item.title|| '';
     const file = item.file || '';
     const page = item.page || 1;
-    return `<div class="draw-item" onclick="openDoc('${file.replace(/'/g,"\\'")}',${page})">
+    return `<div class="draw-item" onclick="openDoc('${file.replace(/'/g,"\\'")}',${page},'${title.replace(/'/g,"\\'").substring(0,24)}')">
       <div class="draw-num">${num}</div>
       <div class="draw-title">${title}</div>
       <div class="draw-open">▶ OPEN IN VIEWER TAB</div>
@@ -1493,7 +1493,8 @@ const MAX_TABS = 8;
 function openViewerTab(file, label, type, startPage) {
   type = type || 'pdf';
   startPage = parseInt(startPage) || 1;
-  const ex = TABS.find(t => t.file === file);
+  // Deduplicate on file+page so same manual can open at different pages
+  const ex = TABS.find(t => t.file === file && t.startPage === startPage);
   if (ex) { activateTab(ex.id); return; }
   const pdfTabs = TABS.filter(t => t.type === 'pdf');
   if (type === 'pdf' && pdfTabs.length >= MAX_TABS) {
@@ -1951,13 +1952,15 @@ function showToast(msg) {
 }
 
 // ── openDoc — uses tabs instead of new windows ────────────────────────────
-function openDoc(file, page) {
+function openDoc(file, page, label) {
   if (!file) return;
   const panel = document.getElementById('card-info-panel');
   if (panel && panel.classList.contains('visible')) panel.classList.remove('visible');
   const fname = file.split('/').pop();
-  const label = fname.replace(/\.pdf$/i, '').substring(0, 22);
-  openViewerTab(fname, label, 'pdf', page || 1);
+  const tabLabel = label
+    ? label.substring(0, 24)
+    : fname.replace(/\.pdf$/i, '').substring(0, 24);
+  openViewerTab(fname, tabLabel, 'pdf', page || 1);
 }
 
 </script>
