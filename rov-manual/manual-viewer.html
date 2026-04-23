@@ -108,7 +108,14 @@ const params  = new URLSearchParams(window.location.search);
 const MANUAL  = params.get('manual') || '';
 const CFG_URL = 'https://rov-chatbot-production-3d66.up.railway.app/api/config';
 const RAILWAY = 'https://rov-chatbot-production-3d66.up.railway.app';
-let SU = '', SA = '', cfgOk = false;
+
+// Supabase anon key embedded as fallback — safe to embed (read-only public access)
+// This allows search to work when file:// protocol blocks the config fetch
+const SB_URL_FALLBACK  = 'https://ccjurdnubkmeepaztomy.supabase.co';
+const SB_ANON_FALLBACK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjanVyZG51YmttZWVwYXp0b215Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMTE4MTAsImV4cCI6MjA5MDY4NzgxMH0.ZMhMmPeliiEUS2UjRgVJyyji8NKpQqvQU38xKiUrpsY';
+
+// Start with fallback — override with live config if available
+let SU = SB_URL_FALLBACK, SA = SB_ANON_FALLBACK, cfgOk = true;
 let pdfDoc = null, totalPages = 0;
 let currentCentre = 0; // page currently centred
 
@@ -158,11 +165,12 @@ if (IS_FILE_PROTOCOL) {
   });
 }
 
-// Load config for search
+// Try to get live config (may fail on file:// — fallback credentials used instead)
 fetch(CFG_URL).then(r => r.json()).then(cfg => {
   SU = cfg.supabaseUrl; SA = cfg.supabaseAnon; cfgOk = true;
 }).catch(() => {
-  document.getElementById('sb-st').textContent = 'Offline \u2014 search unavailable';
+  // Using fallback credentials — search still works
+  document.getElementById('sb-st').textContent = 'Using offline credentials';
 });
 
 document.getElementById('q').addEventListener('keydown', e => {
@@ -257,8 +265,8 @@ function shiftPages(delta) {
 async function doSearch() {
   const q = document.getElementById('q').value.trim();
   if (!q) return;
-  if (!cfgOk || !SU) {
-    document.getElementById('sb-res').innerHTML = '<div id="em">Not connected — check internet</div>';
+  if (!SA) {
+    document.getElementById('sb-res').innerHTML = '<div id="em">No credentials available</div>';
     return;
   }
   const st  = document.getElementById('sb-st');
