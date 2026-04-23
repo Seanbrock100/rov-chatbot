@@ -836,16 +836,16 @@ const DATA = {
   },
   t4_manip: {
     drawings: [
-      {num:"101-6790", title:"T4 Slave Arm Assembly — Complete", file:"manuals/011-8239.pdf"},
-      {num:"101-5977", title:"T4 Upper Arm / Shoulder Assembly (HAWE)", file:"manuals/011-8239.pdf"},
-      {num:"101-4042", title:"T4 Azimuth Actuator — One-Piece Spindle", file:"manuals/011-8239.pdf"},
-      {num:"101-4077", title:"T4 Elbow Rotary Actuator", file:"manuals/011-8239.pdf"},
-      {num:"101-4182", title:"T4 Pitch / Yaw Assembly", file:"manuals/011-8239.pdf"},
-      {num:"101-6789", title:"T4 Wrist Actuator", file:"manuals/011-8239.pdf"},
-      {num:"101-5723", title:"T4 Forearm Assembly", file:"manuals/011-8239.pdf"},
-      {num:"101-4928", title:"T4 Jaw Assembly — 7.8in Intermeshing", file:"manuals/011-8239.pdf"},
-      {num:"025-0102", title:"T4 Hydraulic Schematic & Map (HAWE)", file:"manuals/011-8239.pdf"},
-      {num:"035-0027", title:"T4 Master Arm Electrical Schematic", file:"manuals/011-8239.pdf"},
+      {num:"101-6790", title:"T4 Slave Arm — Complete Assembly", file:"manuals/011-8239.pdf", page:368},
+      {num:"101-5977", title:"T4 Upper Arm / Shoulder (HAWE)", file:"manuals/011-8239.pdf", page:342},
+      {num:"101-4042", title:"T4 Azimuth Actuator", file:"manuals/011-8239.pdf", page:281},
+      {num:"101-4077", title:"T4 Elbow Rotary Actuator", file:"manuals/011-8239.pdf", page:287},
+      {num:"101-4182", title:"T4 Pitch / Yaw Assembly", file:"manuals/011-8239.pdf", page:301},
+      {num:"101-6789", title:"T4 Wrist Actuator", file:"manuals/011-8239.pdf", page:363},
+      {num:"101-5723", title:"T4 Forearm Assembly", file:"manuals/011-8239.pdf", page:329},
+      {num:"101-4928", title:"T4 Jaw Assembly — 7.8in Intermeshing", file:"manuals/011-8239.pdf", page:323},
+      {num:"025-0102", title:"T4 Hydraulic Schematic & Map (HAWE)", file:"manuals/011-8239.pdf", page:272},
+      {num:"035-0027", title:"T4 Master Arm Electrical Schematic", file:"manuals/011-8239.pdf", page:275},
       {num:"ROV-0305-D-0111-01", title:"T4 Mounting Plate (Port)", file:"manuals/ROV-0305-D-0111-01 SHT 1-Model.pdf"},
       {num:"ROV-0300-D-0111-01", title:"T4 Mounting Plate (Stbd)", file:"manuals/ROV-0300-D-0111-01 T4 mounting plate (stbd).pdf"},
       {num:"ROV-0300-D-0802-00", title:"T4 Deck JIB", file:"manuals/ROV-0300-D-0802-00.pdf"},
@@ -1102,7 +1102,7 @@ function renderCardDrawingsInSidebar(drawingsOrFiles, cardName){
         num   = d.num;
         title = d.title;
       }
-      html += '<div class="draw-item" onclick="openDoc(\'' + file.replace(/'/g,"\\'") + '\')" style="cursor:pointer;">'
+      html += '<div class="draw-item" onclick="openDoc(\'' + file.replace(/'/g,"\\'") + '\',' + (d.page||1) + ')" style="cursor:pointer;">'
             + '<div class="draw-num">'   + num   + '</div>'
             + '<div class="draw-title">' + title + '</div>'
             + '<div class="draw-open">\u25b6 OPEN IN VIEWER TAB</div>'
@@ -1427,7 +1427,8 @@ function renderList(elId, items, type){
     const num  = item.num  || '';
     const title= item.title|| '';
     const file = item.file || '';
-    return `<div class="draw-item" onclick="openDoc('${file.replace(/'/g,"\\'")}')">
+    const page = item.page || 1;
+    return `<div class="draw-item" onclick="openDoc('${file.replace(/'/g,"\\'")}',${page})">
       <div class="draw-num">${num}</div>
       <div class="draw-title">${title}</div>
       <div class="draw-open">▶ OPEN IN VIEWER TAB</div>
@@ -1468,8 +1469,9 @@ function updateContext(u) {
 let TABS = [], tabSeq = 0;
 const MAX_TABS = 8;
 
-function openViewerTab(file, label, type) {
+function openViewerTab(file, label, type, startPage) {
   type = type || 'pdf';
+  startPage = parseInt(startPage) || 1;
   const ex = TABS.find(t => t.file === file);
   if (ex) { activateTab(ex.id); return; }
   const pdfTabs = TABS.filter(t => t.type === 'pdf');
@@ -1478,7 +1480,7 @@ function openViewerTab(file, label, type) {
     showToast('Oldest tab closed');
   }
   const id = 'tab_' + (++tabSeq);
-  TABS.push({ id, label: label || file, type, file, active: false });
+  TABS.push({ id, label: label || file, type, file, active: false, startPage });
   renderTabStrip();
   activateTab(id);
 }
@@ -1529,33 +1531,137 @@ function renderTabContent(id) {
   area.style.position = 'relative';
   if (tab.type === 'pdf') {
     CONTEXT.viewerFile = tab.file;
+    const startPage = tab.startPage || 1;
     const overlay = document.createElement('div');
     overlay.id = 'tab-overlay';
     overlay.style.cssText = 'position:absolute;inset:0;background:#111;display:flex;flex-direction:column;z-index:10;';
-    const cid = 'pdfc_' + tab.id;
+
+    // Toolbar
     overlay.innerHTML =
-      '<div style="padding:6px 12px;font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;flex-shrink:0;">' +
-      '<span>' + escH(tab.label) + '</span>' +
-      '<span style="cursor:pointer;color:var(--amber);" data-pf="' + tab.file + '" onclick="window.open(\'manuals/\'+this.dataset.pf,\'_blank\')">\u2197 FULL PDF</span>' +
+      '<div id="pdf-toolbar" style="padding:4px 10px;font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;background:#0a0d14;">' +
+      '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escH(tab.label) + '</span>' +
+      '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">' +
+      '<button onclick="pdfPrevPage()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:3px;padding:2px 8px;cursor:pointer;font-family:IBM Plex Mono,monospace;font-size:9px;">&#9664;</button>' +
+      '<span id="pdf-page-display" style="min-width:70px;text-align:center;">Page 1</span>' +
+      '<button onclick="pdfNextPage()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:3px;padding:2px 8px;cursor:pointer;font-family:IBM Plex Mono,monospace;font-size:9px;">&#9654;</button>' +
+      '<button id="pdf-toc-btn" onclick="togglePdfToc()" style="background:rgba(232,164,74,0.1);border:1px solid var(--amber-dim);color:var(--amber);border-radius:3px;padding:2px 8px;cursor:pointer;font-family:IBM Plex Mono,monospace;font-size:9px;display:none;">&#9776; TOC</button>' +
       '</div>' +
-      '<div style="flex:1;overflow-y:auto;display:flex;justify-content:center;padding:10px;">' +
-      '<canvas id="' + cid + '" style="max-width:100%;box-shadow:0 2px 20px rgba(0,0,0,.5);"></canvas>' +
+      '<span style="cursor:pointer;color:var(--amber);flex-shrink:0;" data-pf="' + tab.file + '" onclick="window.open(\'manuals/\'+this.dataset.pf,\'_blank\')">\u2197 FULL PDF</span>' +
+      '</div>' +
+      '<div style="display:flex;flex:1;overflow:hidden;">' +
+      '<div id="pdf-toc-panel" style="display:none;width:220px;flex-shrink:0;overflow-y:auto;background:#0a0d14;border-right:1px solid var(--border);padding:8px 0;font-family:IBM Plex Mono,monospace;font-size:9px;"></div>' +
+      '<div id="pdf-scroll-area" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:12px 10px;gap:8px;"></div>' +
       '</div>';
     area.appendChild(overlay);
-    if (typeof pdfjsLib !== 'undefined') {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'manuals/pdf.worker.min.js';
-      pdfjsLib.getDocument('manuals/' + tab.file).promise
-        .then(pdf => pdf.getPage(1))
-        .then(page => {
-          const c = document.getElementById(cid);
-          if (!c) return;
-          const vp = page.getViewport({ scale: 1 });
-          const scale = Math.min((overlay.offsetWidth - 40) / vp.width, 2);
-          const sv = page.getViewport({ scale });
-          c.width = sv.width; c.height = sv.height;
-          page.render({ canvasContext: c.getContext('2d'), viewport: sv });
+
+    if (typeof pdfjsLib === 'undefined') return;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'manuals/pdf.worker.min.js';
+
+    let pdfDoc = null, currentPage = startPage, totalPages = 0, rendering = false;
+
+    function renderPage(num) {
+      if (!pdfDoc || rendering) return;
+      rendering = true;
+      const scrollArea = document.getElementById('pdf-scroll-area');
+      if (!scrollArea) return;
+      scrollArea.innerHTML = '<div style="color:var(--text-dim);font-family:IBM Plex Mono,monospace;font-size:9px;padding:20px;">Loading page ' + num + '...</div>';
+      pdfDoc.getPage(num).then(page => {
+        const vp = page.getViewport({ scale: 1 });
+        const availW = (overlay.offsetWidth - (document.getElementById('pdf-toc-panel').style.display !== 'none' ? 240 : 0)) - 40;
+        const scale = Math.min(availW / vp.width, 2.5);
+        const sv = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = sv.width; canvas.height = sv.height;
+        canvas.style.cssText = 'max-width:100%;box-shadow:0 2px 20px rgba(0,0,0,.6);display:block;';
+        scrollArea.innerHTML = '';
+        scrollArea.appendChild(canvas);
+        page.render({ canvasContext: canvas.getContext('2d'), viewport: sv }).promise.then(() => {
+          rendering = false;
+          currentPage = num;
+          const disp = document.getElementById('pdf-page-display');
+          if (disp) disp.textContent = 'Page ' + num + ' / ' + totalPages;
         });
+      }).catch(() => { rendering = false; });
     }
+
+    window.pdfPrevPage = function() { if (currentPage > 1) renderPage(currentPage - 1); };
+    window.pdfNextPage = function() { if (currentPage < totalPages) renderPage(currentPage + 1); };
+
+    window.togglePdfToc = function() {
+      const panel = document.getElementById('pdf-toc-panel');
+      if (!panel) return;
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      renderPage(currentPage);
+    };
+
+    // Keyboard navigation
+    overlay.setAttribute('tabindex', '0');
+    overlay.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); window.pdfNextPage(); }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); window.pdfPrevPage(); }
+    });
+    setTimeout(() => overlay.focus(), 100);
+
+    pdfjsLib.getDocument('manuals/' + tab.file).promise.then(pdf => {
+      pdfDoc = pdf;
+      totalPages = pdf.numPages;
+      const disp = document.getElementById('pdf-page-display');
+      if (disp) disp.textContent = 'Page ' + startPage + ' / ' + totalPages;
+
+      // Show TOC button for large manuals (>20 pages)
+      if (totalPages > 20) {
+        const tocBtn = document.getElementById('pdf-toc-btn');
+        if (tocBtn) tocBtn.style.display = 'block';
+        buildPdfToc(pdf, totalPages);
+      }
+
+      renderPage(startPage);
+    });
+
+    function buildPdfToc(pdf, total) {
+      const panel = document.getElementById('pdf-toc-panel');
+      if (!panel) return;
+      // Use chunks from Supabase if available, else generate page list
+      const fname = tab.file;
+      if (CONFIG.supabaseUrl && CONFIG.supabaseAnon) {
+        fetch(CONFIG.supabaseUrl + '/rest/v1/chunks?manual_name=eq.' + encodeURIComponent(fname) + '&select=chunk_index,page_label&order=chunk_index.asc&limit=100',
+          { headers: { 'apikey': CONFIG.supabaseAnon, 'Authorization': 'Bearer ' + CONFIG.supabaseAnon } })
+        .then(r => r.ok ? r.json() : [])
+        .then(chunks => {
+          if (!chunks.length) { buildNumericToc(panel, total); return; }
+          panel.innerHTML = '<div style="padding:6px 10px;color:var(--amber-dim);letter-spacing:.1em;border-bottom:1px solid var(--border);margin-bottom:4px;">SECTIONS</div>' +
+            chunks.map(c => {
+              const pg = extractFirstPage(c.page_label);
+              return '<div style="padding:4px 10px;cursor:pointer;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,.04);transition:background .1s;" ' +
+                'onmouseover="this.style.background=\'rgba(232,164,74,.08)\'" onmouseout="this.style.background=\'\'" ' +
+                'onclick="pdfGoToPage(' + pg + ')">' +
+                '<div style="color:var(--text-dim);font-size:8px;">' + escH(c.page_label) + '</div>' +
+                '</div>';
+            }).join('');
+        }).catch(() => buildNumericToc(panel, total));
+      } else {
+        buildNumericToc(panel, total);
+      }
+    }
+
+    function extractFirstPage(label) {
+      const m = label.match(/\d+/);
+      return m ? parseInt(m[0]) : 1;
+    }
+
+    function buildNumericToc(panel, total) {
+      const step = Math.max(1, Math.floor(total / 40));
+      let html = '<div style="padding:6px 10px;color:var(--amber-dim);letter-spacing:.1em;border-bottom:1px solid var(--border);margin-bottom:4px;">PAGES</div>';
+      for (let p = 1; p <= total; p += step) {
+        html += '<div style="padding:3px 10px;cursor:pointer;color:var(--text-dim);" onclick="pdfGoToPage(' + p + ')">p.' + p + '</div>';
+      }
+      panel.innerHTML = html;
+    }
+
+    window.pdfGoToPage = function(n) {
+      if (n >= 1 && n <= totalPages) renderPage(n);
+    };
+
   } else if (tab.type === 'chat') {
     CONTEXT.viewerFile = '';
     const overlay = document.createElement('div');
@@ -1824,14 +1930,13 @@ function showToast(msg) {
 }
 
 // ── openDoc — uses tabs instead of new windows ────────────────────────────
-function openDoc(file) {
+function openDoc(file, page) {
   if (!file) return;
-  // Close card info panel if open — otherwise the viewer tab overlay is hidden behind it
   const panel = document.getElementById('card-info-panel');
   if (panel && panel.classList.contains('visible')) panel.classList.remove('visible');
   const fname = file.split('/').pop();
   const label = fname.replace(/\.pdf$/i, '').substring(0, 22);
-  openViewerTab(fname, label, 'pdf');
+  openViewerTab(fname, label, 'pdf', page || 1);
 }
 
 </script>
