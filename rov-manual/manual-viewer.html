@@ -6,14 +6,11 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
-/* TOP BAR */
 #topbar{display:flex;align-items:center;gap:10px;padding:7px 14px;background:#090c13;border-bottom:1px solid #2a2d35;flex-shrink:0;}
 #topbar-title{font-family:monospace;font-size:10px;color:#e8a44a;letter-spacing:.1em;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 #toggle-btn{background:rgba(232,164,74,.1);border:1px solid rgba(232,164,74,.3);color:#e8a44a;border-radius:3px;padding:4px 10px;cursor:pointer;font-family:monospace;font-size:9px;white-space:nowrap;flex-shrink:0;}
 #toggle-btn:hover{background:rgba(232,164,74,.2);}
-/* MAIN LAYOUT */
 #main{display:flex;flex:1;overflow:hidden;}
-/* SIDEBAR */
 #sidebar{width:300px;flex-shrink:0;background:#0d1018;border-right:1px solid #2a2d35;display:flex;flex-direction:column;overflow:hidden;transition:width .18s;}
 #sidebar.collapsed{width:0;}
 #sb-hdr{padding:10px 12px;border-bottom:1px solid #2a2d35;flex-shrink:0;}
@@ -27,32 +24,26 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
 #sb-st{padding:4px 12px 5px;font-family:monospace;font-size:8px;color:#505460;flex-shrink:0;border-top:1px solid #1a1d24;}
 .rc{padding:9px 12px;cursor:pointer;border-bottom:1px solid #1a1d24;transition:background .1s;}
 .rc:hover{background:#181c26;}
-.rc.open{background:#181c26;border-left:2px solid #e8a44a;}
+.rc.open{border-left:2px solid #e8a44a;background:#181c26;}
 .rp{font-family:monospace;font-size:8px;color:#e8a44a;margin-bottom:3px;}
 .rt{font-size:11px;line-height:1.5;color:#8a8680;}
 .rt mark{background:rgba(232,164,74,.2);color:#e8c47a;border-radius:2px;}
 .ro{margin-top:4px;font-family:monospace;font-size:8px;color:#6090e0;}
 #em{padding:28px 12px;text-align:center;color:#505460;font-family:monospace;font-size:9px;line-height:2.2;}
-/* RIGHT: TAB PANE */
 #right{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-/* PDF TAB STRIP */
-#pdf-tabs{display:flex;align-items:center;background:#090c13;border-bottom:1px solid #2a2d35;overflow-x:auto;flex-shrink:0;min-height:32px;}
-#pdf-tabs::-webkit-scrollbar{height:2px;}
-#pdf-tabs::-webkit-scrollbar-thumb{background:#2a2d35;}
+/* Tab history strip */
+#tab-strip{display:flex;align-items:center;background:#090c13;border-bottom:1px solid #2a2d35;overflow-x:auto;flex-shrink:0;min-height:32px;}
+#tab-strip::-webkit-scrollbar{height:2px;}
+#tab-strip::-webkit-scrollbar-thumb{background:#2a2d35;}
 .pt{display:flex;align-items:center;gap:5px;padding:0 10px;height:32px;font-family:monospace;font-size:9px;color:#606470;cursor:pointer;border-bottom:2px solid transparent;border-right:1px solid #1a1d24;white-space:nowrap;flex-shrink:0;transition:all .1s;}
 .pt:hover{color:#c8c4b8;background:rgba(255,255,255,.03);}
 .pt.active{color:#e8a44a;border-bottom-color:#e8a44a;background:rgba(232,164,74,.05);}
-.pt-close{color:#505460;padding:1px 3px;border-radius:2px;font-size:11px;line-height:1;}
-.pt-close:hover{background:rgba(255,80,80,.2);color:#ff6060;}
-/* PDF FRAMES */
-#pdf-area{flex:1;position:relative;background:#1a1a1a;}
-.pf{position:absolute;inset:0;border:none;width:100%;height:100%;display:none;}
-.pf.active{display:block;}
-/* WELCOME SCREEN */
-#welcome{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#404860;font-family:monospace;font-size:10px;text-align:center;line-height:2;}
-#welcome a{color:#6090e0;text-decoration:none;}
-#welcome a:hover{text-decoration:underline;}
-#welcome .big{font-size:28px;opacity:.2;}
+.pt-lbl{pointer-events:none;}
+.pt-x{color:#505460;padding:1px 4px;border-radius:2px;font-size:11px;}
+.pt-x:hover{background:rgba(255,80,80,.2);color:#ff6060;}
+#pdf-area{flex:1;position:relative;background:#222;}
+#pdf-frame{position:absolute;inset:0;border:none;width:100%;height:100%;}
+#loading-msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,13,20,.7);font-family:monospace;font-size:10px;color:#e8a44a;z-index:5;}
 </style>
 </head>
 <body>
@@ -69,17 +60,14 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
         <button id="go" onclick="doSearch()">GO</button>
       </div>
     </div>
-    <div id="sb-res"><div id="em">Search to find sections<br>Results open as tabs on the right<br><br><span style="color:#e8a44a;font-size:8px;">AI semantic search</span></div></div>
+    <div id="sb-res"><div id="em">Search to find sections<br>Results open at the exact page<br><br><span style="color:#e8a44a;font-size:8px;">AI semantic + keyword search</span></div></div>
     <div id="sb-st"></div>
   </div>
   <div id="right">
-    <div id="pdf-tabs"></div>
+    <div id="tab-strip"></div>
     <div id="pdf-area">
-      <div id="welcome">
-        <div class="big">&#128196;</div>
-        <div>Search for a topic in the sidebar<br>or open the full manual below</div>
-        <a id="open-all" href="#" target="_blank">&#8599; Open full manual in browser</a>
-      </div>
+      <iframe id="pdf-frame" src="" title="Manual"></iframe>
+      <div id="loading-msg">Loading page...</div>
     </div>
   </div>
 </div>
@@ -89,18 +77,15 @@ const MANUAL = params.get('manual') || '';
 const CFG_URL = 'https://rov-chatbot-production-3d66.up.railway.app/api/config';
 let SU = '', SA = '', cfgOk = false;
 
-// Tabs state: [{id, page, label, active}]
-let tabs = [], tabSeq = 0;
+// Tab history: [{id, page, label}] — single iframe, tabs = navigation history
+let tabs = [], tabSeq = 0, activeId = null;
 
-// Init
 document.getElementById('topbar-title').textContent = MANUAL;
 document.title = MANUAL + ' \u2014 Hercules MK3';
-document.getElementById('open-all').href = 'manuals/' + MANUAL;
 
-// Open page 1 on load
+// Load cover page immediately
 openTab(1, 'Cover');
 
-// Load config
 fetch(CFG_URL).then(r => r.json()).then(cfg => {
   SU = cfg.supabaseUrl; SA = cfg.supabaseAnon; cfgOk = true;
 }).catch(() => {
@@ -113,82 +98,68 @@ document.getElementById('q').addEventListener('keydown', e => {
 
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
-  const collapsed = sb.classList.toggle('collapsed');
-  document.getElementById('toggle-btn').textContent = collapsed ? '&#128269; SEARCH' : '&#10005; HIDE';
+  const c = sb.classList.toggle('collapsed');
+  document.getElementById('toggle-btn').textContent = c ? '&#128269; SEARCH' : '&#10005; HIDE';
 }
 
 // ── TAB MANAGEMENT ────────────────────────────────────────────────────────────
 function openTab(page, label) {
-  // If tab for this page already exists, just activate it
+  // If this page already has a tab, just navigate to it
   const existing = tabs.find(t => t.page === page);
   if (existing) { activateTab(existing.id); return; }
 
-  const id = 'pt' + (++tabSeq);
-  tabs.push({ id, page, label: label || 'p.' + page, loaded: false });
-
-  // Create iframe but DON'T set src yet — lazy load on activate
-  const frame = document.createElement('iframe');
-  frame.id = 'frame-' + id;
-  frame.className = 'pf';
-  frame.title = label || 'Page ' + page;
-  document.getElementById('pdf-area').appendChild(frame);
-
-  renderTabs();
+  const id = 'tab' + (++tabSeq);
+  tabs.push({ id, page, label: label || 'p.' + page });
   activateTab(id);
-
-  const welcome = document.getElementById('welcome');
-  if (welcome) welcome.style.display = 'none';
 }
 
 function activateTab(id) {
-  tabs.forEach(t => t.active = (t.id === id));
-  // Show/hide frames
-  document.querySelectorAll('.pf').forEach(f => f.classList.remove('active'));
+  activeId = id;
   const tab = tabs.find(t => t.id === id);
-  const frame = document.getElementById('frame-' + id);
-  if (frame) {
-    // Lazy load: only set src when first activated
-    if (tab && !tab.loaded) {
-      frame.src = 'manuals/' + MANUAL + '#page=' + tab.page;
-      tab.loaded = true;
-    }
-    frame.classList.add('active');
-  }
+  if (!tab) return;
+
+  // Navigate the single iframe to this page
+  // Use a unique query param to force browser to treat it as a new URL
+  const frame = document.getElementById('pdf-frame');
+  const url = 'manuals/' + MANUAL + '?t=' + tab.id + '#page=' + tab.page;
+  frame.src = url;
+
   renderTabs();
-  // Highlight matching search result
-  if (tab) {
-    document.querySelectorAll('.rc').forEach(el => {
-      el.classList.toggle('open', parseInt(el.dataset.page) === tab.page);
-    });
-  }
+
+  // Highlight matching result in sidebar
+  document.querySelectorAll('.rc').forEach(el => {
+    el.classList.toggle('open', parseInt(el.dataset.page) === tab.page);
+  });
 }
 
 function closeTab(id, e) {
-  if (e) e.stopPropagation();
+  if (e) { e.preventDefault(); e.stopPropagation(); }
   const idx = tabs.findIndex(t => t.id === id);
   if (idx === -1) return;
-  const wasActive = tabs[idx].active;
-
-  // Remove frame
-  const frame = document.getElementById('frame-' + id);
-  if (frame) frame.remove();
+  const wasActive = (id === activeId);
   tabs.splice(idx, 1);
-  renderTabs();
 
-  if (wasActive && tabs.length) {
-    activateTab(tabs[Math.max(0, idx - 1)].id);
-  } else if (!tabs.length) {
-    document.getElementById('welcome').style.display = 'flex';
+  if (wasActive) {
+    if (tabs.length) {
+      activateTab(tabs[Math.max(0, idx - 1)].id);
+    } else {
+      document.getElementById('pdf-frame').src = '';
+      activeId = null;
+      renderTabs();
+    }
+  } else {
+    renderTabs();
   }
 }
 
 function renderTabs() {
-  const strip = document.getElementById('pdf-tabs');
+  const strip = document.getElementById('tab-strip');
+  if (!tabs.length) { strip.innerHTML = ''; return; }
   strip.innerHTML = tabs.map(t => {
-    const act = t.active ? ' active' : '';
+    const act = (t.id === activeId) ? ' active' : '';
     return '<div class="pt' + act + '" data-id="' + t.id + '" onclick="activateTab(this.dataset.id)">'
-      + '<span style="pointer-events:none;">&#128196; ' + esc(t.label) + '</span>'
-      + '<span class="pt-close" data-id="' + t.id + '" onclick="closeTab(this.dataset.id,event)">\u00d7</span>'
+      + '<span class="pt-lbl">&#128196; ' + esc(t.label) + '</span>'
+      + '<span class="pt-x" data-id="' + t.id + '" onclick="closeTab(this.dataset.id,event)">\u00d7</span>'
       + '</div>';
   }).join('');
 }
@@ -204,7 +175,7 @@ async function doSearch() {
   const st = document.getElementById('sb-st');
   const res = document.getElementById('sb-res');
   st.textContent = 'Searching...';
-  res.innerHTML = '<div id="em" style="color:#404860;">Searching: ' + esc(q) + '</div>';
+  res.innerHTML = '<div id="em" style="color:#404860;">Searching: ' + esc(q) + '...</div>';
 
   try {
     let chunks = [];
@@ -220,12 +191,13 @@ async function doSearch() {
       chunks = all.filter(c => c.manual_name === MANUAL);
     }
 
-    // Keyword fallback if vector returns <3 results
+    // Keyword fallback
     if (chunks.length < 3) {
       const terms = q.split(/\s+/).filter(Boolean);
       const orClauses = terms.map(t => 'text.ilike.*' + encodeURIComponent(t.substring(0, 25)) + '*').join(',');
       const r2 = await fetch(
-        SU + '/rest/v1/chunks?manual_name=eq.' + encodeURIComponent(MANUAL) + '&or=(' + orClauses + ')&limit=20',
+        SU + '/rest/v1/chunks?manual_name=eq.' + encodeURIComponent(MANUAL)
+        + '&or=(' + orClauses + ')&limit=20',
         { headers: { 'apikey': SA, 'Authorization': 'Bearer ' + SA } }
       );
       if (r2.ok) {
@@ -241,10 +213,11 @@ async function doSearch() {
       return;
     }
 
-    st.textContent = chunks.length + ' sections \u2014 click to open as tab';
+    st.textContent = chunks.length + ' sections \u2014 click to open';
     res.innerHTML = chunks.slice(0, 30).map(c => {
       const pg = extractPage(c.page_label);
-      return '<div class="rc" data-page="' + pg + '" onclick="openTab(' + pg + ',' + JSON.stringify('p.' + pg + ' ' + c.page_label.substring(0,12)) + ')">'
+      const lbl = 'p.' + pg;
+      return '<div class="rc" data-page="' + pg + '" onclick="openTab(' + pg + ',' + JSON.stringify(lbl) + ')">'
         + '<div class="rp">&#128196; ' + esc(c.page_label) + '</div>'
         + '<div class="rt">' + hi(esc(c.text.substring(0, 200)), q) + (c.text.length > 200 ? '...' : '') + '</div>'
         + '<div class="ro">&#9654; Open as tab</div>'
@@ -257,7 +230,6 @@ async function doSearch() {
   }
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────
 function extractPage(label) {
   const m = (label || '').match(/\d+/);
   return m ? parseInt(m[0]) : 1;
