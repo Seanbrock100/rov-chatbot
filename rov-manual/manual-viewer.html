@@ -131,14 +131,25 @@ function isExactQuery(q) {
     || q.split(/\s+/).length <= 2 && /\d/.test(q);  // short query with numbers
 }
 
-// Load PDF via pdf.js
-if (typeof pdfjsLib !== 'undefined') {
+// Detect file:// protocol — pdf.js cross-origin blocked, use iframe fallback
+const IS_FILE_PROTOCOL = window.location.protocol === 'file:';
+
+if (IS_FILE_PROTOCOL) {
+  // file:// mode: use browser native PDF rendering in iframe
+  document.getElementById('canvas-area').innerHTML =
+    '<iframe id="pdf-iframe" style="width:100%;height:100%;border:none;" src=""></iframe>';
+  document.getElementById('page-indicator').textContent = 'File mode — search works, click results to navigate';
+  document.getElementById('pdf-iframe').src = 'manuals/' + MANUAL;
+  totalPages = 9999;
+  document.getElementById('btn-prev').disabled = false;
+  document.getElementById('btn-next').disabled = false;
+} else if (typeof pdfjsLib !== 'undefined') {
+  // HTTP mode: pdf.js canvas rendering with page ±1
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'manuals/pdf.worker.min.js';
   pdfjsLib.getDocument('manuals/' + MANUAL).promise.then(doc => {
     pdfDoc = doc;
     totalPages = doc.numPages;
     document.getElementById('sb-st').textContent = totalPages + ' pages';
-    // Show cover on load
     showPages(1);
   }).catch(e => {
     document.getElementById('page-indicator').textContent = 'PDF load error: ' + e.message;
@@ -166,8 +177,27 @@ function toggleSidebar() {
 
 // ── PAGE RENDERING ─────────────────────────────────────────────────────────────
 async function showPages(centrePage) {
-  if (!pdfDoc) return;
   centrePage = Math.max(1, Math.min(totalPages, centrePage));
+  currentCentre = centrePage;
+
+  // file:// mode — navigate iframe
+  if (IS_FILE_PROTOCOL) {
+    const iframe = document.getElementById('pdf-iframe');
+    if (iframe) {
+      // Force navigation by clearing then setting src
+      iframe.src = '';
+      setTimeout(() => {
+        iframe.src = 'manuals/' + MANUAL + '#page=' + centrePage;
+      }, 30);
+    }
+    document.getElementById('page-indicator').textContent = 'Page ' + centrePage;
+    document.getElementById('btn-prev').disabled = (centrePage <= 1);
+    document.getElementById('btn-next').disabled = false;
+    return;
+  }
+
+  // HTTP mode — pdf.js canvas rendering
+  if (!pdfDoc) return;
   currentCentre = centrePage;
 
   const area = document.getElementById('canvas-area');
