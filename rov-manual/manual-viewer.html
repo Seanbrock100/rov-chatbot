@@ -10,7 +10,10 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
 #topbar-title{font-family:monospace;font-size:10px;color:#e8a44a;letter-spacing:.1em;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 #toggle-btn{background:rgba(232,164,74,.1);border:1px solid rgba(232,164,74,.3);color:#e8a44a;border-radius:3px;padding:4px 10px;cursor:pointer;font-family:monospace;font-size:9px;white-space:nowrap;flex-shrink:0;}
 #toggle-btn:hover{background:rgba(232,164,74,.2);}
+#open-full{background:rgba(96,144,224,.1);border:1px solid rgba(96,144,224,.3);color:#6090e0;border-radius:3px;padding:4px 10px;font-family:monospace;font-size:9px;white-space:nowrap;flex-shrink:0;text-decoration:none;cursor:pointer;}
+#open-full:hover{background:rgba(96,144,224,.2);}
 #main{display:flex;flex:1;overflow:hidden;}
+/* SIDEBAR */
 #sidebar{width:300px;flex-shrink:0;background:#0d1018;border-right:1px solid #2a2d35;display:flex;flex-direction:column;overflow:hidden;transition:width .18s;}
 #sidebar.collapsed{width:0;}
 #sb-hdr{padding:10px 12px;border-bottom:1px solid #2a2d35;flex-shrink:0;}
@@ -30,26 +33,30 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
 .rt mark{background:rgba(232,164,74,.2);color:#e8c47a;border-radius:2px;}
 .ro{margin-top:4px;font-family:monospace;font-size:8px;color:#6090e0;}
 #em{padding:28px 12px;text-align:center;color:#505460;font-family:monospace;font-size:9px;line-height:2.2;}
-#right{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-/* Tab history strip */
-#tab-strip{display:flex;align-items:center;background:#090c13;border-bottom:1px solid #2a2d35;overflow-x:auto;flex-shrink:0;min-height:32px;}
-#tab-strip::-webkit-scrollbar{height:2px;}
-#tab-strip::-webkit-scrollbar-thumb{background:#2a2d35;}
-.pt{display:flex;align-items:center;gap:5px;padding:0 10px;height:32px;font-family:monospace;font-size:9px;color:#606470;cursor:pointer;border-bottom:2px solid transparent;border-right:1px solid #1a1d24;white-space:nowrap;flex-shrink:0;transition:all .1s;}
-.pt:hover{color:#c8c4b8;background:rgba(255,255,255,.03);}
-.pt.active{color:#e8a44a;border-bottom-color:#e8a44a;background:rgba(232,164,74,.05);}
-.pt-lbl{pointer-events:none;}
-.pt-x{color:#505460;padding:1px 4px;border-radius:2px;font-size:11px;}
-.pt-x:hover{background:rgba(255,80,80,.2);color:#ff6060;}
-#pdf-area{flex:1;position:relative;background:#222;}
-#pdf-frame{position:absolute;inset:0;border:none;width:100%;height:100%;}
-#loading-msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,13,20,.7);font-family:monospace;font-size:10px;color:#e8a44a;z-index:5;}
+/* RIGHT PANE */
+#right{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#111;}
+/* PAGE TOOLBAR */
+#page-bar{display:flex;align-items:center;gap:8px;padding:5px 12px;background:#090c13;border-bottom:1px solid #2a2d35;flex-shrink:0;font-family:monospace;font-size:9px;color:#505460;}
+#page-indicator{color:#e8a44a;flex:1;}
+.pg-btn{background:#1a1d24;border:1px solid #2a2d35;color:#c8c4b8;border-radius:3px;padding:3px 10px;cursor:pointer;font-family:monospace;font-size:9px;}
+.pg-btn:hover{border-color:#e8a44a;color:#e8a44a;}
+.pg-btn:disabled{opacity:.3;cursor:default;}
+/* CANVAS SCROLL AREA */
+#canvas-area{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 10px;background:#111;}
+.page-wrap{position:relative;width:100%;display:flex;flex-direction:column;align-items:center;}
+.page-label{font-family:monospace;font-size:8px;color:#404860;margin-bottom:4px;align-self:flex-start;padding-left:4px;}
+.page-canvas{max-width:100%;box-shadow:0 2px 20px rgba(0,0,0,.6);display:block;}
+.page-canvas.highlight{box-shadow:0 0 0 2px #e8a44a, 0 2px 20px rgba(0,0,0,.6);}
+#welcome-msg{padding:60px 20px;text-align:center;color:#404860;font-family:monospace;font-size:10px;line-height:2.4;}
+#welcome-msg a{color:#6090e0;text-decoration:none;}
+#loading-spinner{display:none;padding:40px;text-align:center;font-family:monospace;font-size:9px;color:#e8a44a;}
 </style>
 </head>
 <body>
 <div id="topbar">
   <button id="toggle-btn" onclick="toggleSidebar()">&#128269; SEARCH</button>
   <span id="topbar-title">Loading...</span>
+  <a id="open-full" href="#" target="_blank">&#8599; FULL PDF</a>
 </div>
 <div id="main">
   <div id="sidebar">
@@ -60,32 +67,56 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
         <button id="go" onclick="doSearch()">GO</button>
       </div>
     </div>
-    <div id="sb-res"><div id="em">Search to find sections<br>Results open at the exact page<br><br><span style="color:#e8a44a;font-size:8px;">AI semantic + keyword search</span></div></div>
+    <div id="sb-res"><div id="em">Search to find sections<br>Click a result to view those pages<br><br><span style="color:#e8a44a;font-size:8px;">AI semantic + keyword search</span></div></div>
     <div id="sb-st"></div>
   </div>
   <div id="right">
-    <div id="tab-strip"></div>
-    <div id="pdf-area">
-      <iframe id="pdf-frame" src="" title="Manual"></iframe>
-      <div id="loading-msg">Loading page...</div>
+    <div id="page-bar">
+      <span id="page-indicator">No page loaded</span>
+      <button class="pg-btn" id="btn-prev" onclick="shiftPages(-1)" disabled>&#9664; PREV</button>
+      <button class="pg-btn" id="btn-next" onclick="shiftPages(1)" disabled>NEXT &#9654;</button>
+    </div>
+    <div id="canvas-area">
+      <div id="welcome-msg">
+        Search for a topic in the sidebar<br>
+        Click any result to view that section<br>
+        Shows the result page plus one either side<br><br>
+        <a id="open-all" href="#">&#8599; Open full manual in browser</a>
+      </div>
+      <div id="loading-spinner">&#9696; Loading pages...</div>
     </div>
   </div>
 </div>
+<script src="manuals/pdf.min.js"></script>
 <script>
-const params = new URLSearchParams(window.location.search);
-const MANUAL = params.get('manual') || '';
+const params  = new URLSearchParams(window.location.search);
+const MANUAL  = params.get('manual') || '';
 const CFG_URL = 'https://rov-chatbot-production-3d66.up.railway.app/api/config';
 let SU = '', SA = '', cfgOk = false;
+let pdfDoc = null, totalPages = 0;
+let currentCentre = 0; // page currently centred
 
-// Tab history: [{id, page, label}] — single iframe, tabs = navigation history
-let tabs = [], tabSeq = 0, activeId = null;
-
+// Init
 document.getElementById('topbar-title').textContent = MANUAL;
 document.title = MANUAL + ' \u2014 Hercules MK3';
+document.getElementById('open-full').href = 'manuals/' + MANUAL;
+document.getElementById('open-all').href = 'manuals/' + MANUAL;
 
-// Load cover page immediately
-openTab(1, 'Cover');
+// Load PDF via pdf.js
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'manuals/pdf.worker.min.js';
+  pdfjsLib.getDocument('manuals/' + MANUAL).promise.then(doc => {
+    pdfDoc = doc;
+    totalPages = doc.numPages;
+    document.getElementById('sb-st').textContent = totalPages + ' pages';
+    // Show cover on load
+    showPages(1);
+  }).catch(e => {
+    document.getElementById('page-indicator').textContent = 'PDF load error: ' + e.message;
+  });
+}
 
+// Load config for search
 fetch(CFG_URL).then(r => r.json()).then(cfg => {
   SU = cfg.supabaseUrl; SA = cfg.supabaseAnon; cfgOk = true;
 }).catch(() => {
@@ -98,73 +129,70 @@ document.getElementById('q').addEventListener('keydown', e => {
 
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
-  const c = sb.classList.toggle('collapsed');
+  const c  = sb.classList.toggle('collapsed');
   document.getElementById('toggle-btn').textContent = c ? '&#128269; SEARCH' : '&#10005; HIDE';
+  // Re-render current pages to fill new width after transition
+  setTimeout(() => { if (currentCentre) showPages(currentCentre); }, 200);
 }
 
-// ── TAB MANAGEMENT ────────────────────────────────────────────────────────────
-function openTab(page, label) {
-  // If this page already has a tab, just navigate to it
-  const existing = tabs.find(t => t.page === page);
-  if (existing) { activateTab(existing.id); return; }
+// ── PAGE RENDERING ─────────────────────────────────────────────────────────────
+async function showPages(centrePage) {
+  if (!pdfDoc) return;
+  centrePage = Math.max(1, Math.min(totalPages, centrePage));
+  currentCentre = centrePage;
 
-  const id = 'tab' + (++tabSeq);
-  tabs.push({ id, page, label: label || 'p.' + page });
-  activateTab(id);
-}
+  const area = document.getElementById('canvas-area');
+  const welcome = document.getElementById('welcome-msg');
+  const spinner = document.getElementById('loading-spinner');
+  if (welcome) welcome.style.display = 'none';
+  spinner.style.display = 'block';
+  area.querySelectorAll('.page-wrap').forEach(el => el.remove());
 
-function activateTab(id) {
-  activeId = id;
-  const tab = tabs.find(t => t.id === id);
-  if (!tab) return;
+  // Show page before, target page, page after
+  const pages = [centrePage - 1, centrePage, centrePage + 1].filter(p => p >= 1 && p <= totalPages);
 
-  // Navigate the single iframe to this page
-  // Use a unique query param to force browser to treat it as a new URL
-  const frame = document.getElementById('pdf-frame');
-  const url = 'manuals/' + MANUAL + '?t=' + tab.id + '#page=' + tab.page;
-  frame.src = url;
+  for (const pageNum of pages) {
+    const wrap = document.createElement('div');
+    wrap.className = 'page-wrap';
+    const lbl = document.createElement('div');
+    lbl.className = 'page-label';
+    lbl.textContent = 'Page ' + pageNum + (pageNum === centrePage ? '  \u25c4 result' : '');
+    const canvas = document.createElement('canvas');
+    canvas.className = 'page-canvas' + (pageNum === centrePage ? ' highlight' : '');
+    wrap.appendChild(lbl);
+    wrap.appendChild(canvas);
+    area.appendChild(wrap);
 
-  renderTabs();
-
-  // Highlight matching result in sidebar
-  document.querySelectorAll('.rc').forEach(el => {
-    el.classList.toggle('open', parseInt(el.dataset.page) === tab.page);
-  });
-}
-
-function closeTab(id, e) {
-  if (e) { e.preventDefault(); e.stopPropagation(); }
-  const idx = tabs.findIndex(t => t.id === id);
-  if (idx === -1) return;
-  const wasActive = (id === activeId);
-  tabs.splice(idx, 1);
-
-  if (wasActive) {
-    if (tabs.length) {
-      activateTab(tabs[Math.max(0, idx - 1)].id);
-    } else {
-      document.getElementById('pdf-frame').src = '';
-      activeId = null;
-      renderTabs();
-    }
-  } else {
-    renderTabs();
+    // Render this page
+    const page = await pdfDoc.getPage(pageNum);
+    const availW = area.clientWidth - 40;
+    const vp = page.getViewport({ scale: 1 });
+    const scale = Math.min(availW / vp.width, 2.5);
+    const sv = page.getViewport({ scale });
+    canvas.width  = sv.width;
+    canvas.height = sv.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: sv }).promise;
   }
+
+  spinner.style.display = 'none';
+
+  // Update toolbar
+  document.getElementById('page-indicator').textContent =
+    'Page ' + centrePage + ' of ' + totalPages
+    + (pages.length > 1 ? '  (showing \u00b11 page)' : '');
+  document.getElementById('btn-prev').disabled = (centrePage <= 1);
+  document.getElementById('btn-next').disabled = (centrePage >= totalPages);
+
+  // Scroll the result page canvas into view
+  const resultCanvas = area.querySelectorAll('.page-wrap')[pages.indexOf(centrePage)];
+  if (resultCanvas) resultCanvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function renderTabs() {
-  const strip = document.getElementById('tab-strip');
-  if (!tabs.length) { strip.innerHTML = ''; return; }
-  strip.innerHTML = tabs.map(t => {
-    const act = (t.id === activeId) ? ' active' : '';
-    return '<div class="pt' + act + '" data-id="' + t.id + '" onclick="activateTab(this.dataset.id)">'
-      + '<span class="pt-lbl">&#128196; ' + esc(t.label) + '</span>'
-      + '<span class="pt-x" data-id="' + t.id + '" onclick="closeTab(this.dataset.id,event)">\u00d7</span>'
-      + '</div>';
-  }).join('');
+function shiftPages(delta) {
+  if (currentCentre) showPages(currentCentre + delta);
 }
 
-// ── SEARCH ────────────────────────────────────────────────────────────────────
+// ── SEARCH ─────────────────────────────────────────────────────────────────────
 async function doSearch() {
   const q = document.getElementById('q').value.trim();
   if (!q) return;
@@ -172,10 +200,10 @@ async function doSearch() {
     document.getElementById('sb-res').innerHTML = '<div id="em">Not connected to database</div>';
     return;
   }
-  const st = document.getElementById('sb-st');
+  const st  = document.getElementById('sb-st');
   const res = document.getElementById('sb-res');
-  st.textContent = 'Searching...';
-  res.innerHTML = '<div id="em" style="color:#404860;">Searching: ' + esc(q) + '...</div>';
+  st.textContent  = 'Searching...';
+  res.innerHTML   = '<div id="em" style="color:#404860;">Searching: ' + esc(q) + '...</div>';
 
   try {
     let chunks = [];
@@ -194,10 +222,9 @@ async function doSearch() {
     // Keyword fallback
     if (chunks.length < 3) {
       const terms = q.split(/\s+/).filter(Boolean);
-      const orClauses = terms.map(t => 'text.ilike.*' + encodeURIComponent(t.substring(0, 25)) + '*').join(',');
+      const or = terms.map(t => 'text.ilike.*' + encodeURIComponent(t.substring(0, 25)) + '*').join(',');
       const r2 = await fetch(
-        SU + '/rest/v1/chunks?manual_name=eq.' + encodeURIComponent(MANUAL)
-        + '&or=(' + orClauses + ')&limit=20',
+        SU + '/rest/v1/chunks?manual_name=eq.' + encodeURIComponent(MANUAL) + '&or=(' + or + ')&limit=20',
         { headers: { 'apikey': SA, 'Authorization': 'Bearer ' + SA } }
       );
       if (r2.ok) {
@@ -213,14 +240,13 @@ async function doSearch() {
       return;
     }
 
-    st.textContent = chunks.length + ' sections \u2014 click to open';
+    st.textContent = chunks.length + ' sections found';
     res.innerHTML = chunks.slice(0, 30).map(c => {
       const pg = extractPage(c.page_label);
-      const lbl = 'p.' + pg;
-      return '<div class="rc" data-page="' + pg + '" onclick="openTab(' + pg + ',\'' + lbl + '\')">'
+      return '<div class="rc" data-page="' + pg + '" onclick="selectResult(this,' + pg + ')">'
         + '<div class="rp">&#128196; ' + esc(c.page_label) + '</div>'
         + '<div class="rt">' + hi(esc(c.text.substring(0, 200)), q) + (c.text.length > 200 ? '...' : '') + '</div>'
-        + '<div class="ro">&#9654; Open as tab</div>'
+        + '<div class="ro">&#9654; View pages ' + Math.max(1,pg-1) + '\u2013' + Math.min(totalPages,pg+1) + '</div>'
         + '</div>';
     }).join('');
 
@@ -230,6 +256,13 @@ async function doSearch() {
   }
 }
 
+function selectResult(el, page) {
+  document.querySelectorAll('.rc').forEach(r => r.classList.remove('open'));
+  el.classList.add('open');
+  showPages(page);
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────────
 function extractPage(label) {
   const m = (label || '').match(/\d+/);
   return m ? parseInt(m[0]) : 1;
@@ -239,8 +272,8 @@ function hi(text, query) {
   const words = query.split(/\s+/).filter(Boolean);
   let r = text;
   words.forEach(w => {
-    const safe = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    r = r.replace(new RegExp('(' + safe + ')', 'gi'), '<mark>$1</mark>');
+    const s = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    r = r.replace(new RegExp('(' + s + ')', 'gi'), '<mark>$1</mark>');
   });
   return r;
 }
