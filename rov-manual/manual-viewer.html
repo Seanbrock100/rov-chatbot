@@ -83,7 +83,12 @@ document.getElementById('q').addEventListener('keydown', e => {
 function loadPdf(page) {
   currentPage = page;
   const frame = document.getElementById('pdf-frame');
-  frame.src = 'manuals/' + MANUAL + (page > 1 ? '#page=' + page : '');
+  // Browsers ignore hash-only changes on iframes — must force reload
+  // Blank it first, then set the new src to guarantee navigation
+  frame.src = 'about:blank';
+  setTimeout(function() {
+    frame.src = 'manuals/' + MANUAL + (page > 1 ? '#page=' + page : '');
+  }, 30);
   document.getElementById('page-hint').textContent = page > 1 ? 'p.' + page : '';
 }
 
