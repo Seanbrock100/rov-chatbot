@@ -102,6 +102,7 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
 const params  = new URLSearchParams(window.location.search);
 const MANUAL  = params.get('manual') || '';
 const CFG_URL = 'https://rov-chatbot-production-3d66.up.railway.app/api/config';
+const RAILWAY = 'https://rov-chatbot-production-3d66.up.railway.app';
 let SU = '', SA = '', cfgOk = false;
 let pdfDoc = null, totalPages = 0;
 let currentCentre = 0; // page currently centred
@@ -240,50 +241,80 @@ async function doSearch() {
     let chunks = [];
 
     if (useAI) {
-      const r1 = await fetch(SU + '/rest/v1/rpc/match_chunks', {
-        method: 'POST',
-        headers: { 'apikey': SA, 'Authorization': 'Bearer ' + SA, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query_text: q + ' ' + MANUAL, match_count: 50 })
-      });
-      if (r1.ok) {
-        const all = await r1.json();
-        chunks = all.filter(c => c.manual_name === MANUAL);
-      }
+      try {
+        // Get embedding from Railway proxy, then query Supabase with the vector
+        const embResp = await fetch(RAILWAY + '/api/embed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: q })
+        });
+        if (embResp.ok) {
+          const { embedding } = await embResp.json();
+          const r1 = await fetch(SU + '/rest/v1/rpc/match_chunks', {
+            method: 'POST',
+            headers: { 'apikey': SA, 'Authorization': 'Bearer ' + SA, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query_embedding: embedding, match_count: 50 })
+          });
+          if (r1.ok) {
+            const all = await r1.json();
+            chunks = all.filter(c => c.manual_name === MANUAL);
+          }
+        }
+      } catch (e) { /* AI search unavailable, keyword fallback will cover it */ }
     }
 
-    if (useExact || true) {  // Always run keyword search — merge with AI results
+    if (useExact || true) {
       const terms = q.split(/\s+/).filter(t => t.length > 2);
+      if (terms.length > 0) {
+        // Run all term searches in parallel
+        const kwFetches = terms.slice(0, 3).map(term =>
+          fetch(
+            SU + '/rest/v1/chunks?manual_name=eq.' + encodeURIComponent(MANUAL)
+            + '&text=ilike.*' + encodeURIComponent(term) + '*&order=chunk_index.asc&limit=20',
+            { headers: { 'apikey': SA, 'Authorization': 'Bearer ' + SA } }
+          ).then(r => r.ok ? r.json() : []).catch(() => [])
+        );
+        const kwResults = await Promise.all(kwFetches);
 
-      // Run keyword searches in parallel — one per meaningful term
-      const kwFetches = terms.slice(0, 3).map(term =>
-        fetch(
-          SU + '/rest/v1/chunks?manual_name=eq.' + encodeURIComponent(MANUAL)
-          + '&text=ilike.*' + encodeURIComponent(term) + '*&order=chunk_index.asc&limit=20',
-          { headers: { 'apikey': SA, 'Authorization': 'Bearer ' + SA } }
-        ).then(r => r.ok ? r.json() : [])
-      );
-      const kwResults = await Promise.all(kwFetches);
+        // A chunk MUST match the first (most specific) term to appear in results
+        // Secondary terms boost the score but don't gate inclusion
+        const primarySet = new Set(
+          (kwResults[0] || [])
+            .filter(c => extractPage(c.page_label) > 15) // skip TOC/index pages
+            .map(c => c.id)
+        );
+        const scoreMap = {};
+        const qConcat = terms.join('').toLowerCase(); // e.g. "clevisshearpin"
 
-      // Score each chunk by how many terms it contains
-      // Weight the first (rarest/most-specific) term highest
-      const scoreMap = {};
-      kwResults.forEach((termChunks, ti) => {
-        const weight = ti === 0 ? 3 : 1; // first term is most specific, weight it 3x
-        termChunks.forEach(c => {
-          if (!scoreMap[c.id]) scoreMap[c.id] = { chunk: c, score: 0 };
-          scoreMap[c.id].score += weight;
+        kwResults.forEach((termChunks, ti) => {
+          const weight = ti === 0 ? 10 : 2;
+          termChunks.forEach(c => {
+            if (!primarySet.has(c.id)) return;
+            if (!scoreMap[c.id]) scoreMap[c.id] = { chunk: c, score: 0 };
+            scoreMap[c.id].score += weight;
+            // Big bonus: OCR often concatenates words — "clevisshearpin" matches the chunk
+            if (qConcat.length > 5 && c.text.toLowerCase().includes(qConcat)) {
+              scoreMap[c.id].score += 30;
+            }
+          });
         });
-      });
 
-      // Sort by score descending — chunks matching most terms first
-      const kwChunks = Object.values(scoreMap)
-        .sort((a, b) => b.score - a.score)
-        .map(x => x.chunk);
+        const kwChunks = Object.values(scoreMap)
+          .sort((a, b) => {
+            // Primary: score descending
+            if (b.score !== a.score) return b.score - a.score;
+            // Tiebreak: prefer narrower page ranges (single page chunks beat multi-page)
+            const aRange = a.chunk.page_label.includes('-') ? 10 : 0;
+            const bRange = b.chunk.page_label.includes('-') ? 10 : 0;
+            return aRange - bRange;
+          })
+          .map(x => x.chunk);
 
-      // Keyword results go FIRST, AI results appended after
-      const seen = new Set(kwChunks.map(c => c.id));
-      const aiOnly = chunks.filter(c => !seen.has(c.id));
-      chunks = [...kwChunks, ...aiOnly];
+        // Keyword results first, AI-only results after
+        const seen = new Set(kwChunks.map(c => c.id));
+        const aiOnly = chunks.filter(c => !seen.has(c.id));
+        chunks = [...kwChunks, ...aiOnly];
+      }
     }
 
     if (!chunks.length) {
