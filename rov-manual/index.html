@@ -1441,7 +1441,21 @@ function showTab(tab){
 function renderList(elId, items, type){
   const el = document.getElementById(elId);
   if(!items || items.length === 0){
-    el.innerHTML = '<div class="list-empty">No ' + type + 's indexed yet.<br>Populate manuals/ folder to enable.</div>';
+    el.innerHTML = '<div class="list-empty">No ' + type + 's indexed yet.</div>';
+    return;
+  }
+  if (type === 'manual') {
+    el.innerHTML = items.map(item => {
+      const title = item.title || '';
+      const fname = (item.file || '').split('/').pop();
+      return '<div class="draw-item" style="cursor:pointer;">'
+        + '<div class="draw-num" style="pointer-events:none;">MANUAL</div>'
+        + '<div class="draw-title" style="pointer-events:none;">' + escH(title) + '</div>'
+        + '<div style="display:flex;gap:8px;margin-top:5px;">'
+        + '<div class="draw-open" data-f="' + fname + '" onclick="event.stopPropagation();window.open(\'manual-viewer.html?manual=\'+this.dataset.f,\'_blank\')" style="pointer-events:auto;">\u2197 OPEN + SEARCH</div>'
+        + '<div class="draw-open" data-f="' + fname + '" onclick="event.stopPropagation();window.open(\'manuals/\'+this.dataset.f,\'_blank\')" style="pointer-events:auto;color:var(--text-dim);">\uD83D\uDCC4 RAW PDF</div>'
+        + '</div></div>';
+    }).join('');
     return;
   }
   el.innerHTML = items.map(item => {
@@ -1449,11 +1463,11 @@ function renderList(elId, items, type){
     const title= item.title|| '';
     const file = item.file || '';
     const page = item.page || 1;
-    return `<div class="draw-item" onclick="openDoc('${file.replace(/'/g,"\\'")}',${page},'${title.replace(/'/g,"\\'").substring(0,24)}')">
-      <div class="draw-num">${num}</div>
-      <div class="draw-title">${title}</div>
-      <div class="draw-open">▶ OPEN IN VIEWER TAB</div>
-    </div>`;
+    return '<div class="draw-item" onclick="openDoc(\'' + file.replace(/'/g,"\\'") + '\',' + page + ',\'' + title.replace(/'/g,"\\'").substring(0,24) + '\')">'
+      + '<div class="draw-num">' + num + '</div>'
+      + '<div class="draw-title">' + title + '</div>'
+      + '<div class="draw-open">&#9658; OPEN IN VIEWER TAB</div>'
+      + '</div>';
   }).join('');
 }
 // openDoc: see new tab version below
