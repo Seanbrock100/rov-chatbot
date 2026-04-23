@@ -785,7 +785,10 @@ const DATA = {
     manuals: []
   },
   rov_lights: {
-    drawings: [],
+    drawings: [
+      {num:"ROV-0311-D-0680-00", title:"ROV Lights Wiring Diagram Rev 00", file:"manuals/ROV-0311-D-0680-00.pdf"},
+      {num:"ROV-0311-D-0680-90", title:"ROV Lights Wiring Diagram Rev 90", file:"manuals/ROV-0311-D-0680-90.pdf"},
+    ],
     manuals: [
       {title:"Hercules MK3 Lighting JB — OR-TE-03338", file:"manuals/Hercules MK3 Lighting JB with Oceantools Lamps - User Manual OR-TE-03338.pdf"},
     ]
@@ -849,13 +852,19 @@ const DATA = {
     ]
   },
   pan_tilt: {
-    drawings: [],
+    drawings: [
+      {num:"ROV-0305-D-0630-90", title:"Pan & Tilt Camera System Wiring Diagram", file:"manuals/ROV-0305-D-0630-90 Sht 1-3.pdf"},
+      {num:"ROV-0305-D-0660-00", title:"Pan & Tilt Ethernet Switch Panel", file:"manuals/ROV-0305-D-0660-00.pdf"},
+    ],
     manuals: [
       {title:"914-0601-00 Model 914-X Pan & Tilt Manual", file:"manuals/914-0601-00-Model914-X-Series_UserManual.pdf"},
     ]
   },
   tms: {
-    drawings: [],
+    drawings: [
+      {num:"ROV-0311-D-0500-00", title:"TMS General Arrangement", file:"manuals/ROV-0311-D-0500-00 SHT 1-Model.pdf"},
+      {num:"ROV-0311-D-0800-50", title:"TMS Wiring Diagram", file:"manuals/ROV-0311-D-0800-50 SHT 1-Model.pdf"},
+    ],
     manuals: [
       {title:"TMA01029 — H30 GA Top Level & Schematics", file:"manuals/H30 - GA Top Level & Schematics Manual - TMA01029.pdf"},
     ]
@@ -909,8 +918,19 @@ const DATA = {
     ],
     manuals: []
   },
-  longline: { drawings: [], manuals: [] },
-  cables: { drawings: [], manuals: [] },
+  longline: {
+    drawings: [
+      {num:"ROV-0305-D-0470-00", title:"Longline Winch Assembly", file:"manuals/ROV-0305-D-0470-00 sht 1.pdf"},
+    ],
+    manuals: []
+  },
+  cables: {
+    drawings: [
+      {num:"ROV-0226-725-00", title:"Vehicle Cable Assembly Sht 1", file:"manuals/ROV-0226-725-00 SHEET 1.pdf"},
+      {num:"ROV-0226-725-90", title:"Vehicle Cable Wiring Diagram", file:"manuals/ROV-0226-725-90 SHEET 1.pdf"},
+    ],
+    manuals: []
+  },
   all_drawings: { drawings: [], manuals: [] }
 };
 
