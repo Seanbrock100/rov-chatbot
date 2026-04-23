@@ -653,7 +653,7 @@ const SNIPPETS = {
   tcu: "The Thruster Control Unit (TCU) is the central electronic control system that manages power distribution and command signals to all eight thrusters on the Hercules MK3 ROV. Its primary function is to receive thrust commands from the surface control system via the umbilical and convert these digital signals into appropriate voltage and current outputs to drive each thruster motor at the commanded speed and direction. The TCU incorporates individual motor controllers for each thruster, fault monitoring circuits, and thermal protection systems to prevent overload damage during high-demand operations. On the Hercules MK3, the TCU features redundant communication pathways and includes diagnostic feedback capabilities that continuously monitor thruster performance and motor temperatures, automatically reducing power or shutting down individual thrusters if operational limits are exceeded.",
   hpu: "The Hydraulic Power Unit (HPU) is a self-contained pressurized system that provides hydraulic power to operate the Hercules MK3's manipulator arms, tooling interfaces, and other hydraulically-driven equipment. The HPU consists of electric motor-driven hydraulic pumps, accumulator bottles for pressure storage, filtration systems, and relief valves that maintain system pressure typically around 3000 psi. The unit features dual redundant pump circuits to ensure continuous operation even if one pump fails, with automatic switchover capability between primary and backup systems. During operations, maintain awareness of accumulator pre-charge pressures and filter differential pressures, as the Hercules MK3's HPU requires regular monitoring of hydraulic fluid temperature and cleanliness levels to prevent contamination-related failures in the precision manipulator servos.",
   valve_packs: "The hydraulic valve packs (VP1, VP2, VP3, and Aleron) on the Hercules MK3 ROV are modular hydraulic distribution and control units that regulate high-pressure hydraulic fluid flow to various subsea work tools and manipulator systems. Each valve pack contains proportional servo valves, pressure relief valves, flow control valves, and integrated manifold blocks that enable precise control of hydraulic actuators, with VP1 and VP2 typically dedicated to the main and auxiliary manipulators respectively, while VP3 and the Aleron pack service specialized tooling and ancillary equipment. The valve packs receive control signals from the surface control system via the umbilical and convert these into proportional hydraulic outputs, allowing operators to perform delicate manipulation tasks with variable speed and force control.",
-  thrusters: "The thruster system on the Hercules MK3 ROV consists of eight hydraulically-driven thrusters that provide omnidirectional propulsion and precise positioning control in subsea operations. The system comprises four horizontal thrusters arranged in a vectored configuration for surge, sway, and yaw movements, plus four vertical thrusters for heave control, all powered by the ROV's main hydraulic power unit and controlled through the vehicle's flight control system. Each thruster incorporates a reversible hydraulic motor driving a fixed-pitch propeller within a protective shroud, with integrated flow control valves that enable variable speed and direction control.",
+  thrusters: "The Hercules MK3 uses hydraulically-driven Curvetech thrusters. Thruster speed and direction are controlled by servo valves driven by the TCU (Thruster Control Unit PCB-0162). The TCU receives pilot commands and outputs PWM servo signals via the control ring (CON28/CON29, 12-pin Burton 5507-2412-PE04) to the Curvetech valve packs VP1 and VP2 (RS485 serial, channels 7 and 8). The T4 manipulator is a separate Schilling product — it is unrelated to thruster control.",
   rov_lights: "The lighting system on the Hercules MK3 ROV consists of multiple high-intensity LED light heads strategically positioned around the vehicle frame to provide comprehensive illumination of the work area and surrounding environment during subsea operations. The primary function is to enable clear visual monitoring through the camera systems and facilitate precise manipulation tasks in the deep-water environment where natural light is absent. Key components include forward-facing flood lights for general area illumination, focused spot lights for detailed inspection work, and auxiliary lighting units that can be independently controlled to optimize lighting angles for specific tasks.",
   rov_term_can: "The ROV termination can (term can) on the Hercules MK3 is a pressure-resistant enclosure that serves as the primary electrical interface between the ROV's umbilical and the vehicle's internal power and communication systems. Its primary function is to house and protect the critical electrical terminations, power distribution components, and signal conditioning circuits that convert umbilical-transmitted power and data into formats usable by the ROV's subsystems. Key components include high-voltage power terminations, fiber optic connectors for telemetry and video signals, surge protection devices, and the main power distribution hub that feeds the vehicle's hydraulic power unit, thrusters, and auxiliary systems. On the Hercules MK3, the term can represents a single point of failure for ROV power and communications, and any water ingress or electrical fault within this assembly will typically result in immediate vehicle recovery.",
   frame: "The frame and structural components of the Hercules MK3 ROV consist of a robust aluminum alloy framework that serves as the primary load-bearing structure and mounting platform for all subsystems including thrusters, cameras, manipulators, and tooling packages. This skeletal framework is designed to withstand deep-sea pressures and operational loads while maintaining precise dimensional stability for accurate positioning during subsea operations. Key structural elements include the main chassis rails, cross-bracing members, skid rails for seabed landing, and standardized mounting interfaces that allow for rapid reconfiguration of tooling packages between deployments.",
@@ -768,19 +768,21 @@ const DATA = {
   },
   valve_packs: {
     drawings: [
+      {num:"ROV-0305-D-0450-00", title:"Curvetech Valve Pack GA (VP1/VP2)", file:"manuals/ROV-0305-D-0450-00.PDF"},
       {num:"ROV-0305-D-0470-00", title:"High Flow Valve Pack GA", file:"manuals/ROV-0305-D-0470-00 sht 1.pdf"},
       {num:"ROV-0311-D-0208-00", title:"Valve Pack Unregulated Supply GA", file:"manuals/ROV-0311-D-0208-00 Pod valve pack unregulated supply.pdf"},
       {num:"ROV-0311-D-0208-90", title:"Valve Pack Unregulated Supply Wiring", file:"manuals/ROV-0311-D-0208-90.pdf"},
     ],
     manuals: [
+      {title:"Aleron VP Manual", file:"manuals/Aleron VP Manual.pdf"},
       {title:"TMA01030 — Interface Systems Manual", file:"manuals/TMA01030 - Interface systems manual.pdf"},
     ]
   },
   thrusters: {
     drawings: [
-      {num:"ROV-0226-420-00", title:"Thruster Control Unit GA", file:"manuals/ROV-0226-420-00 SHEET 1.pdf"},
-      {num:"ROV-0226-420-01", title:"Thruster Control Unit Assembly", file:"manuals/ROV-0226-420-01 SHEET 2.pdf"},
-      {num:"ROV-0300-D-0420-90", title:"TCU Wiring Diagram", file:"manuals/ROV-0300-D-0420-90 TCU Wiring Diagram.pdf"},
+      {num:"ROV-0226-630-90", title:"Thruster Cable Assembly Wiring Diagram", file:"manuals/ROV-0226-630-90.pdf"},
+      {num:"ROV-0305-D-0450-00", title:"Curvetech Valve Pack GA (VP1/VP2 — Thruster Control)", file:"manuals/ROV-0305-D-0450-00.PDF"},
+      {num:"ROV-0300-D-0420-90", title:"TCU Wiring Diagram — Servo Valve Outputs", file:"manuals/ROV-0300-D-0420-90 TCU Wiring Diagram.pdf"},
     ],
     manuals: []
   },
@@ -847,8 +849,7 @@ const DATA = {
       {num:"ROV-0226-420-01", title:"Manipulator Control Unit", file:"manuals/ROV-0226-420-01 SHEET 1.pdf"},
     ],
     manuals: [
-      {title:"Aleron VP Manual", file:"manuals/Aleron VP Manual.pdf"},
-      {title:"8228 Atlas7r Manual", file:"manuals/8228_Atlas7r Manual.pdf"},
+      {title:"8228 Atlas7r Manual — Schilling Atlas 7R", file:"manuals/8228_Atlas7r Manual.pdf"},
     ]
   },
   pan_tilt: {
