@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Manual Admin — Hercules MK3</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+#topbar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#090c13;border-bottom:1px solid #2a2d35;flex-shrink:0;}
+#topbar h1{font-family:monospace;font-size:11px;color:#e8a44a;letter-spacing:.12em;flex:1;}
+.top-btn{background:rgba(232,164,74,.1);border:1px solid rgba(232,164,74,.3);color:#e8a44a;border-radius:3px;padding:5px 12px;cursor:pointer;font-family:monospace;font-size:9px;}
+.top-btn:hover{background:rgba(232,164,74,.2);}
+#main{display:flex;flex:1;overflow:hidden;}
+/* LEFT: Section list */
+#sec-panel{width:200px;flex-shrink:0;background:#090c13;border-right:1px solid #2a2d35;overflow-y:auto;padding:8px 0;}
+.sec-item{padding:7px 14px;cursor:pointer;font-family:monospace;font-size:9px;color:#606470;border-left:2px solid transparent;transition:all .1s;}
+.sec-item:hover{color:#c8c4b8;background:rgba(255,255,255,.03);}
+.sec-item.active{color:#e8a44a;border-left-color:#e8a44a;background:rgba(232,164,74,.05);}
+.sec-count{float:right;color:#404860;font-size:8px;}
+/* RIGHT: Drawing/manual list */
+#content{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+#content-header{padding:10px 16px;background:#0d1018;border-bottom:1px solid #2a2d35;flex-shrink:0;display:flex;align-items:center;gap:10px;}
+#section-title{font-family:monospace;font-size:10px;color:#e8a44a;flex:1;}
+#filter-row{display:flex;gap:6px;}
+.filter-btn{padding:4px 10px;font-family:monospace;font-size:8px;border-radius:3px;border:1px solid #2a2d35;background:#1a1d24;color:#606470;cursor:pointer;}
+.filter-btn.active{border-color:#e8a44a;color:#e8a44a;background:rgba(232,164,74,.1);}
+#drawing-list{flex:1;overflow-y:auto;padding:8px 0;}
+/* Drawing row */
+.dr-row{display:flex;align-items:flex-start;gap:10px;padding:9px 16px;border-bottom:1px solid #1a1d24;transition:background .1s;}
+.dr-row:hover{background:#0d1018;}
+.dr-row.removed{opacity:.4;}
+.dr-info{flex:1;min-width:0;}
+.dr-num{font-family:monospace;font-size:8px;color:#e8a44a;margin-bottom:2px;}
+.dr-title{font-size:12px;color:#c8c4b8;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dr-file{font-family:monospace;font-size:8px;color:#404860;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dr-type{font-family:monospace;font-size:8px;padding:2px 6px;border-radius:2px;border:1px solid;margin-right:4px;flex-shrink:0;}
+.dr-type.drawing{color:#6090e0;border-color:rgba(96,144,224,.3);}
+.dr-type.manual{color:#90c060;border-color:rgba(144,192,96,.3);}
+.dr-actions{display:flex;gap:5px;flex-shrink:0;align-items:center;}
+.act-btn{padding:3px 8px;font-family:monospace;font-size:8px;border-radius:3px;border:1px solid;cursor:pointer;white-space:nowrap;}
+.act-btn.move{color:#6090e0;border-color:rgba(96,144,224,.3);background:rgba(96,144,224,.05);}
+.act-btn.move:hover{background:rgba(96,144,224,.15);}
+.act-btn.remove{color:#e06060;border-color:rgba(224,96,96,.3);background:rgba(224,96,96,.05);}
+.act-btn.remove:hover{background:rgba(224,96,96,.15);}
+.act-btn.restore{color:#60c060;border-color:rgba(96,192,96,.3);background:rgba(96,192,96,.05);}
+/* Modal */
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;}
+#modal.open{display:flex;}
+#modal-box{background:#141720;border:1px solid #2a2d35;border-radius:6px;padding:20px;width:420px;max-width:90vw;}
+#modal-title{font-family:monospace;font-size:10px;color:#e8a44a;margin-bottom:12px;}
+#modal-file{font-family:monospace;font-size:8px;color:#606470;margin-bottom:14px;word-break:break-all;}
+.modal-label{font-family:monospace;font-size:9px;color:#a8a49a;margin-bottom:5px;}
+#modal-select{width:100%;background:#1a1d24;border:1px solid #2a2d35;color:#c8c4b8;border-radius:3px;padding:7px;font-family:monospace;font-size:10px;outline:none;}
+#modal-select:focus{border-color:#e8a44a;}
+.modal-btns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+.modal-btn{padding:6px 14px;font-family:monospace;font-size:9px;border-radius:3px;border:none;cursor:pointer;}
+.modal-btn.confirm{background:#e8a44a;color:#000;font-weight:700;}
+.modal-btn.cancel{background:#1a1d24;color:#c8c4b8;border:1px solid #2a2d35;}
+#status-bar{padding:4px 16px;font-family:monospace;font-size:8px;color:#505460;flex-shrink:0;border-top:1px solid #1a1d24;}
+#unsaved-badge{display:none;background:#e8a44a;color:#000;border-radius:3px;padding:2px 8px;font-size:8px;font-family:monospace;font-weight:700;}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <h1>&#9881; MANUAL ADMIN — Hercules MK3</h1>
+  <span id="unsaved-badge">UNSAVED CHANGES</span>
+  <button class="top-btn" onclick="saveChanges()">&#128190; SAVE CHANGES</button>
+  <button class="top-btn" onclick="window.open('index.html','_blank')" style="color:#6090e0;border-color:rgba(96,144,224,.3)">&#128196; BACK TO MANUAL</button>
+</div>
+<div id="main">
+  <div id="sec-panel" id="sec-panel">
+    <div style="padding:6px 14px;font-family:monospace;font-size:8px;color:#404860;letter-spacing:.1em;border-bottom:1px solid #1a1d24;margin-bottom:4px;">SECTIONS</div>
+  </div>
+  <div id="content">
+    <div id="content-header">
+      <span id="section-title">Select a section</span>
+      <div id="filter-row">
+        <button class="filter-btn active" onclick="setFilter('all',this)">ALL</button>
+        <button class="filter-btn" onclick="setFilter('drawing',this)">DRAWINGS</button>
+        <button class="filter-btn" onclick="setFilter('manual',this)">MANUALS</button>
+        <button class="filter-btn" onclick="setFilter('removed',this)">REMOVED</button>
+      </div>
+    </div>
+    <div id="drawing-list"></div>
+    <div id="status-bar">Ready</div>
+  </div>
+</div>
+<!-- Move modal -->
+<div id="modal">
+  <div id="modal-box">
+    <div id="modal-title">&#8594; MOVE TO SECTION</div>
+    <div id="modal-file"></div>
+    <div class="modal-label">Select destination section:</div>
+    <select id="modal-select"></select>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModal()">CANCEL</button>
+      <button class="modal-btn confirm" onclick="confirmMove()">MOVE</button>
+    </div>
+  </div>
+</div>
+<script>
+// Load DATA from index.html via fetch — we'll work on a copy
+let DATA = null;
+let currentSection = null;
+let currentFilter = 'all';
+let pendingMove = null;
+let hasChanges = false;
+
+const SECTION_LABELS = {
+  electronics_pod:'Electronics Pod', tcu:'TCU', hpu:'HPU / Hydraulics',
+  valve_packs:'Valve Packs', thrusters:'Thrusters', t4_manip:'T4 Manipulator',
+  atlas_manip:'Atlas Manipulator', lars:'LARS', tms:'TMS', frame:'Frame / Structure',
+  rov_lights:'ROV Lights', pan_tilt:'Pan & Tilt', longline:'Longline',
+  cables:'Cables', control_room:'Control Room', pdu:'PDU', all_drawings:'All Drawings'
+};
+
+// Load DATA from the parent index.html
+async function loadData() {
+  try {
+    const resp = await fetch('index.html');
+    const html = await resp.text();
+    const match = html.match(/const DATA\s*=\s*(\{[\s\S]*?\});\s*\/\/ END DATA/);
+    if (match) {
+      DATA = eval('(' + match[1] + ')');
+    } else {
+      // Try extracting between markers
+      const start = html.indexOf('const DATA = {');
+      const end = html.indexOf('};\n\n', start);
+      if (start > -1) {
+        DATA = eval('(' + html.substring(start + 'const DATA = '.length, end + 1) + ')');
+      }
+    }
+    if (!DATA) throw new Error('Could not parse DATA from index.html');
+    buildSectionList();
+    setStatus('Loaded ' + Object.keys(DATA).length + ' sections');
+  } catch(e) {
+    setStatus('Error loading: ' + e.message);
+    // Fall back to a minimal structure for navigation
+    DATA = {};
+  }
+}
+
+function buildSectionList() {
+  const panel = document.getElementById('sec-panel');
+  panel.innerHTML = '<div style="padding:6px 14px;font-family:monospace;font-size:8px;color:#404860;letter-spacing:.1em;border-bottom:1px solid #1a1d24;margin-bottom:4px;">SECTIONS</div>';
+  Object.keys(DATA).forEach(key => {
+    if (!DATA[key] || typeof DATA[key] !== 'object') return;
+    const d = DATA[key];
+    const draws = (d.drawings || []).length;
+    const mans = (d.manuals || []).length;
+    if (draws === 0 && mans === 0) return;
+    const label = SECTION_LABELS[key] || key;
+    const div = document.createElement('div');
+    div.className = 'sec-item';
+    div.dataset.key = key;
+    div.innerHTML = label + '<span class="sec-count">' + (draws + mans) + '</span>';
+    div.onclick = () => selectSection(key);
+    panel.appendChild(div);
+  });
+}
+
+function selectSection(key) {
+  currentSection = key;
+  document.querySelectorAll('.sec-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.key === key);
+  });
+  document.getElementById('section-title').textContent = SECTION_LABELS[key] || key;
+  renderList();
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+function renderList() {
+  if (!currentSection || !DATA[currentSection]) return;
+  const d = DATA[currentSection];
+  const list = document.getElementById('drawing-list');
+  list.innerHTML = '';
+
+  const all = [
+    ...(d.drawings || []).map(item => ({...item, _type:'drawing'})),
+    ...(d.manuals || []).map(item => ({...item, _type:'manual'}))
+  ];
+
+  let shown = 0;
+  all.forEach((item, idx) => {
+    if (item._removed && currentFilter !== 'removed') return;
+    if (!item._removed && currentFilter === 'removed') return;
+    if (currentFilter === 'drawing' && item._type !== 'drawing') return;
+    if (currentFilter === 'manual' && item._type !== 'manual') return;
+
+    const row = document.createElement('div');
+    row.className = 'dr-row' + (item._removed ? ' removed' : '');
+    const fname = (item.file || '').split('/').pop();
+    row.innerHTML =
+      '<span class="dr-type ' + item._type + '">' + item._type.toUpperCase() + '</span>' +
+      '<div class="dr-info">' +
+        (item.num ? '<div class="dr-num">' + esc(item.num) + '</div>' : '') +
+        '<div class="dr-title">' + esc(item.title || fname) + '</div>' +
+        '<div class="dr-file">' + esc(fname) + '</div>' +
+      '</div>' +
+      '<div class="dr-actions">' +
+        (item._removed
+          ? '<button class="act-btn restore" onclick="restoreItem(\'' + currentSection + '\',' + idx + ')">&#8635; RESTORE</button>'
+          : '<button class="act-btn move" onclick="showMoveModal(\'' + currentSection + '\',' + idx + ',\'' + esc(item.title||fname) + '\')">&#8594; MOVE</button>' +
+            '<button class="act-btn remove" onclick="removeItem(\'' + currentSection + '\',' + idx + ')">&#10005; REMOVE</button>'
+        ) +
+      '</div>';
+    list.appendChild(row);
+    shown++;
+  });
+
+  if (shown === 0) {
+    list.innerHTML = '<div style="padding:30px;text-align:center;font-family:monospace;font-size:9px;color:#404860;">No items in this view</div>';
+  }
+  setStatus(shown + ' items shown in ' + (SECTION_LABELS[currentSection] || currentSection));
+}
+
+function removeItem(section, idx) {
+  const d = DATA[section];
+  const all = [...(d.drawings||[]), ...(d.manuals||[])];
+  all[idx]._removed = true;
+  markChanged();
+  renderList();
+  buildSectionList();
+}
+
+function restoreItem(section, idx) {
+  const d = DATA[section];
+  const all = [...(d.drawings||[]), ...(d.manuals||[])];
+  delete all[idx]._removed;
+  markChanged();
+  renderList();
+  buildSectionList();
+}
+
+function showMoveModal(section, idx, title) {
+  pendingMove = { section, idx };
+  document.getElementById('modal-title').textContent = '\u2192 MOVE: ' + title;
+  document.getElementById('modal-file').textContent = 'Currently in: ' + (SECTION_LABELS[section] || section);
+  const sel = document.getElementById('modal-select');
+  sel.innerHTML = Object.keys(SECTION_LABELS)
+    .filter(k => k !== section && DATA[k])
+    .map(k => '<option value="' + k + '">' + SECTION_LABELS[k] + '</option>')
+    .join('');
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  pendingMove = null;
+}
+
+function confirmMove() {
+  if (!pendingMove) return;
+  const { section, idx } = pendingMove;
+  const d = DATA[section];
+  const all = [...(d.drawings||[]), ...(d.manuals||[])];
+  const item = all[idx];
+  const dest = document.getElementById('modal-select').value;
+
+  // Remove from source
+  if (item._type === 'drawing') {
+    DATA[section].drawings = DATA[section].drawings.filter((_, i) => i !== idx);
+  } else {
+    DATA[section].manuals = DATA[section].manuals.filter((_, i) => {
+      const drawCount = (DATA[section].drawings||[]).length;
+      return (i + drawCount) !== idx;
+    });
+  }
+
+  // Add to destination
+  const clean = {...item};
+  delete clean._type; delete clean._removed;
+  if (item._type === 'drawing') {
+    DATA[dest].drawings = DATA[dest].drawings || [];
+    DATA[dest].drawings.push(clean);
+  } else {
+    DATA[dest].manuals = DATA[dest].manuals || [];
+    DATA[dest].manuals.push(clean);
+  }
+
+  closeModal();
+  markChanged();
+  renderList();
+  buildSectionList();
+  setStatus('Moved to ' + (SECTION_LABELS[dest] || dest));
+}
+
+function markChanged() {
+  hasChanges = true;
+  document.getElementById('unsaved-badge').style.display = 'inline';
+}
+
+function saveChanges() {
+  // Generate the new DATA JavaScript string
+  const dataStr = JSON.stringify(DATA, (k, v) => {
+    // Strip internal markers
+    if (k === '_removed' || k === '_type') return undefined;
+    return v;
+  }, 2);
+
+  // Create a downloadable patch file
+  const patch = '// DATA PATCH — paste into index.html replacing the DATA object\n' +
+                'const DATA = ' + dataStr + ';\n';
+  const blob = new Blob([patch], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'data_patch.js';
+  a.click();
+  setStatus('Downloaded data_patch.js — apply to index.html');
+}
+
+function setStatus(msg) {
+  document.getElementById('status-bar').textContent = msg;
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+}
+
+// Close modal on backdrop click
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+loadData();
+</script>
+</body>
+</html>
