@@ -58,14 +58,30 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
 .modal-btn.cancel{background:#1a1d24;color:#c8c4b8;border:1px solid #2a2d35;}
 #status-bar{padding:4px 16px;font-family:monospace;font-size:8px;color:#505460;flex-shrink:0;border-top:1px solid #1a1d24;}
 #unsaved-badge{display:none;background:#e8a44a;color:#000;border-radius:3px;padding:2px 8px;font-size:8px;font-family:monospace;font-weight:700;}
+.ref-group{margin-bottom:14px;}
+.ref-prefix{font-family:monospace;font-size:9px;color:#e8a44a;border-bottom:1px solid #2a2d35;padding-bottom:4px;margin-bottom:6px;}
+.ref-row{display:flex;gap:8px;margin-bottom:4px;}
+.ref-num{font-family:monospace;font-size:8px;color:#90c060;min-width:130px;flex-shrink:0;}
+.ref-desc{color:#8a8680;font-size:10px;line-height:1.5;}
+.ref-warn{color:#e06060;font-family:monospace;font-size:8px;padding:4px 8px;background:rgba(224,96,96,.08);border:1px solid rgba(224,96,96,.2);border-radius:3px;margin-top:6px;line-height:1.6;}
 </style>
 </head>
 <body>
 <div id="topbar">
   <h1>&#9881; MANUAL ADMIN — Hercules MK3</h1>
+  <button class="top-btn" onclick="toggleRef()" style="color:#90c060;border-color:rgba(144,192,96,.3);">&#128218; DRG NUMBERS</button>
   <span id="unsaved-badge">UNSAVED CHANGES</span>
   <button class="top-btn" onclick="saveChanges()">&#128190; SAVE CHANGES</button>
   <button class="top-btn" onclick="window.open('index.html','_blank')" style="color:#6090e0;border-color:rgba(96,144,224,.3)">&#128196; BACK TO MANUAL</button>
+</div>
+<!-- Drawing number reference panel -->
+<div id="ref-panel" style="display:none;position:fixed;top:42px;right:0;width:380px;height:calc(100vh - 42px);background:#090c13;border-left:1px solid #2a2d35;overflow-y:auto;z-index:50;padding:14px;">
+  <div style="font-family:monospace;font-size:10px;color:#e8a44a;letter-spacing:.1em;margin-bottom:12px;">DRAWING NUMBER REFERENCE</div>
+  <div style="font-family:monospace;font-size:8px;color:#505460;margin-bottom:14px;line-height:1.8;">
+    Subsea 7 Hercules MK3 drawing numbers follow this structure:<br>
+    <span style="color:#c8c4b8;">PREFIX - SERIES - TYPE - SEQUENCE - REVISION</span>
+  </div>
+  <div id="ref-content"></div>
 </div>
 <div id="main">
   <div id="sec-panel" id="sec-panel">
@@ -113,6 +129,191 @@ const SECTION_LABELS = {
   rov_lights:'ROV Lights', pan_tilt:'Pan & Tilt', longline:'Longline',
   cables:'Cables', control_room:'Control Room', pdu:'PDU', all_drawings:'All Drawings'
 };
+
+// Drawing number reference data
+const DRG_REF = [
+  {
+    prefix: 'ROV-0226-xxx',
+    desc: 'Legacy Hercules MK2/MK3 vehicle drawings (pre-MOTC)',
+    series: [
+      ['ROV-0226-115', 'Buoyancy assemblies'],
+      ['ROV-0226-420', 'TCU junction box — LEGACY, superseded by ROV-0300-D-0420'],
+      ['ROV-0226-455', 'Hydraulic compensators'],
+      ['ROV-0226-630', 'Thruster cable assemblies'],
+      ['ROV-0226-725', 'Vehicle cable assemblies (main loom)'],
+    ],
+    warn: 'ROV-0226-420-xx are OLD TCU drawings — do not use. Current TCU is ROV-0300-D-0420.'
+  },
+  {
+    prefix: 'ROV-0249-xxx',
+    desc: 'HPU — Hydraulic Power Unit drawings',
+    series: [
+      ['ROV-0249-D-0050', 'HPU general arrangement & parts list'],
+      ['ROV-0249-D-0050-90', 'HPU wiring diagram'],
+      ['ROV-0249-D-0051', 'HPU rotor/stator set'],
+    ]
+  },
+  {
+    prefix: 'ROV-0300-D-0xxx',
+    desc: 'Current Hercules MK3 vehicle drawings (post-MOTC)',
+    series: [
+      ['ROV-0300-D-0100', 'Frame general arrangement'],
+      ['ROV-0300-D-0110', 'Frame protection / acetal guards'],
+      ['ROV-0300-D-0111', 'T4 manipulator mounting plates'],
+      ['ROV-0300-D-0115', 'Buoyancy assemblies (current)'],
+      ['ROV-0300-D-0150', 'Tool tray assemblies'],
+      ['ROV-0300-D-0300', 'Termination can (term can)'],
+      ['ROV-0300-D-0420', 'TCU — Thruster Control Unit assembly & wiring'],
+      ['ROV-0300-D-0440', 'Hydraulic schematic (3 sheets) & parts list'],
+      ['ROV-0300-D-0802', 'T4 deck JIB'],
+    ]
+  },
+  {
+    prefix: 'ROV-0305-D-0xxx',
+    desc: 'Hercules MK3 variant / upgrade drawings',
+    series: [
+      ['ROV-0305-D-0100', 'Frame GA variants'],
+      ['ROV-0305-D-0111', 'T4 mount (port side variant)'],
+      ['ROV-0305-D-0127', 'Buoyancy variant'],
+      ['ROV-0305-D-0450', 'Curvetech valve pack GA (VP1/VP2 — thruster control)'],
+      ['ROV-0305-D-0470', 'High flow valve pack GA'],
+      ['ROV-0305-D-0630', 'Pan & tilt camera wiring'],
+      ['ROV-0305-D-0660', 'Pan & tilt switch panel'],
+    ]
+  },
+  {
+    prefix: 'ROV-0311-D-0xxx',
+    desc: 'Electronics Pod drawings (pre-MOTC — superseded by EQP952)',
+    series: [
+      ['ROV-0311-D-0200', 'Pod bottomside network block diagram'],
+      ['ROV-0311-D-0206', 'Pod earth strip plate'],
+      ['ROV-0311-D-0208', 'Valve pack unregulated supply'],
+      ['ROV-0311-D-0210', 'Band splitter assembly'],
+      ['ROV-0311-D-0211', 'Ethernet gyro cover plate'],
+      ['ROV-0311-D-0212', 'CWDM assembly (RED/BLUE)'],
+      ['ROV-0311-D-0213', 'Optical transceiver tray'],
+      ['ROV-0311-D-0300', 'TMS GA (pre-MOTC)'],
+      ['ROV-0311-D-0500', 'TMS GA (current)'],
+      ['ROV-0311-D-0620', 'TMS wiring'],
+      ['ROV-0311-D-0680', 'ROV lights wiring'],
+      ['ROV-0311-D-0800', 'Control console wiring (multiple sheets)'],
+    ],
+    warn: 'ROV-0311-D-02xx pod drawings superseded by EQP952-0203-DR-PD-55xxx after MOTC upgrade.'
+  },
+  {
+    prefix: 'EQP952-0203-DR-PD-55xxx',
+    desc: 'Post-MOTC Electronics Pod drawings — CURRENT versions',
+    series: [
+      ['EQP952-0203-DR-PD-55000', 'Pod assembly GA (top level)'],
+      ['EQP952-0203-DR-PD-55001', 'Control chassis assembly GA'],
+      ['EQP952-0203-DR-PD-55002', 'Payload chassis assembly GA'],
+      ['EQP952-0203-DR-PD-55003', 'Control penetrator ring GA'],
+      ['EQP952-0203-DR-PD-55004', 'Payload penetrator ring GA'],
+      ['EQP952-0203-DR-PD-55006', 'Control chassis earth strip plate'],
+      ['EQP952-0203-DR-PD-55007', 'Payload chassis earth strip plate'],
+      ['EQP952-0203-DR-PD-55011', 'Gyro cover plate assembly'],
+      ['EQP952-0203-DR-PD-55016', 'Payload chassis wiring diagram'],
+      ['EQP952-0203-DR-PD-55017', 'Control chassis wiring diagram'],
+      ['EQP952-0203-DR-PD-55018', 'Control penetrator ring label set'],
+      ['EQP952-0203-DR-PD-55019', 'Payload penetrator ring label set'],
+    ]
+  },
+  {
+    prefix: 'HCV-0015-D-0xxx',
+    desc: 'Control room / console drawings (HCV = Hercules Control Vehicle)',
+    series: [
+      ['HCV-0015-D-0200', 'Control console GA'],
+      ['HCV-0015-D-0800', 'Control console wiring (multiple sheets)'],
+    ]
+  },
+  {
+    prefix: 'PDU-xxxx-D-00xx',
+    desc: 'Power Distribution Unit drawings',
+    series: [
+      ['PDU-0009-D-0016', 'PDU wiring diagrams (3 sheets)'],
+      ['PDU-1012-D-0007', '2.4KV transformer panel wiring'],
+      ['PDU-1012-D-0017', 'PDU GA and wiring'],
+    ]
+  },
+  {
+    prefix: 'OCE-0400-DR-0xxx',
+    desc: 'LARS — Launch & Recovery System (OCE = Oceanic)',
+    series: [
+      ['OCE-0400-DR-0124', 'LARS service winch drawings'],
+      ['OCE-0400-DR-0130', 'Cursor fabrication drawings'],
+      ['OCE-0400-DR-0135', 'Cursor GA MK3'],
+      ['OCE-0400-DR-0140', 'Latch beam GA & wiring'],
+      ['OCE-0400-DR-0304', 'LARS service winch hydraulic schematic'],
+      ['OCE-0400-DR-0551/0561', 'LCC wiring (port & stbd)'],
+      ['OCE-0400-DR-0719–0820', 'Service winch wiring (JB series)'],
+    ]
+  },
+  {
+    prefix: 'SSA-0277-D-0004',
+    desc: 'Tool tray skid drawings (SSA = Subsea 7 Assembly)',
+    series: [
+      ['SSA-0277-D-0004-00', 'Tool tray skid GA (H15 amended)'],
+      ['SSA-0277-D-0004-01', 'Tool tray skid BOM'],
+      ['SSA-0277-D-0004-14/16/17', 'Buoyancy block drawings'],
+    ]
+  },
+  {
+    prefix: 'TMAxxxxx',
+    desc: 'Technical Manuals (TMA = Technical Manual Authored)',
+    series: [
+      ['TMA00974', 'Hercules Series Hydraulics Manual'],
+      ['TMA01028', 'H15 GA & Schematics Manual'],
+      ['TMA01029', 'H30 GA & Schematics Manual'],
+      ['TMA01030', 'Interface Systems Manual'],
+      ['TMA01031', 'Control System Manual'],
+      ['TMA01071', 'LARS Technical Manual'],
+    ]
+  },
+  {
+    prefix: '011-8239',
+    desc: 'Schilling/TechnipFMC T4 Manipulator Manual (vendor numbering)',
+    series: [
+      ['011-8239', 'T4 complete manual — contains all joint drawings 101-xxxx'],
+      ['101-4042', 'Azimuth actuator (p.281)'],
+      ['101-4077', 'Elbow actuator (p.287)'],
+      ['101-4182', 'Pitch/yaw (p.301) — interchangeable joints'],
+      ['101-6789', 'Wrist actuator (p.363)'],
+      ['101-4928', 'Jaw intermeshing (p.417)'],
+    ]
+  },
+  {
+    prefix: 'NOT ROV — flag for review',
+    desc: 'Drawing prefixes that indicate project tooling, not permanent ROV equipment',
+    series: [
+      ['ROV-0300-D-0400', 'JUPITER valve pack — project tooling, not permanent ROV'],
+      ['ROV-0226-420', 'Legacy TCU JB — superseded, keep only if needed for reference'],
+      ['CAB-xxxx', 'Cable assemblies — project-specific, review before including'],
+    ],
+    warn: 'Any drawing with these prefixes found in the manual should be verified as permanent ROV equipment before keeping.'
+  }
+];
+
+function toggleRef() {
+  const panel = document.getElementById('ref-panel');
+  const isVisible = panel.style.display !== 'none';
+  panel.style.display = isVisible ? 'none' : 'block';
+  if (!isVisible) buildRef();
+}
+
+function buildRef() {
+  const el = document.getElementById('ref-content');
+  el.innerHTML = DRG_REF.map(group => {
+    const rows = group.series.map(([num, desc]) =>
+      '<div class="ref-row"><span class="ref-num">' + esc(num) + '</span><span class="ref-desc">' + esc(desc) + '</span></div>'
+    ).join('');
+    const warn = group.warn ? '<div class="ref-warn">&#9888; ' + esc(group.warn) + '</div>' : '';
+    return '<div class="ref-group">'
+      + '<div class="ref-prefix">' + esc(group.prefix) + '</div>'
+      + '<div style="font-size:10px;color:#606470;margin-bottom:6px;">' + esc(group.desc) + '</div>'
+      + rows + warn
+      + '</div>';
+  }).join('<hr style="border:none;border-top:1px solid #1a1d24;margin:10px 0;">');
+}
 
 // Load DATA from the parent index.html
 async function loadData() {
