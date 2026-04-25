@@ -593,45 +593,47 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       <button class="mclose" onclick="closeMenu()">✕ CLOSE</button>
     </div>
     <div id="menu-body">
-      <div class="grp-lbl">Vehicle Systems</div>
-      <div class="mitem" onclick="sel('electronics_pod','Electronics Pod','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Electronics Pod</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('tcu','TCU — Thruster Control Unit','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">TCU — Thruster Control Unit</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('hpu','HPU — Hydraulic Power Unit','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">HPU — Hydraulic Power Unit</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('valve_packs','Valve Packs (1, 2, 3, Aleron)','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Valve Packs (1, 2, 3, Aleron)</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('thrusters','Thrusters','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Thrusters</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('rov_lights','ROV Lights','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">ROV Lights</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('rov_term_can','ROV Term Can','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">ROV Term Can</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('frame','Frame &amp; Structure','VEHICLE SYSTEMS')"><div class="idot"></div><span class="iname">Frame &amp; Structure</span><span class="iarrow">›</span></div>
+
+      <div class="grp-lbl">Electronics &amp; Control</div>
+      <div class="mitem" onclick="sel('electronics_pod','Electronics Pod','ELECTRONICS')"><div class="idot"></div><span class="iname">Electronics Pod</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('tcu','TCU — Thruster Control Unit','ELECTRONICS')"><div class="idot"></div><span class="iname">TCU — Thruster Control Unit</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('control_console','Control Console','ELECTRONICS')"><div class="idot"></div><span class="iname">Control Console</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('pdu','PDU — Power Distribution Unit','ELECTRONICS')"><div class="idot"></div><span class="iname">PDU — Power Distribution Unit</span><span class="iarrow">›</span></div>
+
+      <div class="grp-lbl">Propulsion</div>
+      <div class="mitem" onclick="sel('thrusters','Thrusters — Curvetech Hydraulic','PROPULSION')"><div class="idot"></div><span class="iname">Thrusters — Curvetech</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('valve_packs','Valve Packs — VP1, VP2, VP3','PROPULSION')"><div class="idot"></div><span class="iname">Valve Packs</span><span class="iarrow">›</span></div>
+
+      <div class="grp-lbl">Hydraulics</div>
+      <div class="mitem" onclick="sel('hpu','HPU — Hydraulic Power Unit','HYDRAULICS')"><div class="idot"></div><span class="iname">HPU — Hydraulic Power Unit</span><span class="iarrow">›</span></div>
+
+      <div class="grp-lbl">Vehicle Structure</div>
+      <div class="mitem" onclick="sel('frame','Frame &amp; Structure','STRUCTURE')"><div class="idot"></div><span class="iname">Frame &amp; Structure</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('rov_term_can','ROV Term Can','STRUCTURE')"><div class="idot"></div><span class="iname">ROV Term Can</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('rov_lights','ROV Lights','STRUCTURE')"><div class="idot"></div><span class="iname">ROV Lights</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('longline','Longline &amp; Cables','STRUCTURE')"><div class="idot"></div><span class="iname">Longline &amp; Cables</span><span class="iarrow">›</span></div>
+
       <div class="grp-lbl">Manipulators</div>
-      <div class="mitem" onclick="sel('t4_manip','T4 Manipulator','MANIPULATORS')"><div class="idot"></div><span class="iname">T4 Manipulator</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('atlas_manip','Atlas Manipulator','MANIPULATORS')"><div class="idot"></div><span class="iname">Atlas Manipulator</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('pan_tilt','Pan &amp; Tilt','MANIPULATORS')"><div class="idot"></div><span class="iname">Pan &amp; Tilt</span><span class="iarrow">›</span></div>
-      <div class="grp-lbl">TMS — Tether Management System</div>
-      <div class="mitem" onclick="sel('tms','TMS Overview','TMS')"><div class="idot"></div><span class="iname">TMS Overview</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('tms','TMS H15','TMS')"><div class="idot"></div><span class="iname">TMS H15</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('tms','TMS H30','TMS')"><div class="idot"></div><span class="iname">TMS H30</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('tms','TMS Topside','TMS')"><div class="idot"></div><span class="iname">TMS Topside</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('tms','TMS Protection Frame','TMS')"><div class="idot"></div><span class="iname">TMS Protection Frame</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('tms','Stationary Term Can','TMS')"><div class="idot"></div><span class="iname">Stationary Term Can</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('tms','Rotary Term Can','TMS')"><div class="idot"></div><span class="iname">Rotary Term Can</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('tms','Tether','TMS')"><div class="idot"></div><span class="iname">Tether</span><span class="iarrow">›</span></div>
-      <div class="grp-lbl">LARS — Launch &amp; Recovery System</div>
+      <div class="mitem" onclick="sel('t4_manip','T4 Manipulator — Schilling','MANIPULATORS')"><div class="idot"></div><span class="iname">T4 Manipulator — Schilling</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('atlas_manip','Atlas Manipulator — Schilling','MANIPULATORS')"><div class="idot"></div><span class="iname">Atlas Manipulator — Schilling</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('pan_tilt','Pan &amp; Tilt Camera','MANIPULATORS')"><div class="idot"></div><span class="iname">Pan &amp; Tilt Camera</span><span class="iarrow">›</span></div>
+
+      <div class="grp-lbl">TMS — Tether Management</div>
+      <div class="mitem" onclick="sel('tms','TMS — H15 &amp; H30','TMS')"><div class="idot"></div><span class="iname">TMS — H15 &amp; H30</span><span class="iarrow">›</span></div>
+
+      <div class="grp-lbl">LARS — Launch &amp; Recovery</div>
       <div class="mitem" onclick="sel('lars','LARS Overview','LARS')"><div class="idot"></div><span class="iname">LARS Overview</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('lars','MacArtney Umbilical Winch','LARS')"><div class="idot"></div><span class="iname">MacArtney Umbilical Winch</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('lars','LCC Winch','LARS')"><div class="idot"></div><span class="iname">LCC Winch</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('lars','Latch Beam','LARS')"><div class="idot"></div><span class="iname">Latch Beam</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('lars','Latch Beam Winches','LARS')"><div class="idot"></div><span class="iname">Latch Beam Winches</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('lars','Cursor','LARS')"><div class="idot"></div><span class="iname">Cursor</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('lars','Moonpool Doors','LARS')"><div class="idot"></div><span class="iname">Moonpool Doors</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('lars','Service Winch','LARS')"><div class="idot"></div><span class="iname">Service Winch</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars','Latch Beam &amp; Winches','LARS')"><div class="idot"></div><span class="iname">Latch Beam &amp; Winches</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars','Cursor System','LARS')"><div class="idot"></div><span class="iname">Cursor System</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars','Service Winches','LARS')"><div class="idot"></div><span class="iname">Service Winches</span><span class="iarrow">›</span></div>
+
       <div class="grp-lbl">Topside</div>
-      <div class="mitem" onclick="sel('control_console','Control Console','TOPSIDE')"><div class="idot"></div><span class="iname">Control Console</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('control_room','Control Room','TOPSIDE')"><div class="idot"></div><span class="iname">Control Room</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('pdu','PDU — Power Distribution Unit','TOPSIDE')"><div class="idot"></div><span class="iname">PDU — Power Distribution Unit</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('control_room','Control Room Equipment','TOPSIDE')"><div class="idot"></div><span class="iname">Control Room Equipment</span><span class="iarrow">›</span></div>
+
       <div class="grp-lbl">Reference</div>
-      <div class="mitem" onclick="sel('longline','Longline Drawings','REFERENCE')"><div class="idot"></div><span class="iname">Longline Drawings</span><span class="iarrow">›</span></div>
       <div class="mitem" onclick="sel('cables','Cables Index','REFERENCE')"><div class="idot"></div><span class="iname">Cables Index</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('all_drawings','All Drawings — Search','REFERENCE')"><div class="idot"></div><span class="iname">All Drawings — Search</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('all_drawings','All Drawings','REFERENCE')"><div class="idot"></div><span class="iname">All Drawings</span><span class="iarrow">›</span></div>
+
     </div>
   </div>
 </div>
