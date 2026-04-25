@@ -1448,13 +1448,11 @@ function renderList(elId, items, type){
     el.innerHTML = items.map(item => {
       const title = item.title || '';
       const fname = (item.file || '').split('/').pop();
-      return '<div class="draw-item" style="cursor:pointer;">'
+      return '<div class="draw-item" data-f="' + fname + '" onclick="window.open(\'manuals/\'+this.dataset.f,\'_blank\')" style="cursor:pointer;">'
         + '<div class="draw-num" style="pointer-events:none;">MANUAL</div>'
         + '<div class="draw-title" style="pointer-events:none;">' + escH(title) + '</div>'
-        + '<div style="display:flex;gap:8px;margin-top:5px;">'
-        + '<div class="draw-open" data-f="' + fname + '" onclick="event.stopPropagation();window.open(\'manual-viewer.html?manual=\'+this.dataset.f,\'_blank\')" style="pointer-events:auto;">\u2197 OPEN + SEARCH</div>'
-        + '<div class="draw-open" data-f="' + fname + '" onclick="event.stopPropagation();window.open(\'manuals/\'+this.dataset.f,\'_blank\')" style="pointer-events:auto;color:var(--text-dim);">\uD83D\uDCC4 RAW PDF</div>'
-        + '</div></div>';
+        + '<div class="draw-open" style="pointer-events:none;">\u2197 OPEN IN NEW TAB &nbsp;·&nbsp; use Ctrl+F / Cmd+F to search</div>'
+        + '</div>';
     }).join('');
     return;
   }
