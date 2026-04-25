@@ -594,41 +594,51 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
     </div>
     <div id="menu-body">
 
-      <div class="grp-lbl">Electronics &amp; Control</div>
-      <div class="mitem" onclick="sel('electronics_pod','Electronics Pod','ELECTRONICS')"><div class="idot"></div><span class="iname">Electronics Pod</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('tcu','TCU — Thruster Control Unit','ELECTRONICS')"><div class="idot"></div><span class="iname">TCU — Thruster Control Unit</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('control_console','Control Console','ELECTRONICS')"><div class="idot"></div><span class="iname">Control Console</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('pdu','PDU — Power Distribution Unit','ELECTRONICS')"><div class="idot"></div><span class="iname">PDU — Power Distribution Unit</span><span class="iarrow">›</span></div>
+      <div class="grp-lbl">Longlines</div>
+      <div class="mitem" onclick="sel('longline','Longlines','LONGLINES')"><div class="idot"></div><span class="iname">Longlines</span><span class="iarrow">›</span></div>
 
-      <div class="grp-lbl">Propulsion</div>
-      <div class="mitem" onclick="sel('thrusters','Thrusters — Curvetech Hydraulic','PROPULSION')"><div class="idot"></div><span class="iname">Thrusters — Curvetech</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('valve_packs','Valve Packs — VP1, VP2, VP3','PROPULSION')"><div class="idot"></div><span class="iname">Valve Packs</span><span class="iarrow">›</span></div>
+      <div class="grp-lbl">Control Room</div>
+      <div class="mitem" onclick="sel('control_room','Control Room','CONTROL ROOM')"><div class="idot"></div><span class="iname">Control Room</span><span class="iarrow">›</span></div>
 
-      <div class="grp-lbl">Hydraulics</div>
-      <div class="mitem" onclick="sel('hpu','HPU — Hydraulic Power Unit','HYDRAULICS')"><div class="idot"></div><span class="iname">HPU — Hydraulic Power Unit</span><span class="iarrow">›</span></div>
+      <div class="grp-lbl">PDU — Power Distribution</div>
+      <div class="mitem" onclick="sel('pdu','PDU','PDU')"><div class="idot"></div><span class="iname">PDU</span><span class="iarrow">›</span></div>
 
-      <div class="grp-lbl">Vehicle Structure</div>
-      <div class="mitem" onclick="sel('frame','Frame &amp; Structure','STRUCTURE')"><div class="idot"></div><span class="iname">Frame &amp; Structure</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('rov_term_can','ROV Term Can','STRUCTURE')"><div class="idot"></div><span class="iname">ROV Term Can</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('rov_lights','ROV Lights','STRUCTURE')"><div class="idot"></div><span class="iname">ROV Lights</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('longline','Longline &amp; Cables','STRUCTURE')"><div class="idot"></div><span class="iname">Longline &amp; Cables</span><span class="iarrow">›</span></div>
+      <div class="grp-lbl">ROV — Electrical</div>
+      <div class="mitem" onclick="sel('electronics_pod','Electronics Pod','ROV ELECTRICAL')"><div class="idot"></div><span class="iname">Electronics Pod</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('rov_term_can','Term Can','ROV ELECTRICAL')"><div class="idot"></div><span class="iname">Term Can</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('rov_lights','Lights','ROV ELECTRICAL')"><div class="idot"></div><span class="iname">Lights</span><span class="iarrow">›</span></div>
 
-      <div class="grp-lbl">Manipulators</div>
-      <div class="mitem" onclick="sel('t4_manip','T4 Manipulator — Schilling','MANIPULATORS')"><div class="idot"></div><span class="iname">T4 Manipulator — Schilling</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('atlas_manip','Atlas Manipulator — Schilling','MANIPULATORS')"><div class="idot"></div><span class="iname">Atlas Manipulator — Schilling</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('pan_tilt','Pan &amp; Tilt Camera','MANIPULATORS')"><div class="idot"></div><span class="iname">Pan &amp; Tilt Camera</span><span class="iarrow">›</span></div>
+      <div class="grp-lbl">ROV — Hydraulic</div>
+      <div class="mitem" onclick="sel('hpu','HPU — Pump &amp; Tank','ROV HYDRAULIC')"><div class="idot"></div><span class="iname">HPU — Pump &amp; Tank</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('valve_packs','Valve Packs','ROV HYDRAULIC')"><div class="idot"></div><span class="iname">Valve Packs</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('tcu','TCU — Thruster Control','ROV HYDRAULIC')"><div class="idot"></div><span class="iname">TCU — Thruster Control</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('pan_tilt','Pan &amp; Tilt','ROV HYDRAULIC')"><div class="idot"></div><span class="iname">Pan &amp; Tilt</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('thrusters','Thrusters — Curvetech','ROV HYDRAULIC')"><div class="idot"></div><span class="iname">Thrusters — Curvetech</span><span class="iarrow">›</span></div>
 
-      <div class="grp-lbl">TMS — Tether Management</div>
-      <div class="mitem" onclick="sel('tms','TMS — H15 &amp; H30','TMS')"><div class="idot"></div><span class="iname">TMS — H15 &amp; H30</span><span class="iarrow">›</span></div>
+      <div class="grp-lbl">ROV — Mechanical</div>
+      <div class="mitem" onclick="sel('frame','Frame &amp; Structure','ROV MECHANICAL')"><div class="idot"></div><span class="iname">Frame &amp; Structure</span><span class="iarrow">›</span></div>
+
+      <div class="grp-lbl">TMS — H15</div>
+      <div class="mitem" onclick="sel('tms_h15','TMS H15','TMS H15')"><div class="idot"></div><span class="iname">TMS — H15</span><span class="iarrow">›</span></div>
+
+      <div class="grp-lbl">TMS — H30</div>
+      <div class="mitem" onclick="sel('tms_h30','TMS H30','TMS H30')"><div class="idot"></div><span class="iname">TMS — H30</span><span class="iarrow">›</span></div>
 
       <div class="grp-lbl">LARS — Launch &amp; Recovery</div>
-      <div class="mitem" onclick="sel('lars','LARS Overview','LARS')"><div class="idot"></div><span class="iname">LARS Overview</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('lars','Latch Beam &amp; Winches','LARS')"><div class="idot"></div><span class="iname">Latch Beam &amp; Winches</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('lars','Cursor System','LARS')"><div class="idot"></div><span class="iname">Cursor System</span><span class="iarrow">›</span></div>
-      <div class="mitem" onclick="sel('lars','Service Winches','LARS')"><div class="idot"></div><span class="iname">Service Winches</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars_lcc','LCC Winch','LARS')"><div class="idot"></div><span class="iname">LCC Winch</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars_latch_beam','Latch Beam','LARS')"><div class="idot"></div><span class="iname">Latch Beam</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars_latch_winch','Latch Beam Winch','LARS')"><div class="idot"></div><span class="iname">Latch Beam Winch</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars_cursor','Cursor','LARS')"><div class="idot"></div><span class="iname">Cursor</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars_sliding_weight','Sliding Weight','LARS')"><div class="idot"></div><span class="iname">Sliding Weight</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars_hpu','LARS HPU','LARS')"><div class="idot"></div><span class="iname">LARS HPU</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars_moonpool','Moonpool Doors','LARS')"><div class="idot"></div><span class="iname">Moonpool Doors</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars_service_winch','Service Winch','LARS')"><div class="idot"></div><span class="iname">Service Winch</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars_slip_ring','Service Winch Slip Ring','LARS')"><div class="idot"></div><span class="iname">Service Winch Slip Ring</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('lars_tether','Tether','LARS')"><div class="idot"></div><span class="iname">Tether</span><span class="iarrow">›</span></div>
 
-      <div class="grp-lbl">Topside</div>
-      <div class="mitem" onclick="sel('control_room','Control Room Equipment','TOPSIDE')"><div class="idot"></div><span class="iname">Control Room Equipment</span><span class="iarrow">›</span></div>
+      <div class="grp-lbl">Manipulators</div>
+      <div class="mitem" onclick="sel('t4_manip','T4 Manipulator — Schilling','MANIPULATORS')"><div class="idot"></div><span class="iname">T4 — Schilling</span><span class="iarrow">›</span></div>
+      <div class="mitem" onclick="sel('atlas_manip','Atlas Manipulator — Schilling','MANIPULATORS')"><div class="idot"></div><span class="iname">Atlas — Schilling</span><span class="iarrow">›</span></div>
 
       <div class="grp-lbl">Reference</div>
       <div class="mitem" onclick="sel('cables','Cables Index','REFERENCE')"><div class="idot"></div><span class="iname">Cables Index</span><span class="iarrow">›</span></div>
@@ -903,25 +913,101 @@ const DATA = {
       {title:"914-0601-00 Model 914-X Pan & Tilt Manual", file:"manuals/914-0601-00-Model914-X-Series_UserManual.pdf"},
     ]
   },
-  tms: {
+  tms_h15: {
     drawings: [
-      {num:"ROV-0311-D-0500-00", title:"TMS General Arrangement", file:"manuals/ROV-0311-D-0500-00 SHT 1-Model.pdf"},
-      {num:"ROV-0311-D-0800-50", title:"TMS Wiring Diagram", file:"manuals/ROV-0311-D-0800-50 SHT 1-Model.pdf"},
+      {num:"ROV-0311-D-0500-00", title:"TMS H15 General Arrangement", file:"manuals/ROV-0311-D-0500-00 SHT 1-Model.pdf"},
+      {num:"ROV-0311-D-0800-50", title:"TMS H15 Wiring Diagram", file:"manuals/ROV-0311-D-0800-50 SHT 1-Model.pdf"},
+      {num:"OME-0501-D-0032", title:"TMS H15 Drum Motor Shaft Modification", file:"manuals/OME-0501-D-0032-00 SHEET 1-Model (002).pdf"},
     ],
     manuals: [
+      {title:"FORUM MK2B TMS Manual — OR-TE-00699 H15", file:"manuals/FORUM Mk2B TMS Manual - OR-TE-00699 H15.pdf"},
       {title:"TMA01029 — H30 GA Top Level & Schematics", file:"manuals/H30 - GA Top Level & Schematics Manual - TMA01029.pdf"},
     ]
   },
-  lars: {
+  tms_h30: {
     drawings: [
-      {num:"OCE-0396-D-0142-92", title:"LARS Latch Beam Valve Pack Wiring Diagram", file:"manuals/Latch beam Valve Pack OCE-0396-D-0142-92.pdf"},
-      {num:"OCE-0378-D-0146-90", title:"Deck Link Wiring Diagram", file:"manuals/OCE-0378-D-0146-90 SHT 1 Model (1).pdf"},
-      {num:"ROV-0311-D-0620-90 Sht1", title:"LARS GA — Sht 1", file:"manuals/ROV-0311-D-0620-90 SHT 1-Model.pdf"},
-      {num:"ROV-0311-D-0620-90 Sht2", title:"LARS GA — Sht 2", file:"manuals/ROV-0311-D-0620-90 sht 2-Model.pdf"},
+      {num:"H30-TMS-HYD", title:"TMS H30 Hydraulics Schematic & Hose List", file:"manuals/Hydralics Schematic and hose list.pdf"},
+      {num:"H30-TMS-WIR", title:"TMS H30 Subsea Wiring", file:"manuals/Subsea Wiring.pdf"},
+      {num:"H30-TMS-LV",  title:"TMS H30 Subsea LV JB Wiring", file:"manuals/Subsea LV JB Wiring.pdf"},
+      {num:"H30-TMS-SURF",title:"TMS H30 Surface Wiring Diagram", file:"manuals/Surface Wiring Diagram.pdf"},
+    ],
+    manuals: [
+      {title:"TMS 41-45 Maintenance Manual H30", file:"manuals/TMS 41-45 Maintenance ManualH30.pdf"},
+      {title:"TMS 41-45 Operations Manual", file:"manuals/TMS 41-45 Operations Manual.pdf"},
+      {title:"TMS 51 Maintenance Manual H30", file:"manuals/TMS 51 Maintenance Manual h30.pdf"},
+    ]
+  },
+  lars_lcc: {
+    drawings: [
+      {num:"OCE-0400-DR-0551-90", title:"LARS Port LCC Wiring Diagram", file:"manuals/OCE-0400-DR-0551-90 LARS Port LCC wiring Diagram.pdf"},
+      {num:"OCE-0400-DR-0561-90", title:"LARS Stbd LCC Wiring Diagram", file:"manuals/OCE-0400-DR-0561-90 LARS Stbd LCC wiring Diagram.pdf"},
+      {num:"CAB-0849-DR-0020-00", title:"LCC Cable Assembly Drawing", file:"manuals/CAB-0849-DR-0020-00.pdf"},
     ],
     manuals: [
       {title:"TMA01071 — LARS Technical Manual", file:"manuals/TMA01071 - LARS Technical Manual.pdf"},
     ]
+  },
+  lars_latch_beam: {
+    drawings: [
+      {num:"OCE-0400-DR-0140-00 Sht1", title:"LARS Latch Beam GA — Sht 1", file:"manuals/OCE-0400-DR-0140-00+SHT+1  LARS  LatchBeam GA.pdf"},
+      {num:"OCE-0400-DR-0140-00 Sht2", title:"LARS Latch Beam GA — Sht 2", file:"manuals/OCE-0400-DR-0140-00+SHT+2  LARS  LatchBeam GA.pdf"},
+      {num:"OCE-0400-DR-0140-90", title:"LARS Latch Beam Wiring Diagram", file:"manuals/OCE-0400-DR-0140-90 LARS LatchBeam Wiring Diagram.pdf"},
+      {num:"OCE-0396-D-0142-92", title:"Latch Beam Valve Pack Wiring Diagram", file:"manuals/Latch beam Valve Pack OCE-0396-D-0142-92.pdf"},
+    ],
+    manuals: []
+  },
+  lars_latch_winch: {
+    drawings: [
+      {num:"OCE-0400-DR-0302-00 Sht1", title:"LB Winch Hydraulic Schematic Sht 1", file:"manuals/Hydraulic schematic Sht1 OCE-0400-DR-0302-00 sht 1-Layout1.pdf"},
+      {num:"OCE-0400-DR-0302-00 Sht2", title:"LB Winch Hydraulic Schematic Sht 2", file:"manuals/Hydraulic schematic Sht2OCE-0400-DR-0302-00 sht 2-Layout1.pdf"},
+      {num:"OCE-0400-DR-0302-00 Sht3", title:"LB Winch Hydraulic Schematic Sht 3", file:"manuals/Hydraulic schematic Sht3OCE-0400-DR-0302-00 sht 3-Layout1.pdf"},
+      {num:"LBW-HV51042", title:"LB Winch Wire Rope Specification", file:"manuals/LBW Wires HV51042-1-4.pdf"},
+    ],
+    manuals: []
+  },
+  lars_cursor: {
+    drawings: [
+      {num:"OCE-0400-DR-0130-01 Sht1", title:"Cursor Fabrication Drawing Sht 1", file:"manuals/OCE-0400-DR-0130-01+sht+1 Cursor Fab.pdf"},
+      {num:"OCE-0400-DR-0130-01 Sht2", title:"Cursor Fabrication Drawing Sht 2", file:"manuals/OCE-0400-DR-0130-01+SHT+2 Cursor Fab.pdf"},
+      {num:"OCE-0400-DR-0130-01 Sht3", title:"Cursor Fabrication Drawing Sht 3", file:"manuals/OCE-0400-DR-0130-01+SHT+3 Cursor Fab.pdf"},
+      {num:"OCE-0400-DR-0130-01 Sht4", title:"Cursor Fabrication Drawing Sht 4", file:"manuals/OCE-0400-DR-0130-01+sht+4 Cursor Fab.pdf"},
+      {num:"OCE-0400-DR-0135-00 Sht1", title:"Cursor GA MK3 Stbd — Sht 1", file:"manuals/OCE-0400-DR-0135-00+SHT+1 Cursor GA MK3 STBD.pdf"},
+      {num:"OCE-0400-DR-0135-00 Sht2", title:"Cursor GA MK3 Stbd — Sht 2", file:"manuals/OCE-0400-DR-0135-00+SHT+2 Cursor GA MK3 STBD.pdf"},
+    ],
+    manuals: []
+  },
+  lars_sliding_weight: {
+    drawings: [],
+    manuals: []
+  },
+  lars_hpu: {
+    drawings: [
+      {num:"OCE-0400-DR-0304-00", title:"LARS Service Winch Hydraulic Schematic", file:"manuals/OCE-0400-DR-0304-00 LARS Service Winch Hyd Schematic.pdf"},
+    ],
+    manuals: []
+  },
+  lars_moonpool: {
+    drawings: [
+      {num:"OCE-0400-DR-0124-00", title:"Moonpool Door GA", file:"manuals/OCE-0400-DR-0124-00.pdf"},
+    ],
+    manuals: []
+  },
+  lars_service_winch: {
+    drawings: [
+      {num:"OCE-0400-DR-0719-90", title:"LARS Port Service Winch Wiring — JB119", file:"manuals/OCE-0400-DR-0719-90 LARS Port Service Winch wiring Diagram JB119.pdf"},
+      {num:"OCE-0400-DR-0720-90", title:"LARS Port Service Winch Wiring — JB120", file:"manuals/OCE-0400-DR-0720-90 LARS Port Service Winch wiring Diagram JB120.pdf"},
+      {num:"OCE-0400-DR-0819-90", title:"LARS Stbd Service Winch Wiring — JB219", file:"manuals/OCE-0400-DR-0819-90  LARS Stbd Service Winch wiring Diagram JB219.pdf"},
+      {num:"OCE-0400-DR-0820-90", title:"LARS Stbd Service Winch Wiring — JB220", file:"manuals/OCE-0400-DR-0820-90  LARS Stbd Service Winch wiring Diagram JB220.pdf"},
+    ],
+    manuals: []
+  },
+  lars_slip_ring: {
+    drawings: [],
+    manuals: []
+  },
+  lars_tether: {
+    drawings: [],
+    manuals: []
   },
   control_console: {
     drawings: [
@@ -1951,10 +2037,19 @@ async function updateSidebarDrawings(systemKey, systemName) {
   dl.innerHTML = '<div style="padding:10px 16px;font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--text-dim);">Loading drawings\u2026</div>';
   try {
     const sysMap = {
-      electronics_pod: 'Electronics Pod', tcu: 'Control Console',
-      hpu: 'Hydraulics', valve_packs: 'Hydraulics', lars: 'LARS',
-      frame: 'Frame', t4_manip: 'T4', atlas_manip: 'Atlas',
-      pan_tilt: 'Camera', control_console: 'Control Console', pdu: 'PDU'
+      electronics_pod: 'Electronics Pod', tcu: 'TCU', hpu: 'HPU',
+      valve_packs: 'Valve Packs', thrusters: 'Thrusters',
+      rov_lights: 'ROV Lights', rov_term_can: 'Term Can', frame: 'Frame',
+      t4_manip: 'T4', atlas_manip: 'Atlas', pan_tilt: 'Pan & Tilt',
+      tms_h15: 'TMS H15', tms_h30: 'TMS H30',
+      lars_lcc: 'LARS LCC', lars_latch_beam: 'Latch Beam',
+      lars_latch_winch: 'LB Winch', lars_cursor: 'Cursor',
+      lars_sliding_weight: 'Sliding Weight', lars_hpu: 'LARS HPU',
+      lars_moonpool: 'Moonpool Doors', lars_service_winch: 'Service Winch',
+      lars_slip_ring: 'Slip Ring', lars_tether: 'Tether',
+      control_console: 'Control Console', control_room: 'Control Room',
+      pdu: 'PDU', longline: 'Longlines', cables: 'Cables',
+      all_drawings: 'All Drawings'
     };
     const s = sysMap[systemKey] || systemName;
     const r = await fetch(
