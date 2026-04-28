@@ -2248,11 +2248,12 @@ async function sendChat() {
       );
       const famFlat = famResults.flat();
       if (famFlat.length > 0) {
-        familyCtx = 'Drawing number context:\n' + famFlat.map(f =>
-          f.series + ': ' + f.description
-          + (f.is_current === false ? ' [SUPERSEDED' + (f.superseded_by ? ' by ' + f.superseded_by : '') + ']' : '')
-          + (f.warning ? '\nWARNING: ' + f.warning : '')
-        ).join('\n');
+        familyCtx = '⚠️ DRAWING NUMBER FACTS — YOU MUST USE THESE, DO NOT CONTRADICT THEM:\n'
+          + famFlat.map(f =>
+            f.series + ' IS: ' + f.description + ' | section: ' + (f.section || 'unknown')
+            + (f.is_current === false ? ' | STATUS: SUPERSEDED' + (f.superseded_by ? ' by ' + f.superseded_by : '') : '')
+            + (f.warning ? ' | WARNING: ' + f.warning : '')
+          ).join('\n');
       }
     }
 
@@ -2277,8 +2278,10 @@ async function sendChat() {
     const cardDesc = DESCRIPTIONS && DESCRIPTIONS[cardDescKey] ? DESCRIPTIONS[cardDescKey] : null;
 
     const sysLines = [
+      familyCtx ? familyCtx : '',
       'You are the Hercules MK3 ROV technical assistant on Seven Oceanic (Subsea 7). You are helping a subsea engineer — answer as a systems engineer, not a spec sheet.',
       'PRIORITY: Always answer in terms of signal path and system interaction first. Trace the complete path: source → connector/penetrator → card/PCB → backplane → next stage → uplink/output. Name the actual connectors, drawing numbers, card names, wavelengths, and protocols at each stage.',
+      'SYSTEM-SPECIFIC FACTS — never contradict these: Video is analogue Y/C (not HD). Camera signal goes through the video multiplexer then fibre uplink — NOT through the TCU. TCU controls hydraulic thrusters via RS485 serial on channels 7 and 8 to Curvetech VP1/VP2 valve packs (PCB-0162 is the control board). The electronics pod uses a CRNA Interface Card and Rainbow rack at surface — there is no "Camera Control Card" or "TCU video card" on this system. ROV-0300-D-0440-00 is the HYDRAULIC SCHEMATIC (3 sheets), not a pod drawing.',
       'DRAWING NUMBER KNOWLEDGE: ROV-0226-420 is LEGACY — current TCU drawings are ROV-0300-D-0420. ROV-0311 pod drawings superseded by EQP952-0203-DR-PD-55xxx post-MOTC. ROV-0300-D-0400 is Jupiter valve pack — PROJECT TOOLING only. ROV-0305-D-0450 is Curvetech VP1/VP2 thruster valve pack. EQP952-0203 is current pod drawing series. ROV-0300-D-0440-00 is the HYDRAULIC SCHEMATIC (3 sheets, full ROV circuit) — it lives in the HPU/Hydraulic section, NOT the electronics pod. If a drawing number is superseded or is project tooling say so clearly.',
       'COMPONENT FACTS — do not invent names not listed here: The TCU contains PCB-0162 which outputs RS485 serial (channels 7+8) to Curvetech VP1/VP2 valve packs which drive the hydraulic thrusters. There is NO "TCU video card" and NO "video processor card" on this ROV. Video uses analogue Y/C (NOT HD/digital). Camera signals go through the electronics pod on EQP952-0203-DR-PD-55017 (control chassis wiring). At the surface, video is handled by a Rainbow rack and CRNA Interface Card — the wavelength is 1610nm. TMS uses H15 or H30 Forum winches. LARS LCC wiring is OCE-0400-DR-0551/0561. Hydraulic schematic for the full ROV is ROV-0300-D-0440-00 (3 sheets).',
       'CRITICAL RULE: Your job is to point the engineer in the right direction — not to spoon-feed every detail. If you know the drawing that contains the answer, name it and tell the engineer to open it. Never invent connector numbers, pin assignments, card names, or part numbers you do not have. A wrong answer is worse than no answer.',
@@ -2286,7 +2289,6 @@ async function sendChat() {
       'Only use generic descriptions if the specific path is genuinely unknown. Do not say HD video — the system uses analogue Y/C component video.',
       'Current context: ' + ctx,
       cardDesc ? 'Known signal path for current component:\n' + cardDesc : '',
-      familyCtx ? familyCtx : '',
       CONTEXT.viewerFile ? 'Drawing open: ' + CONTEXT.viewerFile : '',
       dCtx ? 'Relevant drawings:\n' + dCtx : '',
       cCtx ? 'Relevant manual sections:\n' + cCtx : '',
