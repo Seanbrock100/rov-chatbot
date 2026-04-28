@@ -6,49 +6,70 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
-#topbar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#090c13;border-bottom:1px solid #2a2d35;flex-shrink:0;}
+#topbar{display:flex;align-items:center;gap:10px;padding:7px 14px;background:#090c13;border-bottom:1px solid #2a2d35;flex-shrink:0;}
 #topbar h1{font-family:monospace;font-size:11px;color:#e8a44a;letter-spacing:.12em;flex:1;}
-.top-btn{background:rgba(232,164,74,.1);border:1px solid rgba(232,164,74,.3);color:#e8a44a;border-radius:3px;padding:5px 12px;cursor:pointer;font-family:monospace;font-size:9px;}
+.top-btn{background:rgba(232,164,74,.1);border:1px solid rgba(232,164,74,.3);color:#e8a44a;border-radius:3px;padding:4px 10px;cursor:pointer;font-family:monospace;font-size:9px;white-space:nowrap;}
 .top-btn:hover{background:rgba(232,164,74,.2);}
+#unsaved-badge{display:none;background:#e8a44a;color:#000;border-radius:3px;padding:2px 8px;font-size:8px;font-family:monospace;font-weight:700;}
 #main{display:flex;flex:1;overflow:hidden;}
-/* LEFT: Section list */
-#sec-panel{width:200px;flex-shrink:0;background:#090c13;border-right:1px solid #2a2d35;overflow-y:auto;padding:8px 0;}
-.sec-item{padding:7px 14px;cursor:pointer;font-family:monospace;font-size:9px;color:#606470;border-left:2px solid transparent;transition:all .1s;}
+</style>
+</head>
+<style>
+/* SECTION PANEL */
+#sec-panel{width:170px;flex-shrink:0;background:#090c13;border-right:1px solid #2a2d35;display:flex;flex-direction:column;overflow:hidden;}
+#sec-panel-hdr{padding:6px 12px;font-family:monospace;font-size:8px;color:#404860;letter-spacing:.1em;border-bottom:1px solid #1a1d24;flex-shrink:0;}
+#sec-list{flex:1;overflow-y:auto;}
+.sec-item{padding:6px 10px;cursor:pointer;font-family:monospace;font-size:8px;color:#606470;border-left:2px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sec-item:hover{color:#c8c4b8;background:rgba(255,255,255,.03);}
 .sec-item.active{color:#e8a44a;border-left-color:#e8a44a;background:rgba(232,164,74,.05);}
-.sec-count{float:right;color:#404860;font-size:8px;}
-/* RIGHT: Drawing/manual list */
-#content{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-#content-header{padding:10px 16px;background:#0d1018;border-bottom:1px solid #2a2d35;flex-shrink:0;display:flex;align-items:center;gap:10px;}
-#section-title{font-family:monospace;font-size:10px;color:#e8a44a;flex:1;}
-#filter-row{display:flex;gap:6px;}
-.filter-btn{padding:4px 10px;font-family:monospace;font-size:8px;border-radius:3px;border:1px solid #2a2d35;background:#1a1d24;color:#606470;cursor:pointer;}
+.sec-count{float:right;color:#404860;font-size:8px;margin-left:4px;}
+
+/* LIST PANEL */
+#list-panel{width:320px;flex-shrink:0;border-right:1px solid #2a2d35;display:flex;flex-direction:column;overflow:hidden;}
+#list-hdr{padding:8px 10px;background:#0d1018;border-bottom:1px solid #2a2d35;flex-shrink:0;}
+#section-title{font-family:monospace;font-size:9px;color:#e8a44a;margin-bottom:5px;}
+#filter-row{display:flex;gap:3px;flex-wrap:wrap;}
+.filter-btn{padding:2px 7px;font-family:monospace;font-size:8px;border-radius:3px;border:1px solid #2a2d35;background:#1a1d24;color:#606470;cursor:pointer;}
 .filter-btn.active{border-color:#e8a44a;color:#e8a44a;background:rgba(232,164,74,.1);}
-#drawing-list{flex:1;overflow-y:auto;padding:8px 0;}
-/* Drawing row */
-.dr-row{display:flex;align-items:flex-start;gap:10px;padding:9px 16px;border-bottom:1px solid #1a1d24;transition:background .1s;}
+#drawing-list{flex:1;overflow-y:auto;}
+#status-bar{padding:4px 10px;font-family:monospace;font-size:8px;color:#505460;flex-shrink:0;border-top:1px solid #1a1d24;}
+
+/* ROW */
+.dr-row{padding:7px 10px;border-bottom:1px solid #1a1d24;cursor:pointer;transition:background .1s;}
 .dr-row:hover{background:#0d1018;}
-.dr-row.removed{opacity:.4;}
-.dr-info{flex:1;min-width:0;}
-.dr-num{font-family:monospace;font-size:8px;color:#e8a44a;margin-bottom:2px;}
-.dr-title{font-size:12px;color:#c8c4b8;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.dr-file{font-family:monospace;font-size:8px;color:#404860;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.dr-type{font-family:monospace;font-size:8px;padding:2px 6px;border-radius:2px;border:1px solid;margin-right:4px;flex-shrink:0;}
+.dr-row.selected{background:#131825;border-left:2px solid #e8a44a;}
+.dr-row.removed{opacity:.35;}
+.dr-top{display:flex;align-items:center;gap:5px;margin-bottom:2px;}
+.dr-type{font-family:monospace;font-size:7px;padding:1px 4px;border-radius:2px;border:1px solid;flex-shrink:0;}
 .dr-type.drawing{color:#6090e0;border-color:rgba(96,144,224,.3);}
 .dr-type.manual{color:#90c060;border-color:rgba(144,192,96,.3);}
-.dr-actions{display:flex;gap:5px;flex-shrink:0;align-items:center;}
-.act-btn{padding:3px 8px;font-family:monospace;font-size:8px;border-radius:3px;border:1px solid;cursor:pointer;white-space:nowrap;}
+.dr-num{font-family:monospace;font-size:8px;color:#e8a44a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dr-title{font-size:11px;color:#c8c4b8;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dr-file{font-family:monospace;font-size:7px;color:#404860;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px;}
+.dr-actions{display:flex;gap:3px;}
+.act-btn{padding:2px 7px;font-family:monospace;font-size:8px;border-radius:3px;border:1px solid;cursor:pointer;white-space:nowrap;}
 .act-btn.move{color:#6090e0;border-color:rgba(96,144,224,.3);background:rgba(96,144,224,.05);}
-.act-btn.move:hover{background:rgba(96,144,224,.15);}
+.act-btn.move:hover{background:rgba(96,144,224,.2);}
 .act-btn.remove{color:#e06060;border-color:rgba(224,96,96,.3);background:rgba(224,96,96,.05);}
 .act-btn.remove:hover{background:rgba(224,96,96,.15);}
 .act-btn.restore{color:#60c060;border-color:rgba(96,192,96,.3);background:rgba(96,192,96,.05);}
-/* Modal */
-#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;}
+
+/* VIEWER PANEL */
+#viewer-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#111;}
+#viewer-hdr{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#090c13;border-bottom:1px solid #2a2d35;flex-shrink:0;min-height:34px;}
+#viewer-title{font-family:monospace;font-size:9px;color:#c8c4b8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#viewer-new-tab{font-family:monospace;font-size:9px;color:#6090e0;background:none;border:none;cursor:pointer;}
+#viewer-new-tab:hover{color:#e8a44a;}
+#viewer-frame{flex:1;border:none;width:100%;height:100%;background:#1a1a1a;}
+#viewer-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#2a2d35;font-family:monospace;font-size:10px;text-align:center;gap:10px;}
+#viewer-empty .big{font-size:42px;opacity:.4;}
+
+/* MODAL */
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;}
 #modal.open{display:flex;}
 #modal-box{background:#141720;border:1px solid #2a2d35;border-radius:6px;padding:20px;width:420px;max-width:90vw;}
-#modal-title{font-family:monospace;font-size:10px;color:#e8a44a;margin-bottom:12px;}
-#modal-file{font-family:monospace;font-size:8px;color:#606470;margin-bottom:14px;word-break:break-all;}
+#modal-title{font-family:monospace;font-size:10px;color:#e8a44a;margin-bottom:8px;}
+#modal-ctx{font-family:monospace;font-size:8px;color:#606470;margin-bottom:14px;word-break:break-all;}
 .modal-label{font-family:monospace;font-size:9px;color:#a8a49a;margin-bottom:5px;}
 #modal-select{width:100%;background:#1a1d24;border:1px solid #2a2d35;color:#c8c4b8;border-radius:3px;padding:7px;font-family:monospace;font-size:10px;outline:none;}
 #modal-select:focus{border-color:#e8a44a;}
@@ -56,40 +77,33 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
 .modal-btn{padding:6px 14px;font-family:monospace;font-size:9px;border-radius:3px;border:none;cursor:pointer;}
 .modal-btn.confirm{background:#e8a44a;color:#000;font-weight:700;}
 .modal-btn.cancel{background:#1a1d24;color:#c8c4b8;border:1px solid #2a2d35;}
-#status-bar{padding:4px 16px;font-family:monospace;font-size:8px;color:#505460;flex-shrink:0;border-top:1px solid #1a1d24;}
-#unsaved-badge{display:none;background:#e8a44a;color:#000;border-radius:3px;padding:2px 8px;font-size:8px;font-family:monospace;font-weight:700;}
+
+/* DRG REF PANEL */
+#ref-panel{display:none;position:fixed;top:42px;right:0;width:360px;height:calc(100vh - 42px);background:#090c13;border-left:1px solid #2a2d35;overflow-y:auto;z-index:50;padding:14px;}
 .ref-group{margin-bottom:14px;}
-.ref-prefix{font-family:monospace;font-size:9px;color:#e8a44a;border-bottom:1px solid #2a2d35;padding-bottom:4px;margin-bottom:6px;}
+.ref-prefix{font-family:monospace;font-size:9px;color:#e8a44a;border-bottom:1px solid #2a2d35;padding-bottom:4px;margin-bottom:5px;}
 .ref-row{display:flex;gap:8px;margin-bottom:4px;}
 .ref-num{font-family:monospace;font-size:8px;color:#90c060;min-width:130px;flex-shrink:0;}
 .ref-desc{color:#8a8680;font-size:10px;line-height:1.5;}
-.ref-warn{color:#e06060;font-family:monospace;font-size:8px;padding:4px 8px;background:rgba(224,96,96,.08);border:1px solid rgba(224,96,96,.2);border-radius:3px;margin-top:6px;line-height:1.6;}
+.ref-warn{color:#e06060;font-family:monospace;font-size:8px;padding:4px 8px;background:rgba(224,96,96,.08);border:1px solid rgba(224,96,96,.2);border-radius:3px;margin-top:5px;line-height:1.6;}
 </style>
-</head>
-<body>
 <div id="topbar">
   <h1>&#9881; MANUAL ADMIN — Hercules MK3</h1>
   <button class="top-btn" onclick="toggleRef()" style="color:#90c060;border-color:rgba(144,192,96,.3);">&#128218; DRG NUMBERS</button>
   <span id="unsaved-badge">UNSAVED CHANGES</span>
   <button class="top-btn" onclick="saveChanges()">&#128190; SAVE CHANGES</button>
-  <button class="top-btn" onclick="window.open('index.html','_blank')" style="color:#6090e0;border-color:rgba(96,144,224,.3)">&#128196; BACK TO MANUAL</button>
-</div>
-<!-- Drawing number reference panel -->
-<div id="ref-panel" style="display:none;position:fixed;top:42px;right:0;width:380px;height:calc(100vh - 42px);background:#090c13;border-left:1px solid #2a2d35;overflow-y:auto;z-index:50;padding:14px;">
-  <div style="font-family:monospace;font-size:10px;color:#e8a44a;letter-spacing:.1em;margin-bottom:12px;">DRAWING NUMBER REFERENCE</div>
-  <div style="font-family:monospace;font-size:8px;color:#505460;margin-bottom:14px;line-height:1.8;">
-    Subsea 7 Hercules MK3 drawing numbers follow this structure:<br>
-    <span style="color:#c8c4b8;">PREFIX - SERIES - TYPE - SEQUENCE - REVISION</span>
-  </div>
-  <div id="ref-content"></div>
+  <button class="top-btn" onclick="window.open('index.html','_blank')" style="color:#6090e0;border-color:rgba(96,144,224,.3);">&#128196; BACK TO MANUAL</button>
 </div>
 <div id="main">
-  <div id="sec-panel" id="sec-panel">
-    <div style="padding:6px 14px;font-family:monospace;font-size:8px;color:#404860;letter-spacing:.1em;border-bottom:1px solid #1a1d24;margin-bottom:4px;">SECTIONS</div>
+  <!-- SECTION LIST -->
+  <div id="sec-panel">
+    <div id="sec-panel-hdr">SECTIONS</div>
+    <div id="sec-list"></div>
   </div>
-  <div id="content">
-    <div id="content-header">
-      <span id="section-title">Select a section</span>
+  <!-- DRAWING LIST -->
+  <div id="list-panel">
+    <div id="list-hdr">
+      <div id="section-title">Select a section</div>
       <div id="filter-row">
         <button class="filter-btn active" onclick="setFilter('all',this)">ALL</button>
         <button class="filter-btn" onclick="setFilter('drawing',this)">DRAWINGS</button>
@@ -100,13 +114,25 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
     <div id="drawing-list"></div>
     <div id="status-bar">Ready</div>
   </div>
+  <!-- PDF VIEWER -->
+  <div id="viewer-panel">
+    <div id="viewer-hdr">
+      <span id="viewer-title">Click any drawing or manual to preview</span>
+      <button id="viewer-new-tab" onclick="openViewerNewTab()" style="display:none;">&#8599; Open in new tab</button>
+    </div>
+    <div id="viewer-empty">
+      <div class="big">&#128196;</div>
+      <div>Click any item in the list<br>to preview it here</div>
+    </div>
+    <iframe id="viewer-frame" src="" style="display:none;"></iframe>
+  </div>
 </div>
-<!-- Move modal -->
+<!-- MOVE MODAL -->
 <div id="modal">
   <div id="modal-box">
     <div id="modal-title">&#8594; MOVE TO SECTION</div>
-    <div id="modal-file"></div>
-    <div class="modal-label">Select destination section:</div>
+    <div id="modal-ctx"></div>
+    <div class="modal-label">Destination section:</div>
     <select id="modal-select"></select>
     <div class="modal-btns">
       <button class="modal-btn cancel" onclick="closeModal()">CANCEL</button>
@@ -114,258 +140,80 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
     </div>
   </div>
 </div>
+<!-- DRG REFERENCE PANEL -->
+<div id="ref-panel">
+  <div style="font-family:monospace;font-size:10px;color:#e8a44a;letter-spacing:.1em;margin-bottom:12px;">DRAWING NUMBER REFERENCE</div>
+  <div id="ref-content"></div>
+</div>
 <script>
-// Load DATA from index.html via fetch — we'll work on a copy
-let DATA = null;
-let currentSection = null;
-let currentFilter = 'all';
-let pendingMove = null;
-let hasChanges = false;
+let DATA = null, currentSection = null, currentFilter = 'all', pendingMove = null;
+let hasChanges = false, currentViewerFile = null;
 
 const SECTION_LABELS = {
-  electronics_pod:'Electronics Pod', tcu:'TCU', hpu:'HPU / Hydraulics',
-  valve_packs:'Valve Packs', thrusters:'Thrusters', t4_manip:'T4 Manipulator',
-  atlas_manip:'Atlas Manipulator', lars:'LARS', tms:'TMS', frame:'Frame / Structure',
-  rov_lights:'ROV Lights', pan_tilt:'Pan & Tilt', longline:'Longline',
-  cables:'Cables', control_room:'Control Room', pdu:'PDU', all_drawings:'All Drawings'
+  electronics_pod:'Electronics Pod', tcu:'TCU', hpu:'HPU',
+  valve_packs:'Valve Packs', thrusters:'Thrusters',
+  rov_lights:'Lights', rov_term_can:'Term Can', frame:'Frame',
+  t4_manip:'T4 Manipulator', atlas_manip:'Atlas Manipulator',
+  pan_tilt:'Pan & Tilt', tms_h15:'TMS H15', tms_h30:'TMS H30',
+  lars_lcc:'LARS LCC', lars_latch_beam:'Latch Beam',
+  lars_latch_winch:'LB Winch', lars_cursor:'Cursor',
+  lars_sliding_weight:'Sliding Weight', lars_hpu:'LARS HPU',
+  lars_moonpool:'Moonpool Doors', lars_service_winch:'Service Winch',
+  lars_slip_ring:'Slip Ring', lars_tether:'Tether',
+  control_console:'Control Console', control_room:'Control Room',
+  pdu:'PDU', longline:'Longlines', cables:'Cables',
+  rov_electrical_pod:'Pod Drawings', all_drawings:'All Drawings'
 };
 
-// Drawing number reference data
-const DRG_REF = [
-  {
-    prefix: 'ROV-0226-xxx',
-    desc: 'Legacy Hercules MK2/MK3 vehicle drawings (pre-MOTC)',
-    series: [
-      ['ROV-0226-115', 'Buoyancy assemblies'],
-      ['ROV-0226-420', 'TCU junction box — LEGACY, superseded by ROV-0300-D-0420'],
-      ['ROV-0226-455', 'Hydraulic compensators'],
-      ['ROV-0226-630', 'Thruster cable assemblies'],
-      ['ROV-0226-725', 'Vehicle cable assemblies (main loom)'],
-    ],
-    warn: 'ROV-0226-420-xx are OLD TCU drawings — do not use. Current TCU is ROV-0300-D-0420.'
-  },
-  {
-    prefix: 'ROV-0249-xxx',
-    desc: 'HPU — Hydraulic Power Unit drawings',
-    series: [
-      ['ROV-0249-D-0050', 'HPU general arrangement & parts list'],
-      ['ROV-0249-D-0050-90', 'HPU wiring diagram'],
-      ['ROV-0249-D-0051', 'HPU rotor/stator set'],
-    ]
-  },
-  {
-    prefix: 'ROV-0300-D-0xxx',
-    desc: 'Current Hercules MK3 vehicle drawings (post-MOTC)',
-    series: [
-      ['ROV-0300-D-0100', 'Frame general arrangement'],
-      ['ROV-0300-D-0110', 'Frame protection / acetal guards'],
-      ['ROV-0300-D-0111', 'T4 manipulator mounting plates'],
-      ['ROV-0300-D-0115', 'Buoyancy assemblies (current)'],
-      ['ROV-0300-D-0150', 'Tool tray assemblies'],
-      ['ROV-0300-D-0300', 'Termination can (term can)'],
-      ['ROV-0300-D-0420', 'TCU — Thruster Control Unit assembly & wiring'],
-      ['ROV-0300-D-0440', 'Hydraulic schematic (3 sheets) & parts list'],
-      ['ROV-0300-D-0802', 'T4 deck JIB'],
-    ]
-  },
-  {
-    prefix: 'ROV-0305-D-0xxx',
-    desc: 'Hercules MK3 variant / upgrade drawings',
-    series: [
-      ['ROV-0305-D-0100', 'Frame GA variants'],
-      ['ROV-0305-D-0111', 'T4 mount (port side variant)'],
-      ['ROV-0305-D-0127', 'Buoyancy variant'],
-      ['ROV-0305-D-0450', 'Curvetech valve pack GA (VP1/VP2 — thruster control)'],
-      ['ROV-0305-D-0470', 'High flow valve pack GA'],
-      ['ROV-0305-D-0630', 'Pan & tilt camera wiring'],
-      ['ROV-0305-D-0660', 'Pan & tilt switch panel'],
-    ]
-  },
-  {
-    prefix: 'ROV-0311-D-0xxx',
-    desc: 'Electronics Pod drawings (pre-MOTC — superseded by EQP952)',
-    series: [
-      ['ROV-0311-D-0200', 'Pod bottomside network block diagram'],
-      ['ROV-0311-D-0206', 'Pod earth strip plate'],
-      ['ROV-0311-D-0208', 'Valve pack unregulated supply'],
-      ['ROV-0311-D-0210', 'Band splitter assembly'],
-      ['ROV-0311-D-0211', 'Ethernet gyro cover plate'],
-      ['ROV-0311-D-0212', 'CWDM assembly (RED/BLUE)'],
-      ['ROV-0311-D-0213', 'Optical transceiver tray'],
-      ['ROV-0311-D-0300', 'TMS GA (pre-MOTC)'],
-      ['ROV-0311-D-0500', 'TMS GA (current)'],
-      ['ROV-0311-D-0620', 'TMS wiring'],
-      ['ROV-0311-D-0680', 'ROV lights wiring'],
-      ['ROV-0311-D-0800', 'Control console wiring (multiple sheets)'],
-    ],
-    warn: 'ROV-0311-D-02xx pod drawings superseded by EQP952-0203-DR-PD-55xxx after MOTC upgrade.'
-  },
-  {
-    prefix: 'EQP952-0203-DR-PD-55xxx',
-    desc: 'Post-MOTC Electronics Pod drawings — CURRENT versions',
-    series: [
-      ['EQP952-0203-DR-PD-55000', 'Pod assembly GA (top level)'],
-      ['EQP952-0203-DR-PD-55001', 'Control chassis assembly GA'],
-      ['EQP952-0203-DR-PD-55002', 'Payload chassis assembly GA'],
-      ['EQP952-0203-DR-PD-55003', 'Control penetrator ring GA'],
-      ['EQP952-0203-DR-PD-55004', 'Payload penetrator ring GA'],
-      ['EQP952-0203-DR-PD-55006', 'Control chassis earth strip plate'],
-      ['EQP952-0203-DR-PD-55007', 'Payload chassis earth strip plate'],
-      ['EQP952-0203-DR-PD-55011', 'Gyro cover plate assembly'],
-      ['EQP952-0203-DR-PD-55016', 'Payload chassis wiring diagram'],
-      ['EQP952-0203-DR-PD-55017', 'Control chassis wiring diagram'],
-      ['EQP952-0203-DR-PD-55018', 'Control penetrator ring label set'],
-      ['EQP952-0203-DR-PD-55019', 'Payload penetrator ring label set'],
-    ]
-  },
-  {
-    prefix: 'HCV-0015-D-0xxx',
-    desc: 'Control room / console drawings (HCV = Hercules Control Vehicle)',
-    series: [
-      ['HCV-0015-D-0200', 'Control console GA'],
-      ['HCV-0015-D-0800', 'Control console wiring (multiple sheets)'],
-    ]
-  },
-  {
-    prefix: 'PDU-xxxx-D-00xx',
-    desc: 'Power Distribution Unit drawings',
-    series: [
-      ['PDU-0009-D-0016', 'PDU wiring diagrams (3 sheets)'],
-      ['PDU-1012-D-0007', '2.4KV transformer panel wiring'],
-      ['PDU-1012-D-0017', 'PDU GA and wiring'],
-    ]
-  },
-  {
-    prefix: 'OCE-0400-DR-0xxx',
-    desc: 'LARS — Launch & Recovery System (OCE = Oceanic)',
-    series: [
-      ['OCE-0400-DR-0124', 'LARS service winch drawings'],
-      ['OCE-0400-DR-0130', 'Cursor fabrication drawings'],
-      ['OCE-0400-DR-0135', 'Cursor GA MK3'],
-      ['OCE-0400-DR-0140', 'Latch beam GA & wiring'],
-      ['OCE-0400-DR-0304', 'LARS service winch hydraulic schematic'],
-      ['OCE-0400-DR-0551/0561', 'LCC wiring (port & stbd)'],
-      ['OCE-0400-DR-0719–0820', 'Service winch wiring (JB series)'],
-    ]
-  },
-  {
-    prefix: 'SSA-0277-D-0004',
-    desc: 'Tool tray skid drawings (SSA = Subsea 7 Assembly)',
-    series: [
-      ['SSA-0277-D-0004-00', 'Tool tray skid GA (H15 amended)'],
-      ['SSA-0277-D-0004-01', 'Tool tray skid BOM'],
-      ['SSA-0277-D-0004-14/16/17', 'Buoyancy block drawings'],
-    ]
-  },
-  {
-    prefix: 'TMAxxxxx',
-    desc: 'Technical Manuals (TMA = Technical Manual Authored)',
-    series: [
-      ['TMA00974', 'Hercules Series Hydraulics Manual'],
-      ['TMA01028', 'H15 GA & Schematics Manual'],
-      ['TMA01029', 'H30 GA & Schematics Manual'],
-      ['TMA01030', 'Interface Systems Manual'],
-      ['TMA01031', 'Control System Manual'],
-      ['TMA01071', 'LARS Technical Manual'],
-    ]
-  },
-  {
-    prefix: '011-8239',
-    desc: 'Schilling/TechnipFMC T4 Manipulator Manual (vendor numbering)',
-    series: [
-      ['011-8239', 'T4 complete manual — contains all joint drawings 101-xxxx'],
-      ['101-4042', 'Azimuth actuator (p.281)'],
-      ['101-4077', 'Elbow actuator (p.287)'],
-      ['101-4182', 'Pitch/yaw (p.301) — interchangeable joints'],
-      ['101-6789', 'Wrist actuator (p.363)'],
-      ['101-4928', 'Jaw intermeshing (p.417)'],
-    ]
-  },
-  {
-    prefix: 'NOT ROV — flag for review',
-    desc: 'Drawing prefixes that indicate project tooling, not permanent ROV equipment',
-    series: [
-      ['ROV-0300-D-0400', 'JUPITER valve pack — project tooling, not permanent ROV'],
-      ['ROV-0226-420', 'Legacy TCU JB — superseded, keep only if needed for reference'],
-      ['CAB-xxxx', 'Cable assemblies — project-specific, review before including'],
-    ],
-    warn: 'Any drawing with these prefixes found in the manual should be verified as permanent ROV equipment before keeping.'
-  }
-];
-
-function toggleRef() {
-  const panel = document.getElementById('ref-panel');
-  const isVisible = panel.style.display !== 'none';
-  panel.style.display = isVisible ? 'none' : 'block';
-  if (!isVisible) buildRef();
-}
-
-function buildRef() {
-  const el = document.getElementById('ref-content');
-  el.innerHTML = DRG_REF.map(group => {
-    const rows = group.series.map(([num, desc]) =>
-      '<div class="ref-row"><span class="ref-num">' + esc(num) + '</span><span class="ref-desc">' + esc(desc) + '</span></div>'
-    ).join('');
-    const warn = group.warn ? '<div class="ref-warn">&#9888; ' + esc(group.warn) + '</div>' : '';
-    return '<div class="ref-group">'
-      + '<div class="ref-prefix">' + esc(group.prefix) + '</div>'
-      + '<div style="font-size:10px;color:#606470;margin-bottom:6px;">' + esc(group.desc) + '</div>'
-      + rows + warn
-      + '</div>';
-  }).join('<hr style="border:none;border-top:1px solid #1a1d24;margin:10px 0;">');
-}
-
-// Load DATA from the parent index.html
 async function loadData() {
   try {
     const resp = await fetch('index.html');
     const html = await resp.text();
-    const match = html.match(/const DATA\s*=\s*(\{[\s\S]*?\});\s*\/\/ END DATA/);
-    if (match) {
-      DATA = eval('(' + match[1] + ')');
-    } else {
-      // Try extracting between markers
-      const start = html.indexOf('const DATA = {');
-      const end = html.indexOf('};\n\n', start);
-      if (start > -1) {
-        DATA = eval('(' + html.substring(start + 'const DATA = '.length, end + 1) + ')');
+    const lines = html.split('\n');
+    let start = -1, depth = 0, dataLines = [];
+    for (let i = 0; i < lines.length; i++) {
+      if (/^\s*const DATA\s*=\s*\{/.test(lines[i])) { start = i; }
+      if (start >= 0) {
+        dataLines.push(lines[i]);
+        depth += (lines[i].match(/\{/g)||[]).length - (lines[i].match(/\}/g)||[]).length;
+        if (i > start && depth <= 0) break;
       }
     }
-    if (!DATA) throw new Error('Could not parse DATA from index.html');
-    buildSectionList();
+    if (dataLines.length) {
+      const src = dataLines.join('\n').replace(/^\s*const DATA\s*=\s*/, '').replace(/;\s*$/, '');
+      DATA = eval('(' + src + ')');
+    }
+    if (!DATA) throw new Error('Could not parse DATA');
+    buildSections();
     setStatus('Loaded ' + Object.keys(DATA).length + ' sections');
-  } catch(e) {
-    setStatus('Error loading: ' + e.message);
-    // Fall back to a minimal structure for navigation
-    DATA = {};
-  }
+  } catch(e) { setStatus('Load error: ' + e.message); DATA = {}; }
 }
 
-function buildSectionList() {
-  const panel = document.getElementById('sec-panel');
-  panel.innerHTML = '<div style="padding:6px 14px;font-family:monospace;font-size:8px;color:#404860;letter-spacing:.1em;border-bottom:1px solid #1a1d24;margin-bottom:4px;">SECTIONS</div>';
+function buildSections() {
+  const list = document.getElementById('sec-list');
+  list.innerHTML = '';
   Object.keys(DATA).forEach(key => {
-    if (!DATA[key] || typeof DATA[key] !== 'object') return;
     const d = DATA[key];
-    const draws = (d.drawings || []).length;
-    const mans = (d.manuals || []).length;
-    if (draws === 0 && mans === 0) return;
-    const label = SECTION_LABELS[key] || key;
+    if (!d || typeof d !== 'object') return;
+    const cnt = (d.drawings||[]).length + (d.manuals||[]).length;
+    if (!cnt) return;
     const div = document.createElement('div');
     div.className = 'sec-item';
     div.dataset.key = key;
-    div.innerHTML = label + '<span class="sec-count">' + (draws + mans) + '</span>';
+    div.title = SECTION_LABELS[key] || key;
+    div.innerHTML = (SECTION_LABELS[key] || key) + '<span class="sec-count">' + cnt + '</span>';
     div.onclick = () => selectSection(key);
-    panel.appendChild(div);
+    list.appendChild(div);
   });
 }
-
+</script>
+<script>
 function selectSection(key) {
   currentSection = key;
-  document.querySelectorAll('.sec-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.key === key);
-  });
-  document.getElementById('section-title').textContent = SECTION_LABELS[key] || key;
+  document.querySelectorAll('.sec-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.key === key));
+  document.getElementById('section-title').textContent =
+    (SECTION_LABELS[key] || key) + ' — ' + key;
   renderList();
 }
 
@@ -380,154 +228,181 @@ function renderList() {
   if (!currentSection || !DATA[currentSection]) return;
   const d = DATA[currentSection];
   const list = document.getElementById('drawing-list');
-  list.innerHTML = '';
-
   const all = [
-    ...(d.drawings || []).map(item => ({...item, _type:'drawing'})),
-    ...(d.manuals || []).map(item => ({...item, _type:'manual'}))
+    ...(d.drawings||[]).map(i => ({...i, _type:'drawing'})),
+    ...(d.manuals||[]).map(i => ({...i, _type:'manual'}))
   ];
-
-  let shown = 0;
+  let shown = 0, html = '';
   all.forEach((item, idx) => {
     if (item._removed && currentFilter !== 'removed') return;
     if (!item._removed && currentFilter === 'removed') return;
     if (currentFilter === 'drawing' && item._type !== 'drawing') return;
     if (currentFilter === 'manual' && item._type !== 'manual') return;
-
-    const row = document.createElement('div');
-    row.className = 'dr-row' + (item._removed ? ' removed' : '');
     const fname = (item.file || '').split('/').pop();
-    row.innerHTML =
-      '<span class="dr-type ' + item._type + '">' + item._type.toUpperCase() + '</span>' +
-      '<div class="dr-info">' +
-        (item.num ? '<div class="dr-num">' + esc(item.num) + '</div>' : '') +
-        '<div class="dr-title">' + esc(item.title || fname) + '</div>' +
-        '<div class="dr-file">' + esc(fname) + '</div>' +
+    const isSelected = currentViewerFile === fname;
+    html += '<div class="dr-row' + (item._removed?' removed':'') + (isSelected?' selected':'') +
+      '" onclick="previewItem(' + idx + ')">' +
+      '<div class="dr-top">' +
+        '<span class="dr-type ' + item._type + '">' + item._type.toUpperCase() + '</span>' +
+        '<span class="dr-num">' + esc(item.num || '—') + '</span>' +
       '</div>' +
+      '<div class="dr-title">' + esc(item.title || fname) + '</div>' +
+      '<div class="dr-file">' + esc(fname) + '</div>' +
       '<div class="dr-actions">' +
         (item._removed
-          ? '<button class="act-btn restore" onclick="restoreItem(\'' + currentSection + '\',' + idx + ')">&#8635; RESTORE</button>'
-          : '<button class="act-btn move" onclick="showMoveModal(\'' + currentSection + '\',' + idx + ',\'' + esc(item.title||fname) + '\')">&#8594; MOVE</button>' +
-            '<button class="act-btn remove" onclick="removeItem(\'' + currentSection + '\',' + idx + ')">&#10005; REMOVE</button>'
+          ? '<button class="act-btn restore" onclick="event.stopPropagation();restoreItem(' + idx + ')">&#8635; RESTORE</button>'
+          : '<button class="act-btn move" onclick="event.stopPropagation();showMoveModal(' + idx + ',\'' + esc(item.title||fname).replace(/'/g,"\\'") + '\')">&#8594; MOVE</button>' +
+            '<button class="act-btn remove" onclick="event.stopPropagation();removeItem(' + idx + ')">&#10005; REMOVE</button>'
         ) +
-      '</div>';
-    list.appendChild(row);
+      '</div></div>';
     shown++;
   });
-
-  if (shown === 0) {
-    list.innerHTML = '<div style="padding:30px;text-align:center;font-family:monospace;font-size:9px;color:#404860;">No items in this view</div>';
-  }
-  setStatus(shown + ' items shown in ' + (SECTION_LABELS[currentSection] || currentSection));
+  list.innerHTML = html || '<div style="padding:24px;text-align:center;font-family:monospace;font-size:9px;color:#404860;">No items in this view</div>';
+  setStatus(shown + ' items — ' + (SECTION_LABELS[currentSection] || currentSection));
 }
 
-function removeItem(section, idx) {
-  const d = DATA[section];
+function previewItem(idx) {
+  if (!currentSection || !DATA[currentSection]) return;
+  const d = DATA[currentSection];
+  const all = [...(d.drawings||[]).map(i=>({...i,_type:'drawing'})), ...(d.manuals||[]).map(i=>({...i,_type:'manual'}))];
+  const item = all[idx];
+  if (!item || !item.file) return;
+  const fname = item.file.split('/').pop();
+  currentViewerFile = fname;
+
+  // Update viewer header
+  document.getElementById('viewer-title').textContent = (item.title || fname);
+  const newTabBtn = document.getElementById('viewer-new-tab');
+  newTabBtn.style.display = 'block';
+
+  // Switch from empty to frame
+  document.getElementById('viewer-empty').style.display = 'none';
+  const frame = document.getElementById('viewer-frame');
+  frame.style.display = 'block';
+
+  // Load PDF — force reload by blanking first
+  frame.src = 'about:blank';
+  setTimeout(() => {
+    frame.src = 'manuals/' + fname + (item.page ? '#page=' + item.page : '');
+  }, 30);
+
+  // Highlight selected row
+  renderList();
+}
+
+function openViewerNewTab() {
+  if (currentViewerFile) window.open('manuals/' + currentViewerFile, '_blank');
+}
+</script>
+<script>
+function removeItem(idx) {
+  const d = DATA[currentSection];
   const all = [...(d.drawings||[]), ...(d.manuals||[])];
   all[idx]._removed = true;
-  markChanged();
-  renderList();
-  buildSectionList();
+  markChanged(); renderList(); buildSections();
 }
-
-function restoreItem(section, idx) {
-  const d = DATA[section];
+function restoreItem(idx) {
+  const d = DATA[currentSection];
   const all = [...(d.drawings||[]), ...(d.manuals||[])];
   delete all[idx]._removed;
-  markChanged();
-  renderList();
-  buildSectionList();
+  markChanged(); renderList(); buildSections();
 }
-
-function showMoveModal(section, idx, title) {
-  pendingMove = { section, idx };
+function showMoveModal(idx, title) {
+  pendingMove = { section: currentSection, idx };
   document.getElementById('modal-title').textContent = '\u2192 MOVE: ' + title;
-  document.getElementById('modal-file').textContent = 'Currently in: ' + (SECTION_LABELS[section] || section);
+  document.getElementById('modal-ctx').textContent = 'Currently in: ' + (SECTION_LABELS[currentSection] || currentSection);
   const sel = document.getElementById('modal-select');
   sel.innerHTML = Object.keys(SECTION_LABELS)
-    .filter(k => k !== section && DATA[k])
-    .map(k => '<option value="' + k + '">' + SECTION_LABELS[k] + '</option>')
+    .filter(k => k !== currentSection && DATA[k])
+    .map(k => '<option value="' + k + '">' + SECTION_LABELS[k] + ' (' + k + ')</option>')
     .join('');
   document.getElementById('modal').classList.add('open');
 }
-
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
   pendingMove = null;
 }
-
 function confirmMove() {
   if (!pendingMove) return;
   const { section, idx } = pendingMove;
   const d = DATA[section];
-  const all = [...(d.drawings||[]), ...(d.manuals||[])];
-  const item = all[idx];
+  const drawCount = (d.drawings||[]).length;
+  let item, isDrawing;
+  if (idx < drawCount) {
+    item = d.drawings[idx];
+    isDrawing = true;
+    d.drawings.splice(idx, 1);
+  } else {
+    item = d.manuals[idx - drawCount];
+    isDrawing = false;
+    d.manuals.splice(idx - drawCount, 1);
+  }
   const dest = document.getElementById('modal-select').value;
-
-  // Remove from source
-  if (item._type === 'drawing') {
-    DATA[section].drawings = DATA[section].drawings.filter((_, i) => i !== idx);
-  } else {
-    DATA[section].manuals = DATA[section].manuals.filter((_, i) => {
-      const drawCount = (DATA[section].drawings||[]).length;
-      return (i + drawCount) !== idx;
-    });
-  }
-
-  // Add to destination
-  const clean = {...item};
-  delete clean._type; delete clean._removed;
-  if (item._type === 'drawing') {
-    DATA[dest].drawings = DATA[dest].drawings || [];
-    DATA[dest].drawings.push(clean);
-  } else {
-    DATA[dest].manuals = DATA[dest].manuals || [];
-    DATA[dest].manuals.push(clean);
-  }
-
-  closeModal();
-  markChanged();
-  renderList();
-  buildSectionList();
+  const clean = Object.fromEntries(Object.entries(item).filter(([k]) => !k.startsWith('_')));
+  if (isDrawing) { DATA[dest].drawings = DATA[dest].drawings || []; DATA[dest].drawings.push(clean); }
+  else { DATA[dest].manuals = DATA[dest].manuals || []; DATA[dest].manuals.push(clean); }
+  closeModal(); markChanged(); renderList(); buildSections();
   setStatus('Moved to ' + (SECTION_LABELS[dest] || dest));
 }
-
 function markChanged() {
   hasChanges = true;
   document.getElementById('unsaved-badge').style.display = 'inline';
 }
-
 function saveChanges() {
-  // Generate the new DATA JavaScript string
-  const dataStr = JSON.stringify(DATA, (k, v) => {
-    // Strip internal markers
-    if (k === '_removed' || k === '_type') return undefined;
-    return v;
-  }, 2);
-
-  // Create a downloadable patch file
-  const patch = '// DATA PATCH — paste into index.html replacing the DATA object\n' +
-                'const DATA = ' + dataStr + ';\n';
+  const patch = '// DATA PATCH — paste into index.html replacing the DATA object\nconst DATA = ' +
+    JSON.stringify(DATA, (k, v) => k.startsWith('_') ? undefined : v, 2) + ';\n';
   const blob = new Blob([patch], {type:'text/plain'});
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'data_patch.js';
-  a.click();
-  setStatus('Downloaded data_patch.js — apply to index.html');
+  a.href = URL.createObjectURL(blob); a.download = 'data_patch.js'; a.click();
+  setStatus('Downloaded data_patch.js');
 }
-
-function setStatus(msg) {
-  document.getElementById('status-bar').textContent = msg;
-}
-
+function setStatus(msg) { document.getElementById('status-bar').textContent = msg; }
 function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
-// Close modal on backdrop click
 document.getElementById('modal').addEventListener('click', e => {
   if (e.target === document.getElementById('modal')) closeModal();
 });
+
+// ── DRG REFERENCE ─────────────────────────────────────────────────────────
+const DRG_REF = [
+  { prefix:'ROV-0226-xxx', desc:'Legacy Hercules MK2/MK3 drawings (pre-MOTC)',
+    series:[['ROV-0226-115','Buoyancy assemblies'],['ROV-0226-420','TCU junction box — LEGACY, superseded'],['ROV-0226-455','Hydraulic compensators'],['ROV-0226-630','Thruster cable assemblies'],['ROV-0226-725','Vehicle cable assemblies']],
+    warn:'ROV-0226-420-xx are OLD TCU drawings — do not use. Current TCU is ROV-0300-D-0420.' },
+  { prefix:'ROV-0249-xxx', desc:'HPU drawings',
+    series:[['ROV-0249-D-0050','HPU GA & parts list'],['ROV-0249-D-0050-90','HPU wiring'],['ROV-0249-D-0051','HPU rotor/stator']] },
+  { prefix:'ROV-0300-D-0xxx', desc:'Current MK3 vehicle drawings (post-MOTC)',
+    series:[['ROV-0300-D-0100','Frame GA'],['ROV-0300-D-0111','T4 mount plates'],['ROV-0300-D-0300','Term can'],['ROV-0300-D-0400','Jupiter VP — PROJECT TOOLING ONLY'],['ROV-0300-D-0420','TCU assembly & wiring (current)'],['ROV-0300-D-0440','Hydraulic schematic (3 sheets)'],['ROV-0300-D-0802','T4 deck JIB']],
+    warn:'ROV-0300-D-0400 = Jupiter valve pack — project tooling only, NOT permanent ROV.' },
+  { prefix:'ROV-0305-D-0xxx', desc:'Hercules MK3 variant/upgrade drawings',
+    series:[['ROV-0305-D-0450','Curvetech VP1/VP2 (thruster control)'],['ROV-0305-D-0470','High flow VP'],['ROV-0305-D-0630','P&T wiring'],['ROV-0305-D-0660','P&T switch panel']] },
+  { prefix:'ROV-0311-D-0xxx', desc:'Pre-MOTC pod drawings — superseded by EQP952',
+    series:[['ROV-0311-D-020x','Pod wiring (pre-MOTC)'],['ROV-0311-D-0208','VP unregulated supply'],['ROV-0311-D-021x','CWDM/band splitter'],['ROV-0311-D-0300','TMS GA (pre-MOTC)'],['ROV-0311-D-0500','TMS GA (current)'],['ROV-0311-D-0680','ROV lights wiring'],['ROV-0311-D-0800','Control console wiring']],
+    warn:'ROV-0311-D-02xx pod drawings superseded by EQP952-0203-DR-PD-55xxx after MOTC.' },
+  { prefix:'EQP952-0203-DR-PD-55xxx', desc:'Post-MOTC Electronics Pod — CURRENT',
+    series:[['55000','Pod assembly GA'],['55001','Control chassis GA'],['55002','Payload chassis GA'],['55003/55004','Penetrator ring GAs'],['55016','Payload wiring'],['55017','Control wiring']] },
+  { prefix:'OCE-0400-DR-0xxx', desc:'LARS drawings (OCE = Oceanic)',
+    series:[['OCE-0400-DR-0124','Moonpool door GA'],['OCE-0400-DR-013x','Cursor fabrication'],['OCE-0400-DR-0135','Cursor GA'],['OCE-0400-DR-0140','Latch beam GA & wiring'],['OCE-0400-DR-0302','LB winch hyd schematic'],['OCE-0400-DR-0304','Service winch hyd'],['OCE-0400-DR-055x/056x','LCC wiring port/stbd'],['OCE-0400-DR-07xx/08xx','Service winch wiring']] },
+  { prefix:'TMAxxxxx', desc:'Technical Manuals',
+    series:[['TMA00974','Hercules Series Hydraulics'],['TMA01028','H15 GA & Schematics'],['TMA01029','H30 GA & Schematics'],['TMA01030','Interface Systems Manual'],['TMA01031','Control System Manual'],['TMA01071','LARS Technical Manual']] },
+];
+
+function toggleRef() {
+  const p = document.getElementById('ref-panel');
+  const vis = p.style.display === 'block';
+  p.style.display = vis ? 'none' : 'block';
+  if (!vis && !document.getElementById('ref-content').innerHTML) buildRef();
+}
+function buildRef() {
+  document.getElementById('ref-content').innerHTML = DRG_REF.map(g =>
+    '<div class="ref-group">' +
+    '<div class="ref-prefix">' + esc(g.prefix) + '</div>' +
+    '<div style="font-size:10px;color:#606470;margin-bottom:5px;">' + esc(g.desc) + '</div>' +
+    g.series.map(([n,d]) => '<div class="ref-row"><span class="ref-num">' + esc(n) + '</span><span class="ref-desc">' + esc(d) + '</span></div>').join('') +
+    (g.warn ? '<div class="ref-warn">&#9888; ' + esc(g.warn) + '</div>' : '') +
+    '</div>'
+  ).join('<hr style="border:none;border-top:1px solid #1a1d24;margin:10px 0;">');
+}
 
 loadData();
 </script>
