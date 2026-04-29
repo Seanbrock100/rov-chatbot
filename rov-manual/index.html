@@ -1863,6 +1863,10 @@ function resetViewer(){
   document.getElementById('l2-frame').style.display = 'none';
   document.getElementById('l2-frame').src = '';
   document.getElementById('viewer-ph').style.display = 'flex';
+  // Clear all open tabs when navigating away
+  TABS = [];
+  tabSeq = 0;
+  renderTabStrip();
 }
 function showTab(tab){
   activeTab = tab;
