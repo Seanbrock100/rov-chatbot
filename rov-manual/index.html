@@ -1863,10 +1863,17 @@ function resetViewer(){
   document.getElementById('l2-frame').style.display = 'none';
   document.getElementById('l2-frame').src = '';
   document.getElementById('viewer-ph').style.display = 'flex';
-  // Clear all open tabs when navigating away
-  TABS = [];
-  tabSeq = 0;
+  // Close all PDF tabs but keep the chat tab
+  const chatTab = TABS.find(t => t.type === 'chat');
+  TABS = chatTab ? [chatTab] : [];
   renderTabStrip();
+  // Activate chat tab if it exists, otherwise clear overlay
+  if (chatTab) {
+    activateTab(chatTab.id);
+  } else {
+    const ov = document.getElementById('tab-overlay');
+    if (ov) ov.remove();
+  }
 }
 function showTab(tab){
   activeTab = tab;
