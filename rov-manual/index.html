@@ -1843,7 +1843,7 @@ function sel(key, name, group){
   const isPod = (key === 'electronics_pod');
   document.getElementById('pod-ga-viewer').style.display = isPod ? 'flex' : 'none';
   document.getElementById('pod-ga-viewer').style.flexDirection = isPod ? 'column' : '';
-  document.getElementById('viewer-ph').style.display = isPod ? 'none' : 'flex';
+  document.getElementById('viewer-ph').style.display = 'none';
   document.getElementById('l2-pane').classList.add('visible');
   document.getElementById('menu-panel').classList.add('collapsed');
 }
@@ -1866,18 +1866,15 @@ function resetViewer(){
   // Clear iframe
   const frame = document.getElementById('l2-frame');
   if (frame) { frame.style.display = 'none'; frame.src = ''; }
-  // Close PDF tabs only — keep chat tab alive
+  // Close PDF tabs only — keep chat tab if it exists
   const chatTab = TABS.find(t => t.type === 'chat');
   TABS = chatTab ? [chatTab] : [];
   renderTabStrip();
-  // Re-render chat tab content if it exists
+  // If chat tab exists re-render it, otherwise just show placeholder
   if (chatTab) {
     activateTab(chatTab.id);
-  } else {
-    // Show placeholder
-    const ph = document.getElementById('viewer-ph');
-    if (ph) ph.style.display = 'flex';
   }
+  // Note: viewer-ph visibility is managed by renderTabContent — don't touch it here
 }
 function showTab(tab){
   activeTab = tab;
