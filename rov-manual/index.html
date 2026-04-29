@@ -1860,19 +1860,23 @@ function openL3Drawing(){
   if(l3DrawingFile) window.open(l3DrawingFile, '_blank');
 }
 function resetViewer(){
-  document.getElementById('l2-frame').style.display = 'none';
-  document.getElementById('l2-frame').src = '';
-  document.getElementById('viewer-ph').style.display = 'flex';
-  // Close all PDF tabs but keep the chat tab
+  // Remove any existing tab overlay
+  const ov = document.getElementById('tab-overlay');
+  if (ov) ov.remove();
+  // Clear iframe
+  const frame = document.getElementById('l2-frame');
+  if (frame) { frame.style.display = 'none'; frame.src = ''; }
+  // Close PDF tabs only — keep chat tab alive
   const chatTab = TABS.find(t => t.type === 'chat');
   TABS = chatTab ? [chatTab] : [];
   renderTabStrip();
-  // Activate chat tab if it exists, otherwise clear overlay
+  // Re-render chat tab content if it exists
   if (chatTab) {
     activateTab(chatTab.id);
   } else {
-    const ov = document.getElementById('tab-overlay');
-    if (ov) ov.remove();
+    // Show placeholder
+    const ph = document.getElementById('viewer-ph');
+    if (ph) ph.style.display = 'flex';
   }
 }
 function showTab(tab){
@@ -2007,6 +2011,9 @@ function renderTabContent(id) {
   const old = document.getElementById('tab-overlay');
   if (old) old.remove();
   area.style.position = 'relative';
+  // Hide placeholder whenever a tab is being rendered
+  const ph = document.getElementById('viewer-ph');
+  if (ph) ph.style.display = 'none';
   if (tab.type === 'pdf') {
     CONTEXT.viewerFile = tab.file;
     const startPage = tab.startPage || 1;
