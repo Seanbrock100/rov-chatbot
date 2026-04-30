@@ -1,7 +1,13 @@
 # COWORK TASK — Reorganise Technical Docs Folder
 
 ## Objective
-Reorganise `/Users/seanbrock/work documents/3. Technical Docs` to match the structure of the Hercules MK3 Interactive Manual.
+Create a **new, parallel folder structure** at:
+
+`/Users/seanbrock/work documents/3. Technical Docs - Hercules MK3/`
+
+Populate it with **copies** (not moves) of the relevant files from the original folder, renamed where needed.
+
+**The original `/Users/seanbrock/work documents/3. Technical Docs/` folder must not be touched.**
 
 Additionally, **rename PDF files whose names are only drawing numbers** by opening each one, reading the title block text, and prepending the English title.
 
@@ -60,13 +66,19 @@ Archive/                 (anything that doesn't fit above)
 
 ## Step 1 — Create the New Folder Structure
 
-Create all folders listed above under `/Users/seanbrock/work documents/3. Technical Docs/`.
+Create the new root folder and all sub-folders:
+
+`/Users/seanbrock/work documents/3. Technical Docs - Hercules MK3/`
+
+Create all sub-folders listed in the Target Folder Structure above inside this new root.
 
 ---
 
-## Step 2 — Migrate Existing Files
+## Step 2 — Copy Files to New Structure
 
-Move files from old locations to new structure according to the mapping below.
+**COPY** (do not move) files from the original `/Users/seanbrock/work documents/3. Technical Docs/` folder into the new `/Users/seanbrock/work documents/3. Technical Docs - Hercules MK3/` structure according to the mapping below.
+
+The original files remain untouched in their original locations.
 
 ### Drawing Number Reference (to help categorise)
 | Drawing prefix | Goes to |
@@ -122,7 +134,7 @@ Move files from old locations to new structure according to the mapping below.
 | Fibre Optics/ | ROV/Electrical/Electronics Pod/ |
 | Cables/ | Reference/Cables/ |
 
-**Anything that doesn't match** goes to `Archive/` — do NOT delete anything.
+**Anything that doesn't match** the Hercules MK3 scope — skip it. This new folder is Hercules MK3 only.
 
 ---
 
@@ -220,7 +232,7 @@ def extract_title_from_pdf(path):
 ## Step 4 — Log Everything
 
 Create a log file at:
-`/Users/seanbrock/work documents/3. Technical Docs/REORGANISATION_LOG.txt`
+`/Users/seanbrock/work documents/3. Technical Docs - Hercules MK3/REORGANISATION_LOG.txt`
 
 Log format:
 ```
@@ -248,19 +260,21 @@ FILES NOT CATEGORISED → Archive/:
 
 ## Important Rules
 
-1. **Never delete any file** — move to `Archive/` if uncertain
-2. **Never overwrite** — if destination file exists, rename with `_DUPLICATE` suffix
-3. **Keep sub-folders** within each new section — don't flatten everything
-4. **Don't touch** `Ancillary Tooling/`, `Survey/`, `Work Instructions and checklists/` — move as-is to `Ancillary and Tooling/`
-5. **Scanned PDFs** (no extractable text) — rename with `[OCR NEEDED]` prefix, still move to correct location
-6. **Run on the actual folder** — `/Users/seanbrock/work documents/3. Technical Docs/`
-7. **Test on one subfolder first** — run on `ROV/Herc Mk 3 manuals/Pod Drawings Post MOTC/` first and report results before proceeding with the full reorganisation
+1. **DO NOT TOUCH the original folder** — `/Users/seanbrock/work documents/3. Technical Docs/` is read-only for this task
+2. **Copy only, never move** — all file operations are `shutil.copy2()`, never `shutil.move()`
+3. **Never overwrite** — if destination file already exists, rename copy with `_DUPLICATE` suffix
+4. **Scanned PDFs** (no extractable text) — rename with `[OCR NEEDED]` prefix, still copy to correct location
+5. **Test on one subfolder first** — copy and rename files from `ROV/Herc Mk 3 manuals/Pod Drawings Post MOTC/` first and report results before proceeding with the full run
+6. **Verify test batch** — show the renamed files before proceeding so Sean can check the title extraction is working correctly
 
 ---
 
-## Files NOT in scope (leave in place)
+## Files NOT in scope (do not copy)
+These exist in the original folder but are NOT relevant to the Hercules MK3 manual and should not appear in the new structure:
 - Survey equipment docs
 - Rigging docs
-- Ancillary tooling (move as a block to Ancillary and Tooling/)
+- Ancillary tooling
 - Work instructions and checklists
-- Swagelok, Clear-Com, Air Con, Oil Reclaim (move to Archive/)
+- Swagelok, Clear-Com, Air Con, Oil Reclaim
+- Munk Crane, Kempi Welder, DWP Build, Pre-Comm Skid
+- Anything not in the drawing number mapping table above
