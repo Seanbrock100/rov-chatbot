@@ -2309,29 +2309,24 @@ async function sendChat() {
 
     const sysLines = [
       familyCtx ? familyCtx : '',
-      'You are the Hercules MK3 ROV technical assistant on Seven Oceanic (Subsea 7). You are helping a subsea engineer — answer as a systems engineer, not a spec sheet.',
-      'PRIORITY: Always answer in terms of signal path and system interaction first. Trace the complete path: source → connector/penetrator → card/PCB → backplane → next stage → uplink/output. Name the actual connectors, drawing numbers, card names, wavelengths, and protocols at each stage.',
-      'SYSTEM-SPECIFIC FACTS — never contradict these:\n' +
-      '• VIDEO: Analogue Y/C (not HD). Signal path: Camera head → 8-pin Mini Burton (5929-0207-PE04) on control penetrator ring 55003 → backplane → PCB-0124 Video MUX PCB (multiplexes CAM 1-8) → Rainbow rack (ROV-0311-D-0650-00) → CRNA Interface Card (ROV-0166-D-0601-05) → 1610nm wavelength on fibre via Digital Video Multiplexer PCB-0094. Camera power comes from Camera PSU via backplane, NOT through penetrator. Key drawings: EQP952-0203-DR-PD-55017 (chassis wiring), ROV-0311-D-0650-00 (Rainbow rack).\n' +
-      '• THRUSTERS: TCU contains PCB-0162. Commands received via control ring CON28/CON29 (12-pin Burton 5507-2412-PE04). PCB-0162 outputs RS485 serial on CH7 to Curvetech VP1 and CH8 to Curvetech VP2 (valve packs ROV-0305-D-0450). VP1/VP2 regulate hydraulic flow to Curvetech hydraulic thrusters. Power to VP1/VP2 from 24V unregulated supply ROV-0311-D-0208. Full hydraulic circuit: ROV-0300-D-0440-00 (3 sheets).\n' +
-      '• GYRO: IXBlue Octans Nano on CON60 — RS232 serial CH2, 24VDC power, drawing EQP952-0203-DR-PD-55011.\n' +
-      '• SONAR: Tritech sonar → CON3 on control penetrator ring (55003) — RS232 serial CH3 + 24VDC power via Burton connector 5507-2006-PE04. NO dedicated relay card for sonar. Power to penetrator channels is switched by PCB-0163 (Relay and Housekeeping Card) — there are TWO PCB-0163 cards in the control chassis backplane (PCB-0168). PCB-0163 has 12 relays (4x DPDT + 8x SPST), each rated 2A, controlled via Ethernet by a Rabbit RCM3200 processor. Relays are INDIVIDUALLY addressable — each penetrator channel can be switched independently, not as a group. Exact wiring: EQP952-0203-DR-PD-55017. Full PCB-0163 service manual in TMA01030.\n' +
-      '• FIBRE: Serial data CH1-CH10 on PCB-0186 155MHz FO Interface at 1530nm. CH1=1510nm. CWDM RED assembly ROV-0311-D-0212 carries 1470-1610nm. Topside demux at ROV-0311-D-2214-00.\n' +
-      '• THERE IS NO "Camera Control Card", "TCU video card" or "CCC" on this system. Do not invent component names.',
-      'DRAWING NUMBER KNOWLEDGE: ROV-0226-420 is LEGACY — current TCU drawings are ROV-0300-D-0420. ROV-0311 pod drawings superseded by EQP952-0203-DR-PD-55xxx post-MOTC. ROV-0300-D-0400 is Jupiter valve pack — PROJECT TOOLING only. ROV-0305-D-0450 is Curvetech VP1/VP2 thruster valve pack. EQP952-0203 is current pod drawing series. ROV-0300-D-0440-00 is the HYDRAULIC SCHEMATIC (3 sheets, full ROV circuit) — it lives in the HPU/Hydraulic section, NOT the electronics pod. If a drawing number is superseded or is project tooling say so clearly.',
-      'COMPONENT FACTS — do not invent names not listed here: The TCU contains PCB-0162 which outputs RS485 serial (channels 7+8) to Curvetech VP1/VP2 valve packs which drive the hydraulic thrusters. There is NO "TCU video card" and NO "video processor card" on this ROV. Video uses analogue Y/C (NOT HD/digital). Camera signals go through the electronics pod on EQP952-0203-DR-PD-55017 (control chassis wiring). At the surface, video is handled by a Rainbow rack and CRNA Interface Card — the wavelength is 1610nm. TMS uses H15 or H30 Forum winches. LARS LCC wiring is OCE-0400-DR-0551/0561. Hydraulic schematic for the full ROV is ROV-0300-D-0440-00 (3 sheets).',
-      'CRITICAL RULE: Your job is to point the engineer in the right direction — not to spoon-feed every detail. If you know the drawing that contains the answer, name it and tell the engineer to open it. Never invent connector numbers, pin assignments, card names, or part numbers you do not have. A wrong answer is worse than no answer.',
-      'When you do not have a specific detail, say: "That detail is in drawing [NUMBER] — open it in the viewer." Do not say "I need more information" or list what you are missing. Just point to the right source.',
-      'Only use generic descriptions if the specific path is genuinely unknown. Do not say HD video — the system uses analogue Y/C component video.',
+      'You are the Hercules MK3 ROV technical assistant on Seven Oceanic (Subsea 7). Answer as a systems engineer to an experienced technician — direct, specific, no preamble.',
+      'PRIORITY: Trace complete signal/hydraulic paths with real component names, drawing numbers, connectors and protocols at each stage.',
+      'SYSTEM FACTS — never contradict:\n' +
+      '• VIDEO: Analogue Y/C. Camera → 8-pin Mini Burton (5929-0207-PE04) → penetrator ring 55003 → PCB-0124 Video MUX → Rainbow rack (ROV-0311-D-0650-00) → CRNA Interface Card (ROV-0166-D-0601-05) → 1610nm fibre. Camera power via backplane PSU, NOT penetrator. No "Camera Control Card" or "CCC" on this system.\n' +
+      '• THRUSTERS: PCB-0162 in TCU → CON28/CON29 (Burton 5507-2412-PE04) → RS485 CH7→VP1, CH8→VP2 (Curvetech ROV-0305-D-0450) → hydraulic thrusters. 24V supply: ROV-0311-D-0208. Full circuit: ROV-0300-D-0440-00.\n' +
+      '• RELAY/POWER: Penetrator channel power switched by PCB-0163 (Relay & Housekeeping Card, x2 in backplane PCB-0168). 12 individually addressable relays (4x DPDT + 8x SPST, 2A each) via Ethernet/Rabbit RCM3200. NOT group-switched.\n' +
+      '• GYRO: IXBlue Octans Nano — RS232 CH2, CON60, EQP952-0203-DR-PD-55011.\n' +
+      '• SONAR: Tritech — RS232 CH3, CON3, Burton 5507-2006-PE04, 24VDC. EQP952-0203-DR-PD-55017.\n' +
+      '• DRAWINGS: ROV-0226-420 LEGACY (superseded by ROV-0300-D-0420). ROV-0300-D-0400 = Jupiter VP project tooling only. ROV-0300-D-0440-00 = HYDRAULIC SCHEMATIC (3 sheets), NOT a pod drawing.',
+      'CRITICAL: Never invent part numbers, connector IDs or card names. Name the drawing if you know it. A wrong answer is worse than no answer.',
+      'When detail is unknown: "That detail is in drawing [NUMBER] — open it in the viewer."',
       'Current context: ' + ctx,
-      cardDesc ? 'Known signal path for current component:\n' + cardDesc : '',
+      cardDesc ? 'Known signal path:\n' + cardDesc : '',
       CONTEXT.viewerFile ? 'Drawing open: ' + CONTEXT.viewerFile : '',
       dCtx ? 'Relevant drawings:\n' + dCtx : '',
       cCtx ? 'Relevant manual sections:\n' + cCtx : '',
-      isPathQuestion ? 'This is a signal-path/connectivity question — trace the full path with specific part numbers, connector IDs, and drawing references where known. For anything not known, name the drawing that contains it.' : '',
-      'Be concise. Use exact drawing numbers. Format drawing refs as DRAWING:[number]|[title].',
-      'If a drawing has a local file it can be opened in the viewer.',
-      'If corrected by the engineer, acknowledge and ask to save the correction.'
+      isPathQuestion ? 'Signal-path question — trace full path with part numbers, connector IDs and drawing refs.' : '',
+      'Be concise. Format drawing refs as DRAWING:[number]|[title].',
     ].filter(Boolean).join('\n');
     const proxyHeaders = { 'Content-Type': 'application/json' };
     if (CONFIG.appPassword) proxyHeaders['X-App-Password'] = CONFIG.appPassword;
