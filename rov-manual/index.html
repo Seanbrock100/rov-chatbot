@@ -1923,6 +1923,21 @@ document.addEventListener('click', (e) => {
 });
 // ── CONFIG ─────────────────────────────────────────────────────────────────
 const CONFIG = {};
+
+// ── FILE:// PROTOCOL WARNING ───────────────────────────────────────────────
+if (window.location.protocol === 'file:') {
+  const warn = document.createElement('div');
+  warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#c04020;color:#fff;' +
+    'font-family:monospace;font-size:12px;padding:10px 16px;text-align:center;';
+  warn.innerHTML = '⚠️ &nbsp; <strong>PDF viewer will not work when opened directly as a file.</strong>' +
+    '&nbsp; Run a local server: &nbsp;<code style="background:rgba(0,0,0,.3);padding:2px 8px;border-radius:3px;">' +
+    'cd rov-manual &amp;&amp; python3 -m http.server 8765</code>' +
+    '&nbsp; then open &nbsp;<code style="background:rgba(0,0,0,.3);padding:2px 8px;border-radius:3px;">' +
+    'http://localhost:8765</code>' +
+    '&nbsp; <span style="opacity:.7;font-size:10px;">(click to dismiss)</span>';
+  warn.onclick = () => warn.remove();
+  document.body.appendChild(warn);
+}
 fetch('https://rov-chatbot-production-3d66.up.railway.app/api/config')
   .then(r => r.json()).then(cfg => {
     CONFIG.anthropicKey = cfg.anthropicKey;
