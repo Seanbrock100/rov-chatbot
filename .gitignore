@@ -1,0 +1,25 @@
+# PDF library — too large for git, copy manually to vessel
+rov-manual/manuals/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Non-PDF files in manuals that shouldn't be tracked
+rov-manual/manuals/*.dwg
+rov-manual/manuals/*.bak
+rov-manual/manuals/*.dwfx
+rov-manual/manuals/*.idw
+rov-manual/manuals/*.vsd
+rov-manual/manuals/*.odt
+rov-manual/manuals/*.gdoc
+rov-manual/manuals/*.db
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Logs
+*.log
+/tmp/
