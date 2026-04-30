@@ -42,16 +42,43 @@ python3 -c "html=open('rov-manual/index.html').read(); script=html[html.rfind('<
 
 ---
 
-## Database State (28 April 2026)
+## Database State (30 April 2026 — POST EMBED RUN)
 
 | Table | Count | Notes |
 |-------|-------|-------|
-| `chunks` | 3,612 | Across 175 embedded manuals |
+| `chunks` | **23,333** | Across **392** embedded manuals |
 | `drawing_families` | 70 rows | Full Hercules MK3 prefix/series guide |
 | `card_index` | 30 rows | ROV pod card signal path data |
 | `drawings` | 194 | 67 mapped to local files |
 | `fault_log` | 1,057 | |
 | `handover_log` | 4,060 | |
+
+### Embed run results (Cowork, 30 April 2026)
+| Stat | Count |
+|------|-------|
+| Files embedded | **161** |
+| Files skipped (scanned/image PDFs — no text) | 174 |
+| Files with errors | 0 |
+| Chunks before run | 7,850 across 210 manuals |
+| Chunks after run | **23,333 across 392 manuals** |
+| Net gain | **+15,483 chunks, +182 manuals** |
+
+### Top embedded manuals by chunk count
+| Manual | Chunks | Relevance |
+|--------|--------|-----------|
+| TMA01071 Complete.pdf | 3,560 | Full LARS technical manual |
+| Control System Manual TMA01031 Hyperlinked.pdf | 1,552 | TCU/software — critical |
+| Alstrom T3 spares price list.pdf | 1,103 | T4 spares reference |
+| 8239.pdf | 1,084 | T4 Schilling manual |
+| Interface system Manual TMA01030.pdf | 926 | Electronics pod — critical |
+| 8212 TITAN 4 PN 199-0295.pdf | 724 | T4 manipulator |
+| Control System Manual TMA01031.pdf | 569 | TCU control system |
+| T3-T4 slave electronics upgrade.pdf | 523 | Electronics upgrade |
+| TMA01030 Interface systems manual.pdf | 341 | Pod interface |
+| OR-TE-01228 LARS IAS Design Package.pdf | 294 | LARS design |
+
+### 174 skipped files (scanned/image PDFs)
+These have no extractable text — OCR would be required to make them searchable. Not a blocker for current use. Drawings are navigated directly via the manual viewer.
 
 ### Supabase RPCs
 | Function | Purpose |
@@ -61,12 +88,12 @@ python3 -c "html=open('rov-manual/index.html').read(); script=html[html.rfind('<
 | `search_fuzzy(p_manual, p_query, p_limit, p_threshold)` | pg_trgm fuzzy search within a manual |
 | `search_part_number(p_manual, p_query, p_limit)` | Exact part number keyword search |
 
-### Embedding Gap
+### Embedding status (post 30 April 2026 run)
 - **PDFs in manuals/:** 593
-- **Embedded in DB:** 175 (3,612 chunks)
-- **Not yet embedded:** ~391 files (all new migration files)
-- **Embed script ready:** `embed_new_files.py` — hand to Cowork to run overnight
-- **Model required:** `voyage-large-2` (1536 dimensions — DO NOT use voyage-3 or voyage-3-lite)
+- **Embedded with text:** 392 manuals ✅
+- **Skipped (scanned/image):** 174 — no extractable text, OCR needed for search
+- **Model used:** `voyage-large-2` (1536 dimensions)
+- **Next embed run:** Only needed if new PDFs added to manuals/
 
 ---
 
@@ -294,93 +321,98 @@ All 34 entries with exact page numbers for drawing + parts list:
 | "What is ROV-0300-D-0440-00?" | 1/10 | 9/10 | Now correctly says hydraulic schematic |
 | "TCU or VP1 fault on port thruster?" | 6/10 | 9/10 | Now correctly says RS485 ch7, PCB-0162 |
 | "T4 pitch/yaw o-ring kit" | — | 7/10 | Found actual part numbers from DB, honest about kit number gap |
-| "Sonar relay card in pod" | — | 2/10 | No chunks in DB yet — will improve after embed run |
+| "Sonar relay card in pod" | — | 2/10 | Pre-embed run — TMA01030 now has 926 chunks, expect improvement |
 
-**Fundamental limitation:** 391 files not yet embedded. Chatbot answers from general ROV knowledge + system prompt for unanswered questions. After embed run, quality will increase significantly for component-specific queries.
+**Post embed-run state:** 23,333 chunks across 392 manuals. Full LARS (3,560 chunks), pod interface manual (926 chunks), T4 manual (1,084 chunks), control system (1,552 chunks) all now searchable. Re-test recommended.
 
 ---
 
 ## Outstanding Tasks — Priority Order
 
-### 1. IMMEDIATE — Embed run (hand to Cowork)
-```
-Run: python3 /Users/seanbrock/Documents/GitHub/rov-chatbot/embed_new_files.py
-Log: /tmp/embed_new_files.log
-Time: Several hours (391 files, some 100MB+)
-```
-This is the single biggest quality improvement available. Until it runs, the chatbot cannot answer detailed questions about LARS, TMS H30, Atlas manipulator, HPU compensators, term can wiring, or control room equipment.
+### 1. IMMEDIATE — Re-test chatbot with full library
+Now that 23,333 chunks are embedded, re-run the quality tests:
+- T4 pitch/yaw o-ring numbers (previously 7/10 — should improve)
+- Sonar relay card in pod (previously 2/10 — TMA01030 now has 926 chunks)
+- LARS-specific questions (TMA01071 now has 3,560 chunks)
+- HPU and hydraulic schematic questions
 
 ### 2. SHORT TERM — Admin panel review
 Work through each section in `admin.html`:
-- Check for misplaced drawings (e.g., any remaining project tooling in wrong section)
+- Check for misplaced drawings
 - Flag duplicates (some files copied with different names)
-- Save and apply data_patch.js for each session
+- Save and apply data_patch.js
 
-### 3. SHORT TERM — TCU wiring only in ROV Electrical
-Sean's confirmed structure has TCU wiring drawing (ROV-0300-D-0420-90) appearing under BOTH:
+### 3. SHORT TERM — TCU wiring cross-reference
+ROV-0300-D-0420-90 (wiring drawing only) to appear under BOTH:
 - ROV ELECTRICAL (wiring drawing only)
-- ROV HYDRAULIC (full TCU section — assembly + wiring + servo valve + schematic)
-This cross-reference hasn't been implemented yet — full TCU is only under Hydraulic currently.
+- ROV HYDRAULIC (full TCU section — already there)
 
-### 4. MEDIUM TERM — Chatbot specific knowledge
-Add to system prompt once confirmed:
-- Which relay card the sonar powers through (currently unknown without embed)
-- Camera 1-5 connector assignments in EQP952-0203-DR-PD-55017
-- Specific penetrator assignments from pod drawings
+### 4. MEDIUM TERM — LARS/TMS sub-sections with no drawings
+Sliding weight, slip ring, tether sections are empty — identify available drawings.
 
-### 5. MEDIUM TERM — LARS/TMS sub-section data
-LARS has 10 sub-sections in the menu but several are empty (sliding weight, slip ring, tether).
-These need drawings/manuals populated once the local docs review identifies what's available.
+### 5. MEDIUM TERM — OCR for 174 scanned PDFs
+174 files skipped during embed run — all scanned/image PDFs with no text.
+OCR would make them searchable via chatbot. Tools: tesseract, AWS Textract, or Adobe.
+Priority candidates: any wiring diagrams or parts lists in scanned format.
 
 ### 6. LONGER TERM — Vessel deploy test
 - Copy `rov-manual/` folder to Windows machine
 - Test in Edge via `file://` protocol
-- Verify PDF viewer, chatbot (needs internet), and admin panel all function
-- Note: Chatbot requires internet to reach Railway + Supabase
+- Chatbot needs internet; manual + viewer works fully offline
 
 ---
 
 ## Session History Summary
 
 ### Session 1 (early April 2026)
-- Built initial ROV manual structure
+- Built initial ROV manual structure in index.html
 - Created Supabase schema (chunks, drawings, card_index, fault_log, handover_log)
 - Embedded first batch of manuals (175 files, 3,612 chunks)
-- Built chatbot with signal path priority
+- Built chatbot with signal path priority and vector search
 
 ### Session 2 (23 April 2026)
 - Fixed PDF tab deduplication (same file + different page = separate tab)
 - Tab labels now show drawing title not filename
-- Built `manual-viewer.html` — manuals open in new browser tab with Ctrl+F
-- T4 section: mapped all 34 drawings to exact page numbers (drawing + parts list)
-- Added `drawing_families` table (70 rows) with full prefix guide and warnings
-- Wired drawing family lookup into chatbot (fires on drawing number detection)
-- Restructured menu by functional discipline
+- Built `manual-viewer.html` — manuals open in new browser tab with native Ctrl+F
+- T4 section: mapped all 34 drawings to exact page numbers in 011-8239.pdf
+- Added `drawing_families` table (70 rows) with full prefix/series guide and warnings
+- Wired drawing family lookup into chatbot (auto-fires on drawing number detection)
+- Initial menu restructure by functional discipline
 
 ### Session 3 (25 April 2026)
 - Major restructure: confirmed technician mental model for menu organisation
-- Implemented Longlines / Control Room / PDU / ROV Electrical/Hydraulic/Mechanical / TMS H15 / TMS H30 / LARS (10 sub-sections) / Manipulators
+- Implemented: Longlines / Control Room / PDU / ROV Electrical/Hydraulic/Mechanical / TMS H15 / TMS H30 / LARS (10 sub-sections) / Manipulators
 - Catalogued 1,590 ROV-relevant PDFs from local `work documents/3. Technical Docs`
 - Applied drawing family knowledge to categorise 548/568 files
 - Copied 379 new PDFs to manuals/ — full migration complete
 - Populated 24 DATA sections in index.html from migration plan
 - Built `admin.html` with integrated PDF preview, MOVE/REMOVE/RESTORE, DRG NUMBERS reference
 - Added `embed_new_files.py` for Cowork batch embed job
-- Database check: confirmed 391 files need embedding
 
 ### Session 4 (28 April 2026)
-- Chatbot quality testing — honest assessment showed 4/10 overall
-- Fixed: drawing family context moved to TOP of system prompt (was being ignored)
-- Fixed: hardcoded system-specific facts (CRNA, Rainbow rack, PCB-0162, RS485 ch7+8)
+- Chatbot quality testing — honest assessment: 4/10 overall before fixes
+- Fixed: drawing family context moved to TOP of system prompt (was being ignored when buried)
+- Fixed: hardcoded system-specific component names (CRNA, Rainbow rack, PCB-0162, RS485 CH7/CH8)
 - Fixed: ROV-0300-D-0440-00 explicitly described as hydraulic schematic (not pod drawing)
-- Fixed: hallucinated "TCU video card" and "Camera Control Card" removed
+- Fixed: hallucinated "TCU video card" and "Camera Control Card" removed from responses
 - Re-tested: quality improved to 8-9/10 for signal path and drawing ID questions
-- Tested experienced technician questions:
-  - T4 o-ring part numbers: correctly found from DB (7/10)
-  - Sonar relay card: correctly admitted not in DB (2/10 — needs embed run)
-- Confirmed: embed run is the single most impactful next step
+- T4 o-ring part numbers test: 7/10 (found actual numbers from DB)
+- Sonar relay card test: 2/10 (no chunks in DB yet at that point)
+- PROJECT_STATUS.md created with full vision/progress documentation
 
----
+### Session 5 (29-30 April 2026)
+- System prompt expanded with full specific component names: PCB-0124 Video MUX, PCB-0162 TCU board, PCB-0186 FO Interface, CRNA Interface Card, Rainbow rack, RS485 CH7→VP1/CH8→VP2, gyro CON60/RS232 CH2, sonar RS232 CH3, CWDM wavelengths
+- Viewer tab bug fixed: tabs now clear when navigating back to main menu
+- Root cause identified: `viewer-ph` placeholder being set `display:flex` in `sel()` after every section change, sitting underneath tab overlays and causing blank viewer
+- Fix: `viewer-ph` always `display:none` in `sel()` — `renderTabContent` exclusively owns placeholder visibility
+- **Embed run completed via Cowork (30 April 2026):**
+  - 161 new files embedded successfully, 174 scanned PDFs skipped, 0 errors
+  - Database grew: 3,612 → **23,333 chunks**, 175 → **392 manuals**
+  - Net gain: +15,483 chunks, +182 manuals
+  - TMA01071 LARS manual: 3,560 chunks — full LARS library now searchable
+  - TMA01031 Control System Manual: 1,552 chunks — TCU/software fully searchable
+  - TMA01030 Interface Systems Manual: 926 chunks — pod interface fully searchable
+- PROJECT_STATUS.md updated to reflect post-embed state
 
 ## Known Issues & Limitations
 
