@@ -44,12 +44,23 @@ SB_HEADERS = {
 
 # ── GET ALREADY-EMBEDDED FILES ────────────────────────────────────────────────
 log.info("Fetching already-embedded filenames from Supabase...")
-r = requests.get(
-    SB_URL + '/rest/v1/chunks?select=manual_name&limit=10000',
-    headers={**SB_HEADERS, 'Prefer': ''},
-    timeout=30
-)
-embedded_raw = {row['manual_name'] for row in r.json()}
+embedded_raw = set()
+_offset = 0
+_page   = 1000
+while True:
+    r = requests.get(
+        SB_URL + f'/rest/v1/chunks?select=manual_name&limit={_page}&offset={_offset}',
+        headers={**SB_HEADERS, 'Prefer': ''},
+        timeout=30
+    )
+    batch = r.json()
+    if not batch:
+        break
+    for row in batch:
+        embedded_raw.add(row['manual_name'])
+    if len(batch) < _page:
+        break
+    _offset += len(batch)
 
 # Normalise — strip prefixes like "LARS - ", "Winch H15 - " etc
 def normalise_name(name):
@@ -63,7 +74,7 @@ def normalise_name(name):
     return name
 
 embedded_files = {normalise_name(n).lower() for n in embedded_raw}
-log.info(f"Already embedded: {len(embedded_files)} files")
+log.info(f"Already embedded: {len(embedded_files)} unique files ({len(embedded_raw)} raw names, {_offset + len(batch) if batch else _offset} total chunks scanned)")
 
 # ── GET ALL PDFs IN MANUALS/ ──────────────────────────────────────────────────
 all_pdfs = sorted([
@@ -149,19 +160,28 @@ def chunk_text(text, filename):
     return chunks
 
 # ── HELPER: GET EMBEDDING ─────────────────────────────────────────────────────
-def get_embedding(text):
-    """Get voyage-3-lite embedding for text."""
-    r = requests.post(
-        'https://api.voyageai.com/v1/embeddings',
-        headers={'Authorization': 'Bearer ' + VOYAGE, 'Content-Type': 'application/json'},
-        json={'input': text[:4000], 'model': 'voyage-large-2'},
-        timeout=30
-    )
-    r.raise_for_status()
-    return r.json()['data'][0]['embedding']
+def get_embedding(text, retries=4, base_delay=3):
+    """Get voyage-large-2 embedding for text, with exponential backoff retries."""
+    for attempt in range(retries):
+        try:
+            r = requests.post(
+                'https://api.voyageai.com/v1/embeddings',
+                headers={'Authorization': 'Bearer ' + VOYAGE, 'Content-Type': 'application/json'},
+                json={'input': text[:4000], 'model': 'voyage-large-2'},
+                timeout=30
+            )
+            r.raise_for_status()
+            return r.json()['data'][0]['embedding']
+        except Exception as e:
+            if attempt < retries - 1:
+                delay = base_delay * (2 ** attempt)  # 3, 6, 12, 24s
+                log.warning(f"  Embed attempt {attempt+1}/{retries} failed: {e}. Retrying in {delay}s...")
+                time.sleep(delay)
+            else:
+                raise
 
 # ── HELPER: INSERT CHUNKS ─────────────────────────────────────────────────────
-def insert_chunk(manual_name, chunk_index, page_label, text, embedding):
+def insert_chunk(manual_name, chunk_index, page_label, text, embedding, retries=3, base_delay=2):
     payload = {
         'manual_name': manual_name,
         'chunk_index': chunk_index,
@@ -169,16 +189,26 @@ def insert_chunk(manual_name, chunk_index, page_label, text, embedding):
         'text':        text,
         'embedding':   embedding
     }
-    r = requests.post(
-        SB_URL + '/rest/v1/chunks',
-        headers=SB_HEADERS,
-        json=payload,
-        timeout=15
-    )
-    if r.status_code not in (200, 201):
-        log.error(f"  Insert failed: {r.status_code} {r.text[:100]}")
-        return False
-    return True
+    for attempt in range(retries):
+        try:
+            r = requests.post(
+                SB_URL + '/rest/v1/chunks',
+                headers=SB_HEADERS,
+                json=payload,
+                timeout=15
+            )
+            if r.status_code not in (200, 201):
+                log.error(f"  Insert failed: {r.status_code} {r.text[:100]}")
+                return False
+            return True
+        except Exception as e:
+            if attempt < retries - 1:
+                delay = base_delay * (2 ** attempt)  # 2, 4, 8s
+                log.warning(f"  Insert attempt {attempt+1}/{retries} failed: {e}. Retrying in {delay}s...")
+                time.sleep(delay)
+            else:
+                log.error(f"  Insert failed after {retries} attempts: {e}")
+                return False
 
 # ── MAIN EMBED LOOP ───────────────────────────────────────────────────────────
 log.info("=" * 60)
