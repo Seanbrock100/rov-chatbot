@@ -2345,10 +2345,56 @@ async function sendChat() {
     const text = data.content?.[0]?.text || 'No response';
     thinking.innerHTML = formatMsg(text, draws);
     CHAT_HIST.push({ role: 'assistant', content: text });
+
+    // Log to Supabase chat_log
+    let logId = null;
+    if (CONFIG.supabaseUrl) {
+      try {
+        const lr = await fetch(CONFIG.supabaseUrl + '/rest/v1/chat_log', {
+          method:'POST',
+          headers:{'apikey':CONFIG.supabaseAnon,'Authorization':'Bearer '+CONFIG.supabaseAnon,
+            'Content-Type':'application/json','Prefer':'return=representation'},
+          body: JSON.stringify({question:msg, answer:text,
+            context_sys:CONTEXT.system||null, context_comp:CONTEXT.component||null,
+            context_card:CONTEXT.card||null, drawing_open:CONTEXT.viewerFile||null})
+        });
+        if (lr.ok) { const ld = await lr.json(); logId = ld[0]?.id ?? null; }
+      } catch(e) {}
+    }
+    // Rating buttons
+    const rd = document.createElement('div');
+    rd.dataset.logId = logId;
+    rd.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);';
+    rd.innerHTML =
+      '<span style="font-family:IBM Plex Mono,monospace;font-size:8px;color:var(--text-dim);letter-spacing:.08em;">RATE</span>'
+      + '<button class="rate-btn" onclick="rateAnswer(this,1)" style="background:rgba(96,192,96,.1);border:1px solid rgba(96,192,96,.3);color:#60c060;border-radius:3px;padding:2px 10px;cursor:pointer;font-family:IBM Plex Mono,monospace;font-size:9px;">GOOD</button>'
+      + '<button class="rate-btn" onclick="rateAnswer(this,-1)" style="background:rgba(224,96,96,.1);border:1px solid rgba(224,96,96,.3);color:#e06060;border-radius:3px;padding:2px 10px;cursor:pointer;font-family:IBM Plex Mono,monospace;font-size:9px;">BAD</button>'
+      + '<span class="rate-status" style="font-family:IBM Plex Mono,monospace;font-size:8px;color:var(--text-dim);display:none;"></span>';
+    thinking.appendChild(rd);
+
   } catch (e) {
     thinking.innerHTML = '<em style="color:#c06030">Error: ' + escH(e.message) + '</em>';
   }
   chatBusy = false;
+}
+
+async function rateAnswer(btn, rating) {
+  const rd = btn.closest('[data-log-id]');
+  const logId = rd?.dataset?.logId;
+  rd.querySelectorAll('.rate-btn').forEach(b => { b.style.opacity='0.3'; b.disabled=true; });
+  const st = rd.querySelector('.rate-status');
+  if (st) { st.style.display='inline'; st.textContent = rating===1 ? 'Thanks!' : 'Noted.';
+    st.style.color = rating===1 ? '#60c060' : '#e06060'; }
+  if (logId && CONFIG.supabaseUrl) {
+    try {
+      await fetch(CONFIG.supabaseUrl + '/rest/v1/chat_log?id=eq.' + logId, {
+        method:'PATCH',
+        headers:{'apikey':CONFIG.supabaseAnon,'Authorization':'Bearer '+CONFIG.supabaseAnon,
+          'Content-Type':'application/json'},
+        body: JSON.stringify({rating})
+      });
+    } catch(e) {}
+  }
 }
 
 function formatMsg(text, draws) {

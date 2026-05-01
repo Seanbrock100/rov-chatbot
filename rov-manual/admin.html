@@ -90,6 +90,7 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
 <div id="topbar">
   <h1>&#9881; MANUAL ADMIN — Hercules MK3</h1>
   <button class="top-btn" onclick="toggleRef()" style="color:#90c060;border-color:rgba(144,192,96,.3);">&#128218; DRG NUMBERS</button>
+  <button class="top-btn" onclick="showQALog()" style="color:#e090e0;border-color:rgba(224,144,224,.3);">&#128172; Q&amp;A LOG</button>
   <span id="unsaved-badge">UNSAVED CHANGES</span>
   <button class="top-btn" onclick="saveChanges()">&#128190; SAVE CHANGES</button>
   <button class="top-btn" onclick="window.open('index.html','_blank')" style="color:#6090e0;border-color:rgba(96,144,224,.3);">&#128196; BACK TO MANUAL</button>
@@ -140,6 +141,23 @@ body{background:#0a0d14;color:#c8c4b8;font-family:system-ui,sans-serif;display:f
     </div>
   </div>
 </div>
+<!-- Q&A LOG PANEL -->
+<div id="qa-panel" style="display:none;position:fixed;inset:42px 0 0 0;background:#0a0d14;z-index:60;flex-direction:column;overflow:hidden;">
+  <div style="display:flex;align-items:center;gap:12px;padding:8px 16px;background:#090c13;border-bottom:1px solid #2a2d35;flex-shrink:0;">
+    <span style="font-family:monospace;font-size:10px;color:#e8a44a;letter-spacing:.1em;">Q&amp;A LOG</span>
+    <select id="qa-filter" onchange="loadQALog()" style="background:#1a1d24;border:1px solid #2a2d35;color:#c8c4b8;border-radius:3px;padding:3px 8px;font-family:monospace;font-size:9px;">
+      <option value="all">ALL QUESTIONS</option>
+      <option value="1">GOOD ONLY</option>
+      <option value="-1">BAD ONLY</option>
+      <option value="0">UNRATED</option>
+    </select>
+    <span id="qa-count" style="font-family:monospace;font-size:9px;color:#606470;"></span>
+    <button onclick="exportQACSV()" class="top-btn" style="margin-left:auto;color:#90c060;border-color:rgba(144,192,96,.3);">&#8595; CSV</button>
+    <button onclick="closeQALog()" class="top-btn">&#10005; CLOSE</button>
+  </div>
+  <div id="qa-list" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;"></div>
+</div>
+
 <!-- DRG REFERENCE PANEL -->
 <div id="ref-panel">
   <div style="font-family:monospace;font-size:10px;color:#e8a44a;letter-spacing:.1em;margin-bottom:12px;">DRAWING NUMBER REFERENCE</div>
@@ -405,6 +423,77 @@ function buildRef() {
 }
 
 loadData();
+
+// ── Q&A LOG ────────────────────────────────────────────────────────────────
+let SB_URL_ADMIN = null, SB_ANON_ADMIN = null;
+
+async function getAdminConfig() {
+  if (SB_URL_ADMIN) return;
+  try {
+    const r = await fetch('https://rov-chatbot-production-3d66.up.railway.app/api/config');
+    const cfg = await r.json();
+    SB_URL_ADMIN  = cfg.supabaseUrl;
+    SB_ANON_ADMIN = cfg.supabaseAnon;
+  } catch(e) {}
+}
+
+async function showQALog() {
+  document.getElementById('qa-panel').style.display = 'flex';
+  await loadQALog();
+}
+
+function closeQALog() {
+  document.getElementById('qa-panel').style.display = 'none';
+}
+
+async function loadQALog() {
+  await getAdminConfig();
+  if (!SB_URL_ADMIN) { document.getElementById('qa-list').innerHTML = '<p style="color:#e06060;font-family:monospace;font-size:9px;">Could not connect to database</p>'; return; }
+  const filter = document.getElementById('qa-filter').value;
+  let url = SB_URL_ADMIN + '/rest/v1/chat_log?order=created_at.desc&limit=200';
+  if (filter !== 'all') url += '&rating=eq.' + filter;
+  const r = await fetch(url, { headers: { 'apikey': SB_ANON_ADMIN, 'Authorization': 'Bearer ' + SB_ANON_ADMIN } });
+  const rows = await r.json();
+  document.getElementById('qa-count').textContent = rows.length + ' questions';
+  const RATE_LABEL = { '1': '✅ GOOD', '-1': '❌ BAD', '0': '— UNRATED' };
+  const RATE_COL   = { '1': '#60c060', '-1': '#e06060', '0': '#606470' };
+  document.getElementById('qa-list').innerHTML = rows.map(row => {
+    const r = String(row.rating ?? 0);
+    const d = new Date(row.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    const ctx = [row.context_sys, row.context_comp, row.context_card].filter(Boolean).join(' › ');
+    return '<div style="background:#0d1018;border:1px solid #2a2d35;border-radius:4px;padding:12px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+      + '<span style="font-family:monospace;font-size:8px;color:#404860;">' + esc(d) + (ctx?' &nbsp;|&nbsp; '+esc(ctx):'') + '</span>'
+      + '<span style="font-family:monospace;font-size:8px;color:' + RATE_COL[r] + ';">' + RATE_LABEL[r] + '</span>'
+      + '</div>'
+      + '<div style="font-size:12px;color:#e8a44a;font-weight:600;margin-bottom:6px;">Q: ' + esc(row.question) + '</div>'
+      + '<div style="font-size:11px;color:#9a9890;line-height:1.6;white-space:pre-wrap;">' + esc((row.answer||'').substring(0,400)) + (row.answer?.length>400?'…':'') + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function exportQACSV() {
+  const rows = document.querySelectorAll('#qa-list > div');
+  let csv = 'Date,Rating,Question,Answer,Context\n';
+  // Re-fetch and export
+  getAdminConfig().then(() => {
+    fetch(SB_URL_ADMIN + '/rest/v1/chat_log?order=created_at.desc&limit=1000', {
+      headers: { 'apikey': SB_ANON_ADMIN, 'Authorization': 'Bearer ' + SB_ANON_ADMIN }
+    }).then(r=>r.json()).then(data => {
+      data.forEach(row => {
+        const q = (row.question||'').replace(/"/g,'""');
+        const a = (row.answer||'').replace(/"/g,'""').substring(0,500);
+        const ctx = [row.context_sys,row.context_comp,row.context_card].filter(Boolean).join(' > ');
+        csv += `"${row.created_at}","${row.rating}","${q}","${a}","${ctx}"\n`;
+      });
+      const blob = new Blob([csv], {type:'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'rov_qa_log_' + new Date().toISOString().slice(0,10) + '.csv';
+      a.click();
+    });
+  });
+}
 </script>
 </body>
 </html>
