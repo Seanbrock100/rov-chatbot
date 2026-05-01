@@ -468,6 +468,7 @@ async function loadQALog() {
       + '</div>'
       + '<div style="font-size:12px;color:#e8a44a;font-weight:600;margin-bottom:6px;">Q: ' + esc(row.question) + '</div>'
       + '<div style="font-size:11px;color:#9a9890;line-height:1.6;white-space:pre-wrap;">' + esc((row.answer||'').substring(0,400)) + (row.answer?.length>400?'…':'') + '</div>'
+      + (row.notes ? '<div style="margin-top:6px;padding:4px 8px;background:rgba(224,96,96,.08);border:1px solid rgba(224,96,96,.2);border-radius:3px;font-family:monospace;font-size:9px;color:#e06060;">Feedback: ' + esc(row.notes) + '</div>' : '')
       + '</div>';
   }).join('');
 }

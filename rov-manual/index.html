@@ -2381,17 +2381,73 @@ async function sendChat() {
 async function rateAnswer(btn, rating) {
   const rd = btn.closest('[data-log-id]');
   const logId = rd?.dataset?.logId;
-  rd.querySelectorAll('.rate-btn').forEach(b => { b.style.opacity='0.3'; b.disabled=true; });
-  const st = rd.querySelector('.rate-status');
-  if (st) { st.style.display='inline'; st.textContent = rating===1 ? 'Thanks!' : 'Noted.';
-    st.style.color = rating===1 ? '#60c060' : '#e06060'; }
+
+  if (rating === 1) {
+    // Good — save immediately
+    rd.querySelectorAll('.rate-btn').forEach(b => { b.style.opacity='0.3'; b.disabled=true; });
+    const st = rd.querySelector('.rate-status');
+    if (st) { st.style.display='inline'; st.textContent='Thanks!'; st.style.color='#60c060'; }
+    if (logId && CONFIG.supabaseUrl) {
+      try {
+        await fetch(CONFIG.supabaseUrl + '/rest/v1/chat_log?id=eq.' + logId, {
+          method:'PATCH',
+          headers:{'apikey':CONFIG.supabaseAnon,'Authorization':'Bearer '+CONFIG.supabaseAnon,'Content-Type':'application/json'},
+          body: JSON.stringify({rating:1})
+        });
+      } catch(e) {}
+    }
+  } else {
+    // Bad — show feedback input first
+    rd.querySelectorAll('.rate-btn').forEach(b => { b.style.opacity='0.3'; b.disabled=true; });
+    const fbDiv = document.createElement('div');
+    fbDiv.style.cssText = 'display:flex;gap:6px;align-items:center;margin-top:6px;width:100%;';
+    fbDiv.innerHTML =
+      '<input id="fb-input-' + logId + '" type="text" placeholder="What was wrong? (optional)" '
+      + 'style="flex:1;background:#1a1d24;border:1px solid rgba(224,96,96,.4);color:#c8c4b8;'
+      + 'border-radius:3px;padding:4px 8px;font-family:IBM Plex Mono,monospace;font-size:9px;outline:none;" '
+      + 'onkeydown="if(event.key===\'Enter\'){submitBadFeedback(' + logId + ')}">'
+      + '<button onclick="submitBadFeedback(' + logId + ')" '
+      + 'style="background:rgba(224,96,96,.15);border:1px solid rgba(224,96,96,.4);color:#e06060;'
+      + 'border-radius:3px;padding:4px 10px;cursor:pointer;font-family:IBM Plex Mono,monospace;font-size:9px;'
+      + 'white-space:nowrap;">SEND</button>'
+      + '<button onclick="skipBadFeedback(' + logId + ',this)" '
+      + 'style="background:none;border:none;color:#606470;cursor:pointer;font-family:IBM Plex Mono,monospace;'
+      + 'font-size:8px;">SKIP</button>';
+    rd.appendChild(fbDiv);
+    setTimeout(() => document.getElementById('fb-input-' + logId)?.focus(), 50);
+  }
+}
+
+async function submitBadFeedback(logId) {
+  const inp = document.getElementById('fb-input-' + logId);
+  const notes = inp ? inp.value.trim() : '';
+  inp?.closest('div')?.remove();
+  // Show confirmed
+  const rd = document.querySelector('[data-log-id="' + logId + '"]');
+  const st = rd?.querySelector('.rate-status');
+  if (st) { st.style.display='inline'; st.textContent='Noted — will improve.'; st.style.color='#e06060'; }
   if (logId && CONFIG.supabaseUrl) {
     try {
       await fetch(CONFIG.supabaseUrl + '/rest/v1/chat_log?id=eq.' + logId, {
         method:'PATCH',
-        headers:{'apikey':CONFIG.supabaseAnon,'Authorization':'Bearer '+CONFIG.supabaseAnon,
-          'Content-Type':'application/json'},
-        body: JSON.stringify({rating})
+        headers:{'apikey':CONFIG.supabaseAnon,'Authorization':'Bearer '+CONFIG.supabaseAnon,'Content-Type':'application/json'},
+        body: JSON.stringify({rating:-1, notes: notes || null})
+      });
+    } catch(e) {}
+  }
+}
+
+async function skipBadFeedback(logId, btn) {
+  btn.closest('div')?.remove();
+  const rd = document.querySelector('[data-log-id="' + logId + '"]');
+  const st = rd?.querySelector('.rate-status');
+  if (st) { st.style.display='inline'; st.textContent='Noted.'; st.style.color='#e06060'; }
+  if (logId && CONFIG.supabaseUrl) {
+    try {
+      await fetch(CONFIG.supabaseUrl + '/rest/v1/chat_log?id=eq.' + logId, {
+        method:'PATCH',
+        headers:{'apikey':CONFIG.supabaseAnon,'Authorization':'Bearer '+CONFIG.supabaseAnon,'Content-Type':'application/json'},
+        body: JSON.stringify({rating:-1})
       });
     } catch(e) {}
   }
