@@ -112,7 +112,7 @@ Direct from his system prompt:
 
 ## Immediate next tasks — priority order
 
-1. **Complete the security deployment.** Code is committed. Outstanding: set `APP_PASSWORD` + `ADMIN_PASSWORD` in Railway; rotate `ANTHROPIC_KEY` / `VOYAGE_KEY` / `SUPABASE_SERVICE` (all compromised by the pre-fix `/api/config` leak); browser test end-to-end. See `PROJECT_STATUS.md` Security Architecture section for the full ordered sequence.
+1. **Complete the security deployment.** Code is committed. Outstanding: set `APP_PASSWORD` + `ADMIN_PASSWORD` in Railway; rotate `ANTHROPIC_KEY` + `VOYAGE_KEY` (compromised by the pre-fix `/api/config` leak); browser test end-to-end. `SUPABASE_SERVICE` rotation **deferred as tracked tech debt** — Supabase deprecated the simple JWT secret regeneration; full migration to new `sb_publishable` / `sb_secret` keys is required (~30-45 min of focused work). See `PROJECT_STATUS.md` Security Architecture section + "Tracked tech debt — Supabase key migration" subsection for the full sequence and migration scope.
 2. **Decide tree HTML strategy.** The four tree HTMLs only work in dev (localhost http server + docs symlink target). Pick one of: rewrite `FILES` to flat filenames, ship hierarchical folder to vessel alongside flat `manuals/`, or accept dev-only and link them out of `index.html` for the vessel build.
 3. **Resolve `rov-manual/docs` symlink** before vessel copy.
 4. **Vessel sandbox test** on a Windows machine via `file://`. Verify card click → card_index sidebar populates; drawing click → PDF tab opens; chatbot reaches Railway; check DevTools Network tab for the Anthropic POST.

@@ -369,17 +369,30 @@ The browser never holds Anthropic, Voyage, or Supabase service role keys. All pa
 2. Set `ADMIN_PASSWORD` env var in Railway (different password, also 16+ chars)
 3. Rotate `ANTHROPIC_KEY` (Anthropic console → create new → update Railway env var → test → delete old)
 4. Rotate `VOYAGE_KEY` (same pattern)
-5. Rotate `SUPABASE_SERVICE` (Supabase Project Settings → API → reset service_role secret → update Railway env var)
+5. ~~Rotate `SUPABASE_SERVICE`~~ — **DEFERRED 13 May 2026.** Supabase has deprecated the simple legacy regenerate-JWT-secret rotation. The current path requires migrating to new `sb_publishable` / `sb_secret` keys (~30-45 min of code changes in `app.py` and `index.html`, plus client + server testing). Deferred deliberately to avoid big code changes while Claude Designer exploration is running in parallel. **Tracked tech debt** — schedule a focused 1-hour session this week to migrate properly. See "Open work — Supabase key migration" below.
 6. End-to-end test in browser
 
 `SUPABASE_ANON` does NOT need rotation — public-by-design.
+
+### Tracked tech debt — Supabase key migration
+
+**Risk accepted today:** the leaked `service_role` JWT remains valid until manual migration to the new keys system. Anyone who captured it from `/api/config` pre-fix can still abuse it (read/write/delete any Supabase row, bypass RLS). The `/api/config` leak is plugged so no NEW exposure happens; this is residual risk from the pre-fix window.
+
+**Migration scope when ready:**
+- Server: `app.py` `/supabase/<path>` proxy needs `Authorization: Bearer` header dropped — new sb_secret keys reject it, only `apikey` header is accepted
+- Client: every direct browser→Supabase call in `index.html` needs the same change (card_index lookup, chat_log writes, match_chunks RPC, lookup_drawing_family RPC — ~5-6 locations)
+- Create new `sb_publishable` and `sb_secret` keys in Supabase Settings → API Keys
+- Update Railway env vars (`SUPABASE_ANON` → new publishable value; `SUPABASE_SERVICE` → new secret value)
+- Test all Supabase paths end-to-end
+- Disable legacy `anon` + `service_role` keys in Supabase dashboard
+- Then future Supabase rotations are trivial (same model as Anthropic / Voyage)
 
 ---
 
 ## Outstanding Tasks — Priority Order (13 May 2026)
 
 ### 1. CRITICAL — Complete the security deploy
-Code is committed. Outstanding: set `APP_PASSWORD` and `ADMIN_PASSWORD` env vars in Railway, rotate `ANTHROPIC_KEY` / `VOYAGE_KEY` / `SUPABASE_SERVICE` (all considered compromised because `/api/config` leaked them for an unknown duration before the fix), end-to-end test. See "Security Architecture" section for full sequence.
+Code is committed. Outstanding: set `APP_PASSWORD` and `ADMIN_PASSWORD` env vars in Railway, rotate `ANTHROPIC_KEY` + `VOYAGE_KEY` (compromised by the pre-fix `/api/config` leak), end-to-end test. `SUPABASE_SERVICE` rotation deferred as tracked tech debt — see Security Architecture section above. Full sequence in that section.
 
 ### 2. CRITICAL — Tree HTML `BASE` path mismatch
 `drawing-tree.html`, `control-room-tree.html`, `lars-tree.html`, `pdu-tree.html` hardcode `BASE = 'http://localhost:8765/docs/'` and reference hierarchical paths (`ROV/Mechanical/...`) that only exist in the `rov-manual/docs` symlink target. On vessel `file://` deploy with a flat `manuals/` folder, every PDF link in every tree HTML 404s. Three remediation options documented in `DRAWING_INDEX.md` — design decision needed (rewrite FILES maps to flat filenames vs. ship hierarchical copy vs. accept dev-only).
