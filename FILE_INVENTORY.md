@@ -1,10 +1,10 @@
 # FILE INVENTORY — Hercules MK3 ROV Manual
 
-**Snapshot date:** 13 May 2026
+**Snapshot date:** 13 May 2026 (post security session)
 **Repo root:** `/Users/seanbrock/Documents/GitHub/rov-chatbot/`
 
 > Every file/folder in the project, what it does, and where it sits in the architecture.
-> Companion to `SESSION_HANDOFF.md` (orientation) and `PROJECT_STATUS.md` (vision/progress).
+> Companion to `SESSION_HANDOFF.md` (orientation), `PROJECT_STATUS.md` (vision/progress), `SECURITY_BRIEF.md` (security model), and `DRAWING_INDEX.md` (drawing-index feature).
 
 ---
 
@@ -19,13 +19,15 @@
 | `SESSION_HANDOFF.md` | Drop-in orientation for a fresh AI session. Read first. |
 | `FILE_INVENTORY.md` | This file. Every file mapped. |
 | `MASTER_KNOWLEDGE.md` | Ground truth technical reference (PCBs, signals, hydraulics, drawing numbers). The chatbot prompt is graded against this. v2.0, source manuals TMA01030/01031/00974/01028/01029. |
+| `DRAWING_INDEX.md` | Three-layer drawing-index feature reference: `card_index` flow, `drawing_families` chatbot integration, and the standalone tree HTMLs. Includes the dev-only limitation of tree HTMLs in full detail. |
+| `SECURITY_BRIEF.md` | Self-contained briefing on the security architecture (two-gate model, accepted residual risk, hard constraints, fair-game redesign areas). Read this before any change touching `app.py`, auth flows, or env vars. |
 | `COWORK_TASK_REORGANISE_TECH_DOCS.md` | Run instructions for `reorganise_tech_docs.py` — the script that built the parallel reorganised folder structure. |
 
 ### Server (Railway-deployed)
 
 | File | Purpose |
 |---|---|
-| `app.py` | Flask proxy server. 156 lines. Routes: `/` (serves index), `/<file>` (static), `/api/config` (currently leaks keys — fix pending), `/api/auth` (password check), `/voyage/embeddings` (gated proxy to Voyage AI), `/anthropic/messages` (gated proxy to Anthropic), `/supabase/<path>` (gated proxy with anon/service key selection), `/health`. Decorator `@require_password` enforces `X-App-Password` header. |
+| `app.py` | Flask proxy server. 181 lines. Routes: `/` (serves index), `/<file>` (static), `/api/config` (public values only — no secrets), `/api/auth` (app password check, `hmac.compare_digest`), `/api/admin-auth` (admin password check, deny-by-default), `/voyage/embeddings` (gated), `/anthropic/messages` (gated), `/supabase/<path>` (gated, anon/service key selection), `/health`. Decorator `@require_password` enforces `X-App-Password` header. |
 | `Procfile` | Railway start command: `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120` |
 | `requirements.txt` | flask 3.0.3, flask-cors 4.0.1, requests 2.31.0, gunicorn 21.2.0 |
 | `.gitignore` | Excludes `rov-manual/manuals/`, `.DS_Store`, CAD/binary formats, `__pycache__`, logs |
@@ -137,8 +139,9 @@ This is the folder that gets copied to `N:\15. ROV\3. Technical Docs\` on vessel
 | `VOYAGE_KEY` | SECRET | `/voyage/embeddings` proxy in `app.py` |
 | `SUPABASE_URL` | public | Returned by `/api/config`, used by browser for direct reads |
 | `SUPABASE_ANON` | public-by-design | Returned by `/api/config`, used by browser for direct reads |
-| `SUPABASE_SERVICE` | SECRET (currently leaking — fix pending) | Used server-side by `/supabase/<path>` for writes |
-| `APP_PASSWORD` | SECRET, **not set yet** | Validated by `@require_password` decorator |
+| `SUPABASE_SERVICE` | SECRET (legacy JWT — rotation deferred as tracked tech debt, see SECURITY_BRIEF.md) | Used server-side by `/supabase/<path>` for writes |
+| `APP_PASSWORD` | SECRET | Validated by `@require_password` decorator and `/api/auth` |
+| `ADMIN_PASSWORD` | SECRET | Validated by `/api/admin-auth`. Deny-by-default when unset. |
 
 ---
 
@@ -173,3 +176,5 @@ Engineer opens `index.html` in Edge via `file://`. Chatbot and live drawing sear
 | Run the reorganise script | `COWORK_TASK_REORGANISE_TECH_DOCS.md` |
 | Run a JS parse check before pushing | `README.md` (canonical command) |
 | Add new PDFs to the searchable corpus | `embed_new_files.py` (run via Cowork) |
+| Understand the drawing-index layers | `DRAWING_INDEX.md` |
+| Change auth, `app.py`, or env vars safely | `SECURITY_BRIEF.md` (read FIRST) |
