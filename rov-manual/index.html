@@ -190,6 +190,78 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .draw-title{font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:var(--text-mid);pointer-events:none;}
 .draw-open{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--blue);margin-top:2px;pointer-events:none;}
 .draw-item:hover .draw-open{color:var(--amber);}
+/* ── ADMIN OVERLAY ───────────────────────────────────────────────────────── */
+#adm-overlay{display:none;position:fixed;inset:0;background:#0a0d14;z-index:9999;flex-direction:column;}
+#adm-overlay.visible{display:flex;}
+#adm-login{display:flex;align-items:center;justify-content:center;flex:1;background:#090c13;}
+.adm-login-box{background:#141720;border:1px solid #2a2d35;border-radius:8px;padding:36px 40px;width:360px;text-align:center;}
+.adm-login-title{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#e8a44a;margin-bottom:4px;letter-spacing:.05em;}
+.adm-login-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#606470;letter-spacing:.15em;margin-bottom:28px;}
+.adm-login-field{width:100%;background:#0d1018;border:1px solid #2a2d35;color:#c8c4b8;border-radius:3px;padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;outline:none;margin-bottom:12px;}
+.adm-login-field:focus{border-color:#e8a44a;}
+.adm-login-btn{width:100%;background:#e8a44a;color:#000;border:none;border-radius:3px;padding:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.1em;margin-top:4px;}
+.adm-login-btn:hover{background:#f0b85a;}
+.adm-login-err{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#e06060;margin-top:8px;display:none;}
+.adm-login-close{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#404860;margin-top:16px;cursor:pointer;}
+.adm-login-close:hover{color:#c8c4b8;}
+#adm-main{display:none;flex:1;flex-direction:column;overflow:hidden;}
+#adm-main.visible{display:flex;}
+#adm-topbar{display:flex;align-items:center;gap:10px;padding:7px 14px;background:#090c13;border-bottom:1px solid #2a2d35;flex-shrink:0;}
+#adm-topbar h2{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#e8a44a;letter-spacing:.12em;flex:1;margin:0;}
+.adm-tbtn{background:rgba(232,164,74,.1);border:1px solid rgba(232,164,74,.3);color:#e8a44a;border-radius:3px;padding:4px 10px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:9px;white-space:nowrap;}
+.adm-tbtn:hover{background:rgba(232,164,74,.2);}
+#adm-unsaved{display:none;background:#e8a44a;color:#000;border-radius:3px;padding:2px 8px;font-size:8px;font-family:'IBM Plex Mono',monospace;font-weight:700;}
+#adm-body{display:flex;flex:1;overflow:hidden;}
+#adm-sec-panel{width:170px;flex-shrink:0;background:#090c13;border-right:1px solid #2a2d35;display:flex;flex-direction:column;overflow:hidden;}
+#adm-sec-hdr{padding:6px 12px;font-family:'IBM Plex Mono',monospace;font-size:8px;color:#404860;letter-spacing:.1em;border-bottom:1px solid #1a1d24;flex-shrink:0;}
+#adm-sec-list{flex:1;overflow-y:auto;}
+.adm-si{padding:6px 10px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:8px;color:#606470;border-left:2px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.adm-si:hover{color:#c8c4b8;background:rgba(255,255,255,.03);}
+.adm-si.active{color:#e8a44a;border-left-color:#e8a44a;background:rgba(232,164,74,.05);}
+.adm-si-cnt{float:right;color:#404860;font-size:8px;margin-left:4px;}
+#adm-list-panel{width:320px;flex-shrink:0;border-right:1px solid #2a2d35;display:flex;flex-direction:column;overflow:hidden;}
+#adm-list-hdr{padding:8px 10px;background:#0d1018;border-bottom:1px solid #2a2d35;flex-shrink:0;}
+#adm-sec-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#e8a44a;margin-bottom:5px;}
+#adm-filter-row{display:flex;gap:3px;flex-wrap:wrap;}
+.adm-fb{padding:2px 7px;font-family:'IBM Plex Mono',monospace;font-size:8px;border-radius:3px;border:1px solid #2a2d35;background:#1a1d24;color:#606470;cursor:pointer;}
+.adm-fb.active{border-color:#e8a44a;color:#e8a44a;background:rgba(232,164,74,.1);}
+#adm-drw-list{flex:1;overflow-y:auto;}
+#adm-status{padding:4px 10px;font-family:'IBM Plex Mono',monospace;font-size:8px;color:#505460;flex-shrink:0;border-top:1px solid #1a1d24;}
+.adm-row{padding:7px 10px;border-bottom:1px solid #1a1d24;cursor:pointer;transition:background .1s;}
+.adm-row:hover{background:#0d1018;}
+.adm-row.adm-sel{background:#131825;border-left:2px solid #e8a44a;}
+.adm-row.adm-rm{opacity:.35;}
+.adm-rt{display:flex;align-items:center;gap:5px;margin-bottom:2px;}
+.adm-rtype{font-family:'IBM Plex Mono',monospace;font-size:7px;padding:1px 4px;border-radius:2px;border:1px solid;flex-shrink:0;}
+.adm-rtype.drawing{color:#6090e0;border-color:rgba(96,144,224,.3);}
+.adm-rtype.manual{color:#90c060;border-color:rgba(144,192,96,.3);}
+.adm-rnum{font-family:'IBM Plex Mono',monospace;font-size:8px;color:#e8a44a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.adm-rtitle{font-size:11px;color:#c8c4b8;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.adm-rfile{font-family:'IBM Plex Mono',monospace;font-size:7px;color:#404860;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px;}
+.adm-ra{display:flex;gap:3px;}
+.adm-ab{padding:2px 7px;font-family:'IBM Plex Mono',monospace;font-size:8px;border-radius:3px;border:1px solid;cursor:pointer;white-space:nowrap;}
+.adm-ab.move{color:#6090e0;border-color:rgba(96,144,224,.3);background:rgba(96,144,224,.05);}
+.adm-ab.move:hover{background:rgba(96,144,224,.2);}
+.adm-ab.remove{color:#e06060;border-color:rgba(224,96,96,.3);background:rgba(224,96,96,.05);}
+.adm-ab.remove:hover{background:rgba(224,96,96,.15);}
+.adm-ab.restore{color:#60c060;border-color:rgba(96,192,96,.3);background:rgba(96,192,96,.05);}
+#adm-viewer{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#111;}
+#adm-viewer-hdr{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#090c13;border-bottom:1px solid #2a2d35;flex-shrink:0;min-height:34px;}
+#adm-viewer-title{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#c8c4b8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#adm-viewer-frame{flex:1;border:none;width:100%;height:100%;background:#1a1a1a;display:none;}
+#adm-viewer-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#2a2d35;font-family:'IBM Plex Mono',monospace;font-size:10px;text-align:center;gap:10px;}
+#adm-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10000;align-items:center;justify-content:center;}
+#adm-modal.open{display:flex;}
+#adm-modal-box{background:#141720;border:1px solid #2a2d35;border-radius:6px;padding:20px;width:420px;max-width:90vw;}
+#adm-modal-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#e8a44a;margin-bottom:8px;}
+#adm-modal-ctx{font-family:'IBM Plex Mono',monospace;font-size:8px;color:#606470;margin-bottom:14px;word-break:break-all;}
+.adm-ml{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#a8a49a;margin-bottom:5px;}
+#adm-modal-sel{width:100%;background:#1a1d24;border:1px solid #2a2d35;color:#c8c4b8;border-radius:3px;padding:7px;font-family:'IBM Plex Mono',monospace;font-size:10px;outline:none;}
+#adm-modal-sel:focus{border-color:#e8a44a;}
+.adm-mbtns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+.adm-mbtn{padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;border-radius:3px;border:none;cursor:pointer;}
+.adm-mbtn.confirm{background:#e8a44a;color:#000;font-weight:700;}
+.adm-mbtn.cancel{background:#1a1d24;color:#c8c4b8;border:1px solid #2a2d35;}
 </style>
 <script src="manuals/pdf.min.js"></script>
 </head>
@@ -207,7 +279,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
   <div class="hright">
     Hercules MK3 ROV Technical Reference<br>
     <span style="font-size:9px;color:#2a3040">BUILD: 09 Apr 2026 — Layer 2</span>
-    &nbsp;&nbsp;<a href="admin.html" target="_blank" style="font-family:monospace;font-size:8px;color:#2a3040;text-decoration:none;" title="Admin panel">&#9881;</a>
+    &nbsp;&nbsp;<span onclick="admOpen()" style="font-family:monospace;font-size:8px;color:#2a3040;text-decoration:none;cursor:pointer;" title="Admin panel (Ctrl+Shift+A)">&#9881;</span>
   </div>
 </div>
 
@@ -644,6 +716,12 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
       <div class="mitem" onclick="sel('cables','Cables Index','REFERENCE')"><div class="idot"></div><span class="iname">Cables Index</span><span class="iarrow">›</span></div>
       <div class="mitem" onclick="sel('all_drawings','All Drawings','REFERENCE')"><div class="idot"></div><span class="iname">All Drawings</span><span class="iarrow">›</span></div>
 
+      <div class="grp-lbl">Drawing Indexes</div>
+      <div class="mitem" onclick="window.open('drawing-tree.html','_blank')" style="border-left-color:var(--amber-dim)"><div class="idot" style="background:var(--amber);opacity:.7"></div><span class="iname" style="color:var(--text)">ROV Drawing Index</span><span class="iarrow" style="color:var(--amber)">↗</span></div>
+      <div class="mitem" onclick="window.open('lars-tree.html','_blank')" style="border-left-color:var(--amber-dim)"><div class="idot" style="background:var(--amber);opacity:.7"></div><span class="iname" style="color:var(--text)">LARS Drawing Index</span><span class="iarrow" style="color:var(--amber)">↗</span></div>
+      <div class="mitem" onclick="window.open('pdu-tree.html','_blank')" style="border-left-color:var(--amber-dim)"><div class="idot" style="background:var(--amber);opacity:.7"></div><span class="iname" style="color:var(--text)">PDU Drawing Index</span><span class="iarrow" style="color:var(--amber)">↗</span></div>
+      <div class="mitem" onclick="window.open('control-room-tree.html','_blank')" style="border-left-color:var(--amber-dim)"><div class="idot" style="background:var(--amber);opacity:.7"></div><span class="iname" style="color:var(--text)">Control Room Drawing Index</span><span class="iarrow" style="color:var(--amber)">↗</span></div>
+
     </div>
   </div>
 </div>
@@ -675,6 +753,7 @@ const SNIPPETS = {
   pan_tilt: "The pan and tilt camera system on the Hercules MK3 ROV is a remotely operated positioning mechanism that provides 360-degree horizontal rotation and vertical tilting capability for the primary navigation or inspection cameras. Its primary function is to enable precise visual positioning and tracking of subsea operations without requiring repositioning of the entire ROV, allowing operators topside to maintain visual contact with work areas while the vehicle remains in a stable working position. The system typically comprises servo-driven pan and tilt motors, rotary joints with slip rings for power and video signal transmission, and integrated camera housing with LED lighting arrays that move in coordination with camera positioning.",
   tms: "The Tether Management System (TMS) is an intermediary subsea vehicle that manages the umbilical connection between the Hercules MK3 ROV and the surface vessel, allowing the ROV to operate at extended distances from the ship while maintaining reliable power and communication links. Its primary function is to deploy, retrieve, and manage the ROV's neutrally buoyant tether during subsea operations, effectively decoupling ROV movements from surface vessel motion and weather conditions. The TMS consists of a motorized tether winch system, buoyancy modules for depth control, thrusters for positioning, and integrated electrical slip rings that maintain continuous power and signal transmission to the ROV throughout tether payout and retrieval operations.",
   lars: "The Launch and Recovery System (LARS) is a deck-mounted crane and handling system that safely deploys and retrieves the Hercules MK3 ROV between the sea surface and the Seven Oceanic's working deck. Its primary function is to provide controlled lifting, lowering, and positioning of the ROV through the vessel's moonpool or over the side, while managing the ROV's umbilical cable throughout the operation. The system comprises a main lift winch, an auxiliary positioning winch, a dedicated LARS crane with hydraulic controls, and an integrated umbilical management system that prevents cable damage during launch and recovery sequences.",
+  macartney_winch: "The MacArtney MASH AHC (Active Heave Compensation) Winch is the primary umbilical winch for the Hercules ROV system. During launch, it holds approximately 1 tonne of tension on the umbilical until the ROV has exited the latch beam (normally at 25 metres depth). Once the ROV unlocks from the latch beam, the MacArtney winch takes the full weight of the ROV, TMS, and umbilical. It incorporates active heave compensation to account for vessel motion, a level-wind mechanism to spool the umbilical evenly, and a Hagglunds hydraulic drive with MAYR electromagnetic brakes. The winch is fitted with an MRU (Motion Reference Unit) for heave sensing, a Schneider ATV71 VFD for motor control, and a dedicated brake HPU. Two winches serve the dual-system installation — H15 (Hercules 15) and H30 (Hercules 30) — sharing the LARS HPU.",
   control_console: "The pilot control console for the Hercules MK3 ROV serves as the primary human-machine interface, allowing the ROV pilot to control vehicle navigation, manipulator functions, and tooling operations from the surface control room. The console integrates joystick controllers for thruster and manipulator control, video monitors displaying multiple camera feeds, control panels for lighting and tooling systems, and communication interfaces with the navigation and hydraulic power unit subsystems. Key components include the master joystick for vehicle movement, secondary joysticks for the two manipulator arms, dedicated switches for auxiliary equipment activation, and real-time status displays showing critical parameters such as heading, depth, and hydraulic pressure.",
   control_room: "The control room topside setup for the Hercules MK3 ROV serves as the central command and monitoring hub where operators control the underwater vehicle and manage all subsea operations from the surface vessel. The system's primary function is to provide real-time control of the ROV's movement, manipulator arms, and tooling packages while simultaneously monitoring critical parameters such as power distribution, hydraulic pressure, and vehicle attitude through integrated telemetry systems. Key components include the pilot control consoles with joystick interfaces, high-resolution video monitoring displays for multiple camera feeds, the umbilical management system control panel, and the main power distribution and telemetry racks.",
   pdu: "The Power Distribution Unit (PDU) is a critical electrical subsystem that receives high-voltage AC power from the surface via the umbilical and distributes it to all ROV systems aboard the Hercules MK3. Its primary function is to convert the incoming power to the various AC and DC voltages required by different subsystems including thrusters, lights, cameras, manipulators, and control electronics. The PDU incorporates transformers, rectifiers, switching circuits, and protective devices such as circuit breakers and fuses to ensure safe power distribution throughout the vehicle.",
@@ -1307,6 +1386,53 @@ const DATA = {
     drawings: [
     ],
     manuals: [
+    ]
+  },
+  macartney_winch: {
+    drawings: [
+      {num:"OCE-0392-D-0341-90", title:"MacArtney MASH Winch — Vessel Upgrade Sht 1", file:"manuals/OCE-0392-D-0341-90 SHT 1-Model.pdf"},
+      {num:"OCE-0392-D-0341-90", title:"MacArtney MASH Winch — Vessel Upgrade Sht 2", file:"manuals/OCE-0392-D-0341-90 SHT 2-Model.pdf"},
+      {num:"OCE-0392-D-0341-90", title:"MacArtney MASH Winch — Vessel Upgrade Sht 3", file:"manuals/OCE-0392-D-0341-90 SHT 3-Model.pdf"},
+      {num:"OCE-0392-D-0341-90", title:"MacArtney MASH Winch — Vessel Upgrade Sht 4", file:"manuals/OCE-0392-D-0341-90 SHT 4-Model.pdf"},
+      {num:"OCE-0392-D-0341-90", title:"MacArtney MASH Winch — Vessel Upgrade Sht 5", file:"manuals/OCE-0392-D-0341-90 SHT 5-Model.pdf"},
+      {num:"AB-T-PR-03803", title:"Umbilical Change Out Procedure", file:"manuals/Umbilical change out precedure AB-T-PR-03803.pdf"},
+    ],
+    manuals: [
+      {title:"AHC Winch Manual 08469-30393", file:"manuals/AHC Winch Manual 08469-30393 acro.pdf"},
+      {title:"MRU Manual — Man_inst_mru_5_r11", file:"manuals/Man_inst_mru_5_r11_Winch MRU Manual.pdf"},
+      {title:"ATV71 VFD Programming Manual", file:"manuals/ATV71_Programming_manual_EN_1755855_11.pdf"},
+      {title:"MAYR BRAKES ROBA-stop-M Installation & Operation", file:"manuals/2 4 2 - MAYR BRAKES - ROBA-stop-M - Installation and Operation.pdf"},
+      {title:"MRU JB Oceanic", file:"manuals/MRU JB Oceanic.pdf"},
+      {title:"Level Wind Gearbox — Tramec T-Series Expanded View", file:"manuals/Level wind gearbox expanded view Ricambi_T_IT-EN-DE_140402_WEB.pdf"},
+      {title:"Level Wind Gearbox — Extract (T-Series)", file:"manuals/Extract pages from 1 0 1 - Tramec - T series - Level wind gear box 1.pdf"},
+      {title:"FAT — 08469-30393 (2012)", file:"manuals/S1110348 - FAT - 08469-30393 - 2012 - signed.pdf"},
+      {title:"Winch Camera", file:"manuals/Winch Camera.pdf"},
+      {title:"Abus TVCC40030 Security Camera", file:"manuals/Abus TVCC40030 Security Camera.pdf"},
+      {title:"2016 Completed VFD Reform Test Sheets", file:"manuals/2016 Completed VFD Reform Test Sheets.pdf"},
+      {title:"Pinion Gear Replacement — Rev A", file:"manuals/1 2 2 1 -2 1 - Pinion gear replacement - Rev  A.pdf"},
+      {title:"MRU Configuration — Rev 1", file:"manuals/1 4 1 1-8 1 - MRU configuration - Rev  1.pdf"},
+      {title:"Replacing Flash ROM (E1022 Panel) — Rev 1", file:"manuals/1 4 1 2-3 1 - Replacing Flash ROM - E1022 Panel - Rev  1.pdf"},
+      {title:"Electric Brake Troubleshooting — Rev 1", file:"manuals/1 4 1 3-1 1 - Electric Brake Troubleshooting - Rev  1.pdf"},
+      {title:"Brake Lining Replacement MASH Winches — Rev 2", file:"manuals/1 4 2 2-4 2 - Brake Lining Replacement - MASH Winches - Rev  2.pdf"},
+      {title:"Replacing Accumulator Brake HPU MASH — Rev 1", file:"manuals/1 4 2 2-5 1 - Replacing Accumulator - Brake HPU - MASH - Rev  1.pdf"},
+      {title:"Brake Lining Replacement AHC Winch MKI — Rev B", file:"manuals/Brake lining replacement on AHC Winch MKI - Rev  B.pdf"},
+      {title:"Level Wind Nut Exchange AHC Winch — Rev B", file:"manuals/Level wind nut exchange on AHC Winch - Rev  B.pdf"},
+      {title:"Replacement of Level Wind Nuts — MASH STD AHC", file:"manuals/MacArtney MASH Winch - Replacement of Level Wind Nuts on MASH STD AHC Winch Systems.pdf"},
+      {title:"Replacement of Brake Resistor Bank — MASH STD AHC", file:"manuals/Replacement of brake resistor bank on MASH STD AHC winch system rev 1.pdf"},
+      {title:"Cleaning Steel Surface on Band Brake — Rev 1", file:"manuals/Cleaning of the steel surface on the band brake - Rev  1.pdf"},
+      {title:"Charging Frequency Inverters — Rev A", file:"manuals/Charging Frequency Inverters - Rev  A.pdf"},
+      {title:"Exchanging Condensation Heater Element — Rev 1", file:"manuals/Exchanging Condensation Heater Element on AHC Winch - Rev  1.pdf"},
+      {title:"Winch Motor Reforming 260716", file:"manuals/Winch motor reforming 260716.pdf"},
+      {title:"Levelwind Motor Reforming 260716", file:"manuals/Levelwind motor reforming 260716.pdf"},
+      {title:"Long Term Winch Storage Procedure", file:"manuals/Long term winch storage procedure.pdf"},
+      {title:"Software Upgrade — OR-TE-01978 Rev 2", file:"manuals/OR-TE-01978 - MacArtney MASH Winch Software Upgrade Complete PDF Rev 2.pdf"},
+      {title:"Software Upgrade — OR-TE-01978 (H15 Pages 11-14)", file:"manuals/OR-TE-01978 - Pages 11-14 For H15 winch Complete .pdf"},
+      {title:"Software Upgrade — OR-TE-01978 (H30 Pages 11-14)", file:"manuals/OR-TE-01978 - Pages 11-14 For H30 winch Complete .pdf"},
+      {title:"Software Upgrade — ROVTIN-0214", file:"manuals/ROVTIN-0214 MacArtney MASH Winch Software Upgrade.pdf"},
+      {title:"SAT — 08469-30393 H15 Complete System", file:"manuals/SAT - 08469 - 30393 Complete Herc 15 system.pdf"},
+      {title:"SAT — 08469-30393", file:"manuals/SAT - 08469 - 30393.pdf"},
+      {title:"SAT — 08470-30394 H30 Complete System", file:"manuals/SAT - 08470 - 30394 Complete Herc 30 system.pdf"},
+      {title:"SAT — 08470-30394", file:"manuals/SAT - 08470 - 30394.pdf"},
     ]
   },
   control_console: {
@@ -2568,6 +2694,7 @@ async function updateSidebarDrawings(systemKey, systemName) {
       lars_sliding_weight: 'Sliding Weight', lars_hpu: 'LARS HPU',
       lars_moonpool: 'Moonpool Doors', lars_service_winch: 'Service Winch',
       lars_slip_ring: 'Slip Ring', lars_tether: 'Tether',
+      macartney_winch: 'MacArtney Winch',
       control_console: 'Control Console', control_room: 'Control Room',
       pdu: 'PDU', longline: 'Longlines', cables: 'Cables',
       all_drawings: 'All Drawings'
@@ -2627,6 +2754,329 @@ function openDoc(file, page, label) {
   openViewerTab(fname, tabLabel, 'pdf', page || 1);
 }
 
+</script>
+
+<!-- ── ADMIN OVERLAY ─────────────────────────────────────────────────────── -->
+<div id="adm-overlay">
+  <!-- Login screen -->
+  <div id="adm-login">
+    <div class="adm-login-box">
+      <div class="adm-login-title">⚙ MANUAL ADMIN</div>
+      <div class="adm-login-sub">HERCULES MK3 — RESTRICTED ACCESS</div>
+      <input id="adm-u" class="adm-login-field" type="text" placeholder="Username" autocomplete="off" spellcheck="false">
+      <input id="adm-p" class="adm-login-field" type="password" placeholder="Password" autocomplete="off">
+      <button class="adm-login-btn" onclick="admTryLogin()">SIGN IN</button>
+      <div id="adm-login-err" class="adm-login-err">Invalid credentials — try again</div>
+      <div class="adm-login-close" onclick="admClose()">✕ CANCEL</div>
+    </div>
+  </div>
+  <!-- Main admin interface -->
+  <div id="adm-main">
+    <div id="adm-topbar">
+      <h2>⚙ MANUAL ADMIN — HERCULES MK3</h2>
+      <span id="adm-unsaved">UNSAVED CHANGES</span>
+      <button class="adm-tbtn" onclick="admSave()">💾 SAVE CHANGES</button>
+      <button class="adm-tbtn" onclick="admClose()" style="color:#c8c4b8;border-color:rgba(200,196,184,.2);">✕ CLOSE ADMIN</button>
+    </div>
+    <div id="adm-body">
+      <!-- Section list -->
+      <div id="adm-sec-panel">
+        <div id="adm-sec-hdr">SECTIONS</div>
+        <div id="adm-sec-list"></div>
+      </div>
+      <!-- Item list -->
+      <div id="adm-list-panel">
+        <div id="adm-list-hdr">
+          <div id="adm-sec-title">Select a section</div>
+          <div id="adm-filter-row">
+            <button class="adm-fb active" onclick="admSetFilter('all',this)">ALL</button>
+            <button class="adm-fb" onclick="admSetFilter('drawing',this)">DRAWINGS</button>
+            <button class="adm-fb" onclick="admSetFilter('manual',this)">MANUALS</button>
+            <button class="adm-fb" onclick="admSetFilter('removed',this)">REMOVED</button>
+          </div>
+        </div>
+        <div id="adm-drw-list"></div>
+        <div id="adm-status">Ready</div>
+      </div>
+      <!-- PDF viewer -->
+      <div id="adm-viewer">
+        <div id="adm-viewer-hdr">
+          <span id="adm-viewer-title">Click any item to preview</span>
+        </div>
+        <div id="adm-viewer-empty">
+          <div style="font-size:40px;opacity:.2;">📄</div>
+          <div>Click any item in the list<br>to preview it here</div>
+        </div>
+        <iframe id="adm-viewer-frame" src=""></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Move modal -->
+<div id="adm-modal">
+  <div id="adm-modal-box">
+    <div id="adm-modal-title">→ MOVE TO SECTION</div>
+    <div id="adm-modal-ctx"></div>
+    <div class="adm-ml">Destination section:</div>
+    <select id="adm-modal-sel"></select>
+    <div class="adm-mbtns">
+      <button class="adm-mbtn cancel" onclick="admCloseModal()">CANCEL</button>
+      <button class="adm-mbtn confirm" onclick="admConfirmMove()">MOVE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ADMIN PANEL ──────────────────────────────────────────────────────────────
+(function(){
+  const ADM_USER = 'admin', ADM_PASS = 'hercules';
+  const ADM_LABELS = {
+    electronics_pod:'Electronics Pod', tcu:'TCU', hpu:'HPU',
+    valve_packs:'Valve Packs', thrusters:'Thrusters',
+    rov_lights:'Lights', rov_term_can:'Term Can', frame:'Frame',
+    t4_manip:'T4 Manipulator', atlas_manip:'Atlas Manipulator',
+    pan_tilt:'Pan & Tilt', tms_h15:'TMS H15', tms_h30:'TMS H30',
+    lars_lcc:'LARS LCC', lars_latch_beam:'Latch Beam',
+    lars_latch_winch:'LB Winch', lars_cursor:'Cursor',
+    lars_sliding_weight:'Sliding Weight', lars_hpu:'LARS HPU',
+    lars_moonpool:'Moonpool Doors', lars_service_winch:'Service Winch',
+    lars_slip_ring:'Slip Ring', lars_tether:'Tether',
+    macartney_winch:'MacArtney Winch',
+    control_console:'Control Console', control_room:'Control Room',
+    pdu:'PDU', longline:'Longlines', cables:'Cables',
+    rov_electrical_pod:'Pod Drawings', all_drawings:'All Drawings'
+  };
+
+  let admSection = null, admFilter = 'all', admPendingMove = null;
+  let admHasChanges = false, admViewerFile = null;
+
+  // ── Keyboard trigger: Ctrl+Shift+A ──────────────────────────────────────
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+      e.preventDefault();
+      admOpen();
+    }
+    if (e.key === 'Escape' && document.getElementById('adm-overlay').classList.contains('visible')) {
+      admClose();
+    }
+  });
+
+  // ── Enter-key shortcuts in login form ───────────────────────────────────
+  document.getElementById('adm-u').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('adm-p').focus();
+  });
+  document.getElementById('adm-p').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') admTryLogin();
+  });
+
+  // ── Modal backdrop click ─────────────────────────────────────────────────
+  document.getElementById('adm-modal').addEventListener('click', function(e) {
+    if (e.target === document.getElementById('adm-modal')) admCloseModal();
+  });
+
+  // ── Public API ───────────────────────────────────────────────────────────
+  window.admOpen = function() {
+    const overlay = document.getElementById('adm-overlay');
+    overlay.classList.add('visible');
+    document.getElementById('adm-login').style.display = 'flex';
+    document.getElementById('adm-main').classList.remove('visible');
+    document.getElementById('adm-u').value = '';
+    document.getElementById('adm-p').value = '';
+    document.getElementById('adm-login-err').style.display = 'none';
+    setTimeout(() => document.getElementById('adm-u').focus(), 120);
+  };
+
+  window.admClose = function() {
+    document.getElementById('adm-overlay').classList.remove('visible');
+    const frame = document.getElementById('adm-viewer-frame');
+    frame.src = 'about:blank';
+    frame.style.display = 'none';
+    document.getElementById('adm-viewer-empty').style.display = 'flex';
+  };
+
+  window.admTryLogin = function() {
+    const u = document.getElementById('adm-u').value.trim();
+    const p = document.getElementById('adm-p').value;
+    if (u === ADM_USER && p === ADM_PASS) {
+      document.getElementById('adm-login').style.display = 'none';
+      document.getElementById('adm-main').classList.add('visible');
+      admBuildSections();
+    } else {
+      document.getElementById('adm-login-err').style.display = 'block';
+      document.getElementById('adm-p').value = '';
+      document.getElementById('adm-p').focus();
+    }
+  };
+
+  window.admSetFilter = function(f, btn) {
+    admFilter = f;
+    document.querySelectorAll('.adm-fb').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    admRenderList();
+  };
+
+  window.admPreview = function(idx) {
+    if (!admSection || !DATA[admSection]) return;
+    const d = DATA[admSection];
+    const all = [
+      ...(d.drawings||[]).map(i => ({...i, _t:'drawing'})),
+      ...(d.manuals||[]).map(i => ({...i, _t:'manual'}))
+    ];
+    const item = all[idx];
+    if (!item || !item.file) return;
+    const fname = item.file.split('/').pop();
+    admViewerFile = fname;
+    document.getElementById('adm-viewer-title').textContent = item.title || fname;
+    document.getElementById('adm-viewer-empty').style.display = 'none';
+    const frame = document.getElementById('adm-viewer-frame');
+    frame.style.display = 'block';
+    frame.src = 'about:blank';
+    setTimeout(() => { frame.src = 'manuals/' + fname; }, 30);
+    admRenderList();
+  };
+
+  window.admRemove = function(idx) {
+    const d = DATA[admSection];
+    const all = [...(d.drawings||[]), ...(d.manuals||[])];
+    all[idx]._removed = true;
+    admMarkChanged(); admRenderList(); admBuildSections();
+  };
+
+  window.admRestore = function(idx) {
+    const d = DATA[admSection];
+    const all = [...(d.drawings||[]), ...(d.manuals||[])];
+    delete all[idx]._removed;
+    admMarkChanged(); admRenderList(); admBuildSections();
+  };
+
+  window.admShowMove = function(idx, title) {
+    admPendingMove = { section: admSection, idx };
+    document.getElementById('adm-modal-title').textContent = '→ MOVE: ' + title;
+    document.getElementById('adm-modal-ctx').textContent = 'Currently in: ' + (ADM_LABELS[admSection] || admSection);
+    const sel = document.getElementById('adm-modal-sel');
+    sel.innerHTML = Object.keys(ADM_LABELS)
+      .filter(k => k !== admSection && DATA[k])
+      .map(k => '<option value="' + k + '">' + ADM_LABELS[k] + ' (' + k + ')</option>')
+      .join('');
+    document.getElementById('adm-modal').classList.add('open');
+  };
+
+  window.admCloseModal = function() {
+    document.getElementById('adm-modal').classList.remove('open');
+    admPendingMove = null;
+  };
+
+  window.admConfirmMove = function() {
+    if (!admPendingMove) return;
+    const { section, idx } = admPendingMove;
+    const d = DATA[section];
+    const drawCount = (d.drawings||[]).length;
+    let item, isDrawing;
+    if (idx < drawCount) {
+      item = d.drawings[idx]; isDrawing = true;
+      d.drawings.splice(idx, 1);
+    } else {
+      item = d.manuals[idx - drawCount]; isDrawing = false;
+      d.manuals.splice(idx - drawCount, 1);
+    }
+    const dest = document.getElementById('adm-modal-sel').value;
+    const clean = Object.fromEntries(Object.entries(item).filter(([k]) => !k.startsWith('_')));
+    if (isDrawing) { DATA[dest].drawings = DATA[dest].drawings || []; DATA[dest].drawings.push(clean); }
+    else { DATA[dest].manuals = DATA[dest].manuals || []; DATA[dest].manuals.push(clean); }
+    admCloseModal(); admMarkChanged(); admRenderList(); admBuildSections();
+    admSetStatus('Moved to ' + (ADM_LABELS[dest] || dest));
+  };
+
+  window.admSave = function() {
+    const patch = '// DATA PATCH — paste into index.html replacing the DATA object\nconst DATA = ' +
+      JSON.stringify(DATA, (k, v) => k.startsWith('_') ? undefined : v, 2) + ';\n';
+    const blob = new Blob([patch], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'data_patch.js';
+    a.click();
+    admSetStatus('Downloaded data_patch.js');
+  };
+
+  // ── Internal helpers ─────────────────────────────────────────────────────
+  function admBuildSections() {
+    const list = document.getElementById('adm-sec-list');
+    list.innerHTML = '';
+    Object.keys(DATA).forEach(key => {
+      const d = DATA[key];
+      if (!d || typeof d !== 'object') return;
+      const cnt = (d.drawings||[]).length + (d.manuals||[]).length;
+      if (!cnt) return;
+      const div = document.createElement('div');
+      div.className = 'adm-si';
+      div.dataset.key = key;
+      div.title = ADM_LABELS[key] || key;
+      div.innerHTML = (ADM_LABELS[key] || key) + '<span class="adm-si-cnt">' + cnt + '</span>';
+      div.onclick = () => admSelectSection(key);
+      list.appendChild(div);
+    });
+  }
+
+  function admSelectSection(key) {
+    admSection = key;
+    document.querySelectorAll('.adm-si').forEach(el =>
+      el.classList.toggle('active', el.dataset.key === key));
+    document.getElementById('adm-sec-title').textContent =
+      (ADM_LABELS[key] || key) + ' — ' + key;
+    admRenderList();
+  }
+
+  function admRenderList() {
+    if (!admSection || !DATA[admSection]) return;
+    const d = DATA[admSection];
+    const all = [
+      ...(d.drawings||[]).map(i => ({...i, _t:'drawing'})),
+      ...(d.manuals||[]).map(i => ({...i, _t:'manual'}))
+    ];
+    let shown = 0, html = '';
+    all.forEach((item, idx) => {
+      if (item._removed && admFilter !== 'removed') return;
+      if (!item._removed && admFilter === 'removed') return;
+      if (admFilter === 'drawing' && item._t !== 'drawing') return;
+      if (admFilter === 'manual' && item._t !== 'manual') return;
+      const fname = (item.file || '').split('/').pop();
+      const isSel = admViewerFile === fname;
+      const safeTitle = admEsc(item.title || fname).replace(/'/g, "\\'");
+      html += '<div class="adm-row' + (item._removed ? ' adm-rm' : '') + (isSel ? ' adm-sel' : '') +
+        '" onclick="admPreview(' + idx + ')">' +
+        '<div class="adm-rt">' +
+          '<span class="adm-rtype ' + item._t + '">' + item._t.toUpperCase() + '</span>' +
+          '<span class="adm-rnum">' + admEsc(item.num || '—') + '</span>' +
+        '</div>' +
+        '<div class="adm-rtitle">' + admEsc(item.title || fname) + '</div>' +
+        '<div class="adm-rfile">' + admEsc(fname) + '</div>' +
+        '<div class="adm-ra">' +
+          (item._removed
+            ? '<button class="adm-ab restore" onclick="event.stopPropagation();admRestore(' + idx + ')">&#8635; RESTORE</button>'
+            : '<button class="adm-ab move" onclick="event.stopPropagation();admShowMove(' + idx + ',\'' + safeTitle + '\')">&#8594; MOVE</button>' +
+              '<button class="adm-ab remove" onclick="event.stopPropagation();admRemove(' + idx + ')">&#10005; REMOVE</button>'
+          ) +
+        '</div></div>';
+      shown++;
+    });
+    document.getElementById('adm-drw-list').innerHTML = html ||
+      '<div style="padding:24px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:9px;color:#404860;">No items in this view</div>';
+    admSetStatus(shown + ' items — ' + (ADM_LABELS[admSection] || admSection));
+  }
+
+  function admMarkChanged() {
+    admHasChanges = true;
+    document.getElementById('adm-unsaved').style.display = 'inline';
+  }
+
+  function admSetStatus(msg) {
+    document.getElementById('adm-status').textContent = msg;
+  }
+
+  function admEsc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+})();
 </script>
 </body>
 </html>
