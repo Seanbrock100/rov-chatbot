@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hercules MK3 — Drawing Family Tree</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0e16;--surface:#13171f;--surface2:#181c26;--border:#1e2330;--border2:#2a3040;
+  --amber:#e8a44a;--amber-dim:#7a5018;--text:#ddd8cc;--text-dim:#6a7080;
+  --text-mid:#9a9890;--blue:#4a7fa0;--blue-dim:#2a4a60;
+}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── HEADER ── */
+#hdr{border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;background:#090c13;flex-shrink:0;}
+.htitle{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#f0ece0;letter-spacing:-.01em;}
+.hbadge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;padding:2px 8px;border-radius:2px;border:1px solid var(--amber);color:var(--amber);background:rgba(232,164,74,.08);}
+.hback{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);cursor:pointer;padding:4px 10px;border:1px solid var(--border2);border-radius:2px;text-decoration:none;transition:all .15s;}
+.hback:hover{border-color:var(--amber);color:var(--amber);}
+.hsep{width:1px;height:20px;background:var(--border);flex-shrink:0;}
+.hright{display:flex;align-items:center;gap:10px;margin-left:auto;}
+#search-wrap{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:3px;transition:border-color .15s;}
+#search-wrap:focus-within{border-color:var(--amber);}
+#search{background:transparent;border:none;outline:none;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);width:200px;}
+#search::placeholder{color:var(--text-dim);}
+.s-icon{font-size:12px;color:var(--text-dim);}
+#match-count{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);min-width:48px;}
+.s-clear{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);cursor:pointer;padding:0 2px;transition:color .15s;display:none;}
+.s-clear:hover{color:var(--amber);}
+
+/* ── BREADCRUMB ── */
+#breadcrumb{
+  padding:8px 24px;
+  display:flex;align-items:center;gap:4px;flex-wrap:wrap;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+  min-height:38px;flex-shrink:0;
+}
+.bc-home{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);cursor:pointer;letter-spacing:.05em;transition:opacity .15s;}
+.bc-home:hover{opacity:.7;}
+.bc-sep{font-size:10px;color:var(--border2);margin:0 2px;}
+.bc-crumb{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);cursor:pointer;letter-spacing:.05em;transition:color .15s;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bc-crumb:hover{color:var(--text);}
+.bc-crumb.current{color:var(--text);cursor:default;}
+.bc-back{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-mid);cursor:pointer;padding:2px 10px;border:1px solid var(--border2);border-radius:2px;transition:all .15s;margin-right:6px;}
+.bc-back:hover{border-color:var(--amber);color:var(--amber);}
+
+/* ── MAIN ── */
+#main{flex:1;padding:28px 24px;overflow-y:auto;}
+
+/* Section header */
+#section-hdr{margin-bottom:22px;}
+#section-hdr .sh-id{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.1em;margin-bottom:4px;}
+#section-hdr .sh-title{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:#f0ece0;letter-spacing:-.01em;line-height:1.2;}
+#section-hdr .sh-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.1em;margin-top:6px;}
+
+/* ── CARD GRID ── */
+#card-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:10px;
+  animation:fadeUp .18s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── CARD ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:6px;
+  padding:13px 15px 11px;
+  display:flex;flex-direction:column;gap:7px;
+  position:relative;
+  transition:border-color .15s, background .15s, transform .12s, box-shadow .15s;
+  min-height:110px;
+}
+.card.clickable{cursor:pointer;}
+.card.clickable:hover{
+  border-color:var(--amber);
+  background:var(--surface2);
+  transform:translateY(-2px);
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.card.is-wiring.clickable:hover{border-color:var(--blue);}
+.card.no-action{opacity:.45;cursor:not-allowed;}
+
+/* PDF quick-open badge (top-right corner for nodes that drill AND have PDF) */
+.card-pdf-btn{
+  position:absolute;top:10px;right:10px;
+  font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.05em;
+  color:var(--amber);border:1px solid var(--amber-dim);border-radius:2px;
+  padding:1px 5px;background:rgba(232,164,74,.08);
+  cursor:pointer;transition:all .15s;z-index:2;
+}
+.card-pdf-btn:hover{background:rgba(232,164,74,.18);}
+.card.is-wiring .card-pdf-btn{color:var(--blue);border-color:var(--blue-dim);background:rgba(74,127,160,.08);}
+.card.is-wiring .card-pdf-btn:hover{background:rgba(74,127,160,.18);}
+
+.card-num{
+  font-family:'IBM Plex Mono',monospace;font-size:8px;
+  color:var(--amber);letter-spacing:.08em;line-height:1.5;
+  padding-right:40px;/* avoid overlap with pdf btn */
+}
+.card.is-wiring .card-num{color:var(--blue);}
+.card.no-action .card-num{color:var(--text-dim);}
+
+.card-divider{height:1px;background:var(--border);flex-shrink:0;}
+
+.card-title{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:12px;font-weight:500;
+  color:var(--text);line-height:1.45;flex:1;
+}
+.card.no-action .card-title{color:var(--text-dim);}
+
+.card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:2px;gap:6px;
+}
+.card-type{
+  font-family:'IBM Plex Mono',monospace;font-size:8px;
+  letter-spacing:.1em;padding:1px 6px;border-radius:2px;flex-shrink:0;
+}
+.type-assembly{color:var(--amber);border:1px solid var(--amber-dim);background:rgba(232,164,74,.05);}
+.type-wiring{color:var(--blue);border:1px solid var(--blue-dim);background:rgba(74,127,160,.07);}
+.type-none{color:var(--text-dim);border:1px solid var(--border);background:transparent;}
+
+.card-action{
+  font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.04em;
+  display:flex;align-items:center;gap:5px;
+}
+.ca-drill{color:var(--text-dim);}
+.ca-count{
+  font-family:'IBM Plex Mono',monospace;font-size:8px;
+  color:var(--text-dim);background:var(--border2);border-radius:10px;
+  padding:1px 6px;
+}
+.ca-pdf{color:var(--amber);}
+.card.is-wiring .ca-pdf{color:var(--blue);}
+
+/* ── SEARCH RESULTS ── */
+#search-panel{display:none;animation:fadeUp .15s ease;}
+#search-panel.active{display:block;}
+.sr-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.1em;margin-bottom:12px;}
+.sr-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;
+  border:1px solid var(--border2);border-radius:4px;
+  margin-bottom:7px;cursor:pointer;
+  background:var(--surface);transition:all .15s;
+}
+.sr-item:hover{border-color:var(--amber);background:var(--surface2);}
+.sr-item.is-wiring:hover{border-color:var(--blue);}
+.sr-num{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber);min-width:170px;flex-shrink:0;}
+.sr-item.is-wiring .sr-num{color:var(--blue);}
+.sr-title{font-family:'IBM Plex Sans',monospace;font-size:12px;color:var(--text);flex:1;}
+.sr-path{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text-dim);text-align:right;flex-shrink:0;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sr-pdf{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--amber);flex-shrink:0;}
+.sr-item.is-wiring .sr-pdf{color:var(--blue);}
+.sr-empty{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);padding:24px 0;text-align:center;letter-spacing:.08em;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="hdr">
+  <a class="hback" href="index.html">← MANUAL</a>
+  <div class="hsep"></div>
+  <div class="htitle">Hercules MK3 — Drawing Family Tree</div>
+  <span class="hbadge">ROV-0311-D-0000-01</span>
+  <div class="hright">
+    <div id="search-wrap">
+      <span class="s-icon">⌕</span>
+      <input id="search" type="text" placeholder="Search all drawings…" autocomplete="off">
+      <span id="match-count"></span>
+      <span class="s-clear" id="s-clear" onclick="clearSearch()">✕</span>
+    </div>
+  </div>
+</div>
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb"></div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="section-hdr">
+    <div class="sh-id" id="sh-id"></div>
+    <div class="sh-title" id="sh-title"></div>
+    <div class="sh-sub" id="sh-sub"></div>
+  </div>
+  <div id="card-grid"></div>
+  <div id="search-panel"></div>
+</div>
+
+<script>
+// ── FILE INDEX ─────────────────────────────────────────────────────────────
+const BASE = 'http://localhost:8765/docs/';
+const FILES = {
+  'ROV-0300-D-0100-01': 'ROV/Mechanical/Frame%20and%20Structure/Frame%20Assembly%20ROV-0300-D-0100-01.pdf',
+  'ROV-0300-D-0115-00': 'ROV/Mechanical/Frame%20and%20Structure/Buoyancy%20Assembly%20(3000m)%20ROV-0300-D-0115-00%20Sht%201-2.pdf',
+  'ROV-0300-D-0115-01': 'ROV/Mechanical/Frame%20and%20Structure/Buoyancy%20Assembly%20(3000m)%20ROV-0300-D-0115-01.pdf',
+  'ROV-0300-D-0150-00': 'ROV/Mechanical/Frame%20and%20Structure/Vehicle%20Frame%20Weldment%20Assembly%20ROV-0300-D-0150-00%20sht%201-Model.pdf',
+  'ROV-0300-D-0111-01': 'ROV/Mechanical/Frame%20and%20Structure/ROV-0300-D-0111-01%20T4%20mounting%20plate%20(stbd).pdf',
+  'ROV-0300-D-0300-00': 'ROV/Electrical/Term%20Can/HPU%20General%20Arrangement%20ROV-0300-D-0300-00%20sht%201%20rev%20C1.pdf',
+  'ROV-0300-D-0420-00': 'ROV/Hydraulic/TCU%20-%20Thruster%20Control/Thruster%20Control%20Unit%20Assembly%20ROV-0300-D-0420-00%20TCU%20Assembly.pdf',
+  'ROV-0300-D-0420-90': 'ROV/Hydraulic/TCU%20-%20Thruster%20Control/ROV-0300-D-0420-90%20TCU%20Wiring%20Diagram.pdf',
+  'ROV-0249-D-0125-00': 'ROV/Hydraulic/HPU%20-%20Pump%20and%20Tank/LP%20Hydraulic%20Hose%20Assembly%20ROV-0249-D-0125-00.pdf',
+  'ROV-0226-725-00':    'ROV/Hydraulic/Thrusters%20-%20Curvetech/Curvetech%20Thruster%20Cable%20Assembly%20ROV-0226-725-00%20SHEET%201.pdf',
+  'ROV-0311-D-0200-90': 'ROV/Electrical/Electronics%20Pod/ROV-0311-D-0200-90%20Pod%20bottomside%20network%201%20of%201.pdf',
+  'ROV-0311-D-0206-00': 'ROV/Electrical/Electronics%20Pod/ROV-0311-D-0206-00%20Pod%20control%20earth%20strip%20plate%201%20of%201.pdf',
+  'ROV-0311-D-0210-00': 'ROV/Electrical/Electronics%20Pod/Band%20Splitter%20Assembly%20ROV-0311-D-0210-00.pdf',
+  'ROV-0311-D-0211-00': 'ROV/Electrical/Electronics%20Pod/Ethernet%20Gyro%20Cover%20Plate%20Assembly%20ROV-0311-D-0211-00.pdf',
+  'ROV-0311-D-0212-00': 'ROV/Electrical/Electronics%20Pod/CWDM%20Blue%208%20HP%20Module%20Assembly%20ROV-0311-D-0212-00.pdf',
+  // Electronics Pod top-level & pod assembly — Upgraded POD Drawings supersede ROV-0311 numbers
+  'ROV-0311-D-0200-00': 'ROV/Electrical/Electronics%20Pod/Electronics%20Pod%20Assembly%20GA%20EQP952-0203-DR-PD-55000.pdf',
+  'ROV-0311-D-0300-90': 'Archive/Electronics%20Pod%20Assembly%20Wiring%20ROV-0311-D-0300-90%20sht%201-Model.pdf',
+  // Control chassis — Upgraded POD Drawings (EQP952 series supersedes ROV-0311)
+  'ROV-0311-D-0201-00': 'ROV/Electrical/Electronics%20Pod/Control%20Chassis%20Assembly%20EQP952-0203-DR-PD-55001.pdf',
+  'ROV-0311-D-0201-90': 'ROV/Electrical/Electronics%20Pod/Control%20Chassis%20Wiring%20Diagram%20EQP952-0203-DR-PD-55017.pdf',
+  'ROV-0311-D-0203-00': 'ROV/Electrical/Electronics%20Pod/Control%20Penetrator%20Ring%20GA%20EQP952-0203-DR-PD-55003.pdf',
+  'ROV-0311-D-0206-00': 'ROV/Electrical/Electronics%20Pod/M.C.B.%20Earth%20Strip%20Plate%20GA%20(Control%20Chassis)%20EQP952-0203-DR-PD-55006.pdf',
+  'ROV-0311-D-0213-00': 'ROV/Electrical/Electronics%20Pod/Electronics%20Pod%20Fan%20Tray%20Mounting%20Detail%20ROV-0311-D-0213-01%20SHT%201%20.pdf',
+  // Payload chassis — Upgraded POD Drawings (EQP952 series supersedes ROV-0311)
+  'ROV-0311-D-0202-00': 'ROV/Electrical/Electronics%20Pod/Payload%20Chassis%20Assembly%20EQP952-0203-DR-PD-55002.pdf',
+  'ROV-0311-D-0202-90': 'ROV/Electrical/Electronics%20Pod/Payload%20Chassis%20Wiring%20Diagram%20EQP952-0203-DR-PD-55016.pdf',
+  'ROV-0311-D-0204-00': 'ROV/Electrical/Electronics%20Pod/Payload%20Penetrator%20Ring%20GA%20EQP952-0203-DR-PD-55004.pdf',
+  'ROV-0311-D-0207-00': 'ROV/Electrical/Electronics%20Pod/M.C.B.%20Earth%20Strip%20Plate%20GA%20(Payload%20Chassis)%20EQP952-0203-DR-PD-55007.pdf',
+  // Legacy cross-reference IDs kept for backward compatibility
+  'ROV-0311-D-0302-90': 'ROV/Electrical/Electronics%20Pod/Payload%20Chassis%20Wiring%20Diagram%20EQP952-0203-DR-PD-55016.pdf',
+  'ROV-0311-D-0304-00': 'ROV/Electrical/Electronics%20Pod/Payload%20Penetrator%20Ring%20GA%20EQP952-0203-DR-PD-55004.pdf',
+  'ROV-0311-D-0313-00': 'ROV/Electrical/Electronics%20Pod/Electronics%20Pod%20Fan%20Tray%20Mounting%20Detail%20ROV-0311-D-0213-01%20SHT%201%20.pdf',
+  'EQP952-0203-DR-PD-55006': 'ROV/Electrical/Electronics%20Pod/M.C.B.%20Earth%20Strip%20Plate%20GA%20(Control%20Chassis)%20EQP952-0203-DR-PD-55006.pdf',
+  'EQP952-0203-DR-PD-55007': 'ROV/Electrical/Electronics%20Pod/M.C.B.%20Earth%20Strip%20Plate%20GA%20(Payload%20Chassis)%20EQP952-0203-DR-PD-55007.pdf',
+  'EQP952-0203-DR-PD-55018': 'ROV/Electrical/Electronics%20Pod/Electronics%20Pod%20Payload%20Penetrator%20Ring%20Label%20Set%20Rev%201%20EQP952-0203-DR-PD-55018.pdf',
+  'EQP952-0203-DR-PD-55019': 'ROV/Electrical/Electronics%20Pod/Electronics%20Pod%20Payload%20Penetrator%20Ring%20Label%20Set%20Rev%202%20EQP952-0203-DR-PD-55019.pdf',
+  'ROV-0311-D-0301-01': 'ROV/Electrical/Term%20Can/ROV-0311-D-0301-01%20-%20Umbilical%20Termination%20enclosure.pdf',
+  'ROV-0148-722-00':    'ROV/Electrical/Term%20Can/Termination%20Can%20Drawing%20ROV-0148-722-00.pdf',
+  'EQP950-0200-DR-CA-26100': 'ROV/Electrical/Term%20Can/Termination%20Can%20General%20Arrangement%20EQP950-0200-DR-CA-26100%20-%20GA.pdf',
+  'ROV-0311-D-0510-90': 'ROV/Electrical/Lights/Lighting%20control%20JB%20drawingROV-0311-D-0510-90_AM.pdf',
+  'ROV-0311-D-0680-00': 'ROV/Electrical/Lights/ROV%20Rainbow%20and%20PSU%20Rack%20Subrack%20Assembly%20ROV-0311-D-0680-00.pdf',
+  'ROV-0311-D-0800-90': 'Control%20Room/Control%20Console%20Wiring%20Diagram%20ROV-0311-D-0800-90%20SHT%201%20-%20Control%20Console%20Wiring.pdf',
+  'ROV-0311-D-0800-50': 'Control%20Room/WROV%20Control%20Console%20Block%20Diagram%20ROV-0311-D-0800-50%20SHT%201-Model.pdf',
+  'HCV-0030-D-0630-90': 'Control%20Room/OCU%20Interconnect%20Block%20Diagram%20HCV-0030-D-0630-90%20SHT%201-Layout1.pdf',
+  'HCV-0030-D-0691-90': 'Control%20Room/Pilots%20Control%20Console%20Panel%202%20Wiring%20Diagram%20HCV-0030-D-0691-90%20sht%201-Layout1.pdf',
+  'HCV-0030-D-0692-90': 'Control%20Room/Pilots%20Control%20Console%20Panel%203%20Wiring%20Diagram%20HCV-0030-D-0692-90%20SHT%201-Layout1.pdf',
+  'HCV-0030-D-0693-90': 'Control%20Room/Pilots%20Control%20Console%20Panel%204%20Wiring%20Diagram%20HCV-0030-D-0693-90%20sht%201-Layout1.pdf',
+  'HCV-0030-D-0694-90': 'Control%20Room/Pilots%20Control%20Console%20Panel%205%20Wiring%20Diagram%20HCV-0030-D-0694-90.pdf',
+  'OCE-0400-DR-0030-00': 'LARS/Cursor/Cursor%20Assembly%20OCE-0400-DR-0030-00%2BSHT%2B1.pdf',
+  'OCE-0400-DR-0130-01': 'LARS/Cursor/Cursor%20Fabrication%20Details%20OCE-0400-DR-0130-01%2Bsht%2B1%20Cursor%20Fab.pdf',
+  'OCE-0400-DR-0302-00': 'LARS/Latch%20Beam/Latch%20Beam%20Assembly%20OCE-0400-DR-0302-00%20(1%20of%203).pdf',
+  // Drawings found on disk by audit — were on disk but missing from map
+  'ROV-0305-D-0100-00': 'ROV/Mechanical/Frame%20and%20Structure/TEAN%204%20Manipulator%20Assembly%20ROV-0305-D-0100-00%20(1).pdf',
+  // ROV-0300-D-0470-00 exists on disk under older variant number (hydraulics unchanged MK2→MK3)
+  'ROV-0300-D-0470-00': 'ROV/Hydraulic/Valve%20Packs/High%20Flow%20Valve%20Pack%20Hydraulic%20Fittings%20GA%20ROV-0305-D-0470-00%20sht%201.pdf',
+  'ROV-0311-D-0208-00': 'ROV/Hydraulic/Valve%20Packs/ROV-0311-D-0208-00%20Pod%20valve%20pack%20unregulated%20supply.pdf',
+  'ROV-0311-D-0208-90': 'ROV/Hydraulic/Valve%20Packs/Electronics%20Pod%20Valve%20Pack%20Unregulated%20Supply%20Wiring%20Diagram%20ROV-0311-D-0208-90.pdf',
+  'ROV-0311-D-0213-01': 'ROV/Electrical/Electronics%20Pod/Electronics%20Pod%20Fan%20Tray%20Mounting%20Detail%20ROV-0311-D-0213-01%20SHT%201%20.pdf',
+};
+
+function getFile(id) {
+  if (FILES[id]) return BASE + FILES[id];
+  // Fallback: only match keys with the same suffix type (-00→-00, -90→-90, etc.)
+  // This prevents assembly nodes (-00) from accidentally opening wiring diagrams (-90)
+  const m = id.match(/^(.+)-(\d{2})$/);
+  if (!m) return null;
+  const [, base, suffix] = m;
+  for (const k of Object.keys(FILES)) {
+    if (k.startsWith(base + '-') && k.endsWith('-' + suffix)) return BASE + FILES[k];
+  }
+  return null;
+}
+
+// ── TREE DATA ──────────────────────────────────────────────────────────────
+const TREE = {
+  id:'ROV-0311-D-0001-00', label:'Hercules MK3 (3000M) Vehicle Assembly', type:'a',
+  children:[
+    { id:'ROV-0300-D-0100-00', label:'Frame Assembly', type:'a', children:[
+      { id:'ROV-0300-D-0150-00', label:'Vehicle Frame Weldment Assembly', type:'a' },
+      { id:'ROV-0300-D-0115-00', label:'Buoyancy Assembly (3000M)', type:'a' },
+      { id:'ROV-0300-D-0123-00', label:'Vehicle Bumper Assembly', type:'a' },
+      { id:'ROV-0300-D-1113-00', label:'Lifting Assembly (5000KG)', type:'a' },
+      { id:'ROV-0300-D-0052-00', label:'HPU Removal Carriage Assembly', type:'a' },
+    ]},
+    { id:'ROV-0305-D-0111-00', label:'T4 Manipulator Mounting (STBD)', type:'a', children:[
+      { id:'ROV-0226-D-0004-00', label:'Roadmaster Arm Bracket Assembly', type:'a' },
+      { id:'ROV-0305-D-0100-00', label:'T4 Manipulator Assembly', type:'a' },
+    ]},
+    { id:'ROV-0311-D-0400-00', label:'Hydraulic Components Assembly', type:'a', children:[
+      { id:'ROV-0300-D-0482-00', label:'Low Pressure Manifold Assembly', type:'a', children:[
+        { id:'ROV-0300-D-0484-00', label:'LP Regulating Filter Assembly', type:'a' },
+        { id:'ROV-0300-D-0487-00', label:'HPU Compensator Assembly', type:'a' },
+      ]},
+      { id:'ROV-0300-D-0451-00', label:'High Pressure Filter Assembly', type:'a' },
+      { id:'ROV-0300-D-0459-00', label:'High Pressure #2 Manifold Assembly', type:'a' },
+      { id:'ROV-0300-D-0485-00', label:'HP Regulating Manifold Assembly', type:'a' },
+      { id:'ROV-0300-D-0450-00', label:'Hydraulic Control Unit #2', type:'a', children:[
+        { id:'ROV-0300-D-0453-00', label:'3-Way Pressure Manifold #1 (Port)', type:'a' },
+        { id:'ROV-0300-D-0460-00', label:'3-Way Pressure Manifold #2 (STBD)', type:'a' },
+        { id:'ROV-0300-D-0454-00', label:'Accumulator (0.6L) Assembly', type:'a' },
+        { id:'ROV-0300-D-0466-00', label:'Backup Compensator #2 Assembly', type:'a' },
+        { id:'ROV-0300-D-0462-00', label:'Electrical Backup Compensator', type:'a' },
+        { id:'ROV-0300-D-0470-00', label:'Hi Flow Valve Pack #3', type:'a' },
+      ]},
+      { id:'ROV-0300-D-0465-00', label:'Hydraulic Control Unit #1', type:'a', children:[
+        { id:'ROV-0300-D-0461-00', label:'Oil Cooler #1 Assembly', type:'a' },
+        { id:'ROV-0300-D-0464-00', label:'Oil Cooler #2 Assembly', type:'a' },
+      ]},
+      { id:'ROV-0300-D-0420-00', label:'Thruster Control Unit Assembly', type:'a', children:[
+        { id:'ROV-0300-D-0420-90', label:'TCU Wiring Diagram', type:'w' },
+        { id:'ROV-0300-D-0456-00', label:'Pan & Tilt Upper Assembly', type:'a' },
+        { id:'ROV-0300-D-0458-00', label:'Pan & Tilt Lower Assembly', type:'a' },
+        { id:'ROV-0300-D-0457-00', label:'Pan & Tilt Rear Assembly', type:'a' },
+        { id:'ROV-0300-D-0475-00', label:'Pump/Filter Manifold Assembly', type:'a' },
+        { id:'ROV-0300-D-0477-00', label:'Tooling Panel Assembly', type:'a' },
+      ]},
+      { id:'ROV-0300-D-0476-00', label:'Compensator Main Backup #1', type:'a' },
+      { id:'ROV-0300-D-0478-00', label:'Compensator Bearing Housing Assembly', type:'a' },
+      { id:'ROV-0300-D-0468-00', label:'Compensator Electrical Assembly', type:'a' },
+      { id:'ROV-0249-D-0125-00', label:'LP Hydraulic Hose Assembly', type:'a' },
+    ]},
+    { id:'ROV-0300-D-0300-00', label:'HPU General Arrangement', type:'a', children:[
+      { id:'ROV-0249-D-0130-00', label:'Dual Soft Start Manifold Assembly', type:'a', children:[
+        { id:'ROV-0249-D-0135-00', label:'Hydraulic Power Unit Assembly', type:'a', children:[
+          { id:'ROV-0249-D-0135-90', label:'HPU Wiring Diagram', type:'w' },
+          { id:'ROV-0249-D-0140-00', label:'Motor/Stator Set Assembly', type:'a' },
+        ]},
+      ]},
+      { id:'ROV-0311-D-0410-00', label:'Vertical Thruster Assembly', type:'a' },
+      { id:'ROV-0311-D-0411-00', label:'Horizontal Thruster Assembly', type:'a', children:[
+        { id:'ROV-0305-S-0411-00', label:'Hi Flow Regulator Manifold', type:'a' },
+      ]},
+      { id:'ROV-0300-D-0411-00', label:'High Pressure Filter Assembly #2', type:'a' },
+    ]},
+    { id:'ROV-0311-D-0310-00', label:'Umbilical Wiring Chart', type:'w' },
+    { id:'ROV-0226-D-0210-00', label:'Electronics Pod Mounting Assembly', type:'a', children:[
+      { id:'ROV-0311-D-0200-00', label:'Electronics Pod Assembly', type:'a', children:[
+        { id:'ROV-0311-D-0300-90', label:'Electronics Pod Assembly Wiring', type:'w' },
+        // Pod Main Body is the parent of both chassis assemblies (per A0 drawing)
+        { id:'ROV-0311-D-0205-00', label:'Pod Main Body Assembly', type:'a', children:[
+          { id:'ROV-0311-D-0201-00', label:'Control Chassis Assembly', type:'a', children:[
+            { id:'ROV-0311-D-0201-90', label:'Control Chassis Wiring Diagram', type:'w' },
+            { id:'ROV-0311-D-0203-00', label:'Control Penetrator Ring Assembly', type:'a' },
+            { id:'ROV-0311-D-0206-00', label:'MCB Plate Control Chassis Assembly', type:'a' },
+            { id:'ROV-0311-D-0213-00', label:'Fan Mounting Fan Tray Assembly', type:'a' },
+            { id:'ROV-0311-D-0211-00', label:'Ethernet Gyro Cover Plate Control Chassis', type:'a' },
+            { id:'ROV-0311-D-0210-00', label:'WWDM Band Splitter Assembly', type:'a' },
+            { id:'ROV-0311-D-0215-00', label:'CWDM Red Band Control Chassis', type:'a' },
+          ]},
+          { id:'ROV-0311-D-0202-00', label:'Payload Chassis Assembly', type:'a', children:[
+            { id:'ROV-0311-D-0202-90', label:'Payload Chassis Wiring Diagram', type:'w' },
+            { id:'ROV-0311-D-0204-00', label:'Payload Penetrator Ring Assembly', type:'a' },
+            { id:'ROV-0311-D-0207-00', label:'MCB Plate Payload Chassis Assembly', type:'a' },
+            { id:'ROV-0311-D-0212-00', label:'CWDM Blue Band Payload Chassis', type:'a' },
+            { id:'ROV-0311-D-0213-01', label:'Fan Mounting Fan Tray Assembly', type:'a' },
+          ]},
+        ]},
+        { id:'ROV-0311-D-0208-00', label:'Unregulated PSU Assembly', type:'a', children:[
+          { id:'ROV-0311-D-0208-90', label:'Unregulated PSU Wiring Diagram', type:'w' },
+        ]},
+      ]},
+    ]},
+    { id:'ROV-0311-D-0301-00', label:'Umbilical Termination Assembly', type:'a', children:[
+      { id:'ROV-0311-D-0301-01', label:'Term Can Enclosure', type:'a' },
+      { id:'EQP950-0200-DR-CA-26100', label:'Term Can General Arrangement', type:'a' },
+      { id:'ROV-0148-722-00',    label:'Term Can Drawing', type:'a' },
+    ]},
+    { id:'ROV-0311-D-0510-00', label:'Lighting Control Pod Assembly', type:'a', children:[
+      { id:'ROV-0311-D-0510-90', label:'Lighting JB Wiring Diagram', type:'w' },
+      { id:'ROV-0311-D-0680-00', label:'Rainbow PSU Rack Subrack Assembly', type:'a' },
+    ]},
+    { id:'ROV-0311-D-0800-00', label:'Cabling Assembly', type:'a', children:[
+      { id:'ROV-0311-D-0800-90', label:'Control Console Wiring Diagram', type:'w' },
+      { id:'ROV-0311-D-0800-50', label:'Control Console Block Diagram', type:'w' },
+      { id:'HCV-0030-D-0630-90', label:'OCU Interconnect Block Diagram', type:'w' },
+      { id:'HCV-0030-D-0691-90', label:'Pilots Console Panel 2 Wiring Diagram', type:'w' },
+      { id:'HCV-0030-D-0692-90', label:'Pilots Console Panel 3 Wiring Diagram', type:'w' },
+      { id:'HCV-0030-D-0693-90', label:'Pilots Console Panel 4 Wiring Diagram', type:'w' },
+      { id:'HCV-0030-D-0694-90', label:'Pilots Console Panel 5 Wiring Diagram', type:'w' },
+    ]},
+  ]
+};
+
+// ── BUILD SEARCH INDEX ─────────────────────────────────────────────────────
+const allNodes = [];
+function indexNode(node, ancestors=[]) {
+  node._ancestors = ancestors;
+  allNodes.push(node);
+  (node.children||[]).forEach(c => indexNode(c, [...ancestors, node]));
+}
+indexNode(TREE);
+
+// ── NAVIGATION STATE ───────────────────────────────────────────────────────
+let stack = [];   // ancestors of currentNode
+let currentNode = TREE;
+
+function navigate(node) {
+  // If has children → drill in
+  if (node.children && node.children.length > 0) {
+    stack.push(currentNode);
+    currentNode = node;
+    clearSearch();
+    renderView();
+    return;
+  }
+  // Leaf → open PDF if available
+  const url = getFile(node.id);
+  if (url) window.open(url, '_blank');
+}
+
+function goBack() {
+  if (stack.length === 0) return;
+  currentNode = stack.pop();
+  renderView();
+}
+
+function goHome() {
+  stack = [];
+  currentNode = TREE;
+  clearSearch();
+  renderView();
+}
+
+// ── BREADCRUMB ─────────────────────────────────────────────────────────────
+function renderBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  bc.innerHTML = '';
+
+  if (stack.length > 0) {
+    const back = document.createElement('span');
+    back.className = 'bc-back';
+    back.textContent = '← BACK';
+    back.onclick = goBack;
+    bc.appendChild(back);
+  }
+
+  // Home
+  const home = document.createElement('span');
+  home.className = 'bc-home';
+  home.textContent = 'HOME';
+  home.onclick = goHome;
+  bc.appendChild(home);
+
+  // Ancestors from stack
+  stack.forEach((node, i) => {
+    const sep = document.createElement('span');
+    sep.className = 'bc-sep';
+    sep.textContent = '›';
+    bc.appendChild(sep);
+
+    const crumb = document.createElement('span');
+    crumb.className = 'bc-crumb';
+    crumb.textContent = node.label;
+    crumb.title = node.id;
+    crumb.onclick = () => {
+      // Navigate to this ancestor
+      stack = stack.slice(0, i);
+      currentNode = node;
+      renderView();
+    };
+    bc.appendChild(crumb);
+  });
+
+  // Current node (if not root)
+  if (currentNode !== TREE) {
+    const sep = document.createElement('span');
+    sep.className = 'bc-sep';
+    sep.textContent = '›';
+    bc.appendChild(sep);
+
+    const cur = document.createElement('span');
+    cur.className = 'bc-crumb current';
+    cur.textContent = currentNode.label;
+    bc.appendChild(cur);
+  }
+}
+
+// ── SECTION HEADER ─────────────────────────────────────────────────────────
+function renderSectionHeader(node) {
+  const isRoot = node === TREE;
+  document.getElementById('sh-id').textContent = isRoot ? '' : node.id;
+  document.getElementById('sh-title').textContent = isRoot
+    ? 'ROV-0311-D-0000-01 — Hercules MK3 Vehicle Assembly'
+    : node.label;
+  const count = (node.children||[]).length;
+  document.getElementById('sh-sub').textContent = isRoot
+    ? `SELECT A SYSTEM TO EXPLORE ITS DRAWINGS — ${count} TOP-LEVEL SYSTEMS`
+    : `${count} ITEM${count !== 1 ? 'S' : ''} IN THIS SECTION`;
+}
+
+// ── CARD RENDERING ─────────────────────────────────────────────────────────
+function makeCard(node) {
+  const hasChildren = node.children && node.children.length > 0;
+  const childCount  = hasChildren ? node.children.length : 0;
+  const fileUrl     = getFile(node.id);
+  const isWiring    = node.type === 'w';
+  const canAct      = hasChildren || fileUrl;
+
+  const card = document.createElement('div');
+  card.className = [
+    'card',
+    canAct ? 'clickable' : 'no-action',
+    isWiring ? 'is-wiring' : '',
+  ].join(' ');
+
+  // PDF quick-open badge (only for drill-in nodes that also have a file)
+  if (hasChildren && fileUrl) {
+    const btn = document.createElement('span');
+    btn.className = 'card-pdf-btn';
+    btn.textContent = '↗ PDF';
+    btn.title = 'Open PDF drawing';
+    btn.onclick = e => { e.stopPropagation(); window.open(fileUrl, '_blank'); };
+    card.appendChild(btn);
+  }
+
+  // Drawing number
+  const num = document.createElement('div');
+  num.className = 'card-num';
+  num.textContent = node.id;
+  card.appendChild(num);
+
+  // Divider
+  const div = document.createElement('div');
+  div.className = 'card-divider';
+  card.appendChild(div);
+
+  // Title
+  const title = document.createElement('div');
+  title.className = 'card-title';
+  title.textContent = node.label;
+  card.appendChild(title);
+
+  // Footer
+  const footer = document.createElement('div');
+  footer.className = 'card-footer';
+
+  // Type badge
+  const badge = document.createElement('span');
+  badge.className = 'card-type ' + (fileUrl
+    ? (isWiring ? 'type-wiring' : 'type-assembly')
+    : 'type-none');
+  badge.textContent = fileUrl ? (isWiring ? 'WIRING' : 'ASSEMBLY') : 'NO FILE';
+  footer.appendChild(badge);
+
+  // Action indicator
+  const act = document.createElement('span');
+  act.className = 'card-action';
+  if (hasChildren && !fileUrl) {
+    act.innerHTML = `<span class="ca-drill">EXPLORE</span><span class="ca-count">${childCount}</span>`;
+  } else if (hasChildren && fileUrl) {
+    act.innerHTML = `<span class="ca-drill">EXPLORE</span><span class="ca-count">${childCount}</span>`;
+  } else if (fileUrl) {
+    act.innerHTML = `<span class="ca-pdf">↗ OPEN PDF</span>`;
+  }
+  footer.appendChild(act);
+  card.appendChild(footer);
+
+  // Click handler
+  if (canAct) {
+    card.onclick = () => navigate(node);
+  }
+
+  return card;
+}
+
+// ── RENDER CURRENT VIEW ────────────────────────────────────────────────────
+function renderView() {
+  renderBreadcrumb();
+  renderSectionHeader(currentNode);
+
+  const grid = document.getElementById('card-grid');
+  const sp   = document.getElementById('search-panel');
+  grid.innerHTML = '';
+  sp.innerHTML   = '';
+  sp.classList.remove('active');
+  grid.style.display = '';
+
+  // Force re-animation
+  grid.style.animation = 'none';
+  grid.offsetHeight; // reflow
+  grid.style.animation = '';
+
+  const items = currentNode === TREE
+    ? currentNode.children   // home: show top-level branches
+    : currentNode.children;
+
+  (items || []).forEach(node => grid.appendChild(makeCard(node)));
+}
+
+// ── SEARCH ─────────────────────────────────────────────────────────────────
+let searchTimeout;
+document.getElementById('search').addEventListener('input', e => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => doSearch(e.target.value.trim()), 120);
+});
+
+function doSearch(q) {
+  const grid = document.getElementById('card-grid');
+  const sp   = document.getElementById('search-panel');
+  const mc   = document.getElementById('match-count');
+  const clr  = document.getElementById('s-clear');
+
+  if (!q || q.length < 2) {
+    sp.innerHTML = '';
+    sp.classList.remove('active');
+    grid.style.display = '';
+    mc.textContent = '';
+    clr.style.display = 'none';
+    renderSectionHeader(currentNode);
+    return;
+  }
+
+  clr.style.display = 'inline';
+  grid.style.display = 'none';
+
+  const upper = q.toUpperCase();
+  const hits = allNodes.filter(n =>
+    n !== TREE &&
+    (n.id.toUpperCase().includes(upper) || n.label.toUpperCase().includes(upper))
+  );
+
+  mc.textContent = hits.length + ' found';
+  document.getElementById('sh-id').textContent = '';
+  document.getElementById('sh-title').textContent = `Search: "${q}"`;
+  document.getElementById('sh-sub').textContent = hits.length
+    ? `${hits.length} DRAWING${hits.length !== 1 ? 'S' : ''} MATCHED`
+    : 'NO MATCHES FOUND';
+
+  sp.innerHTML = '';
+  sp.classList.add('active');
+
+  if (!hits.length) {
+    const empty = document.createElement('div');
+    empty.className = 'sr-empty';
+    empty.textContent = 'No drawings matched "' + q + '"';
+    sp.appendChild(empty);
+    return;
+  }
+
+  hits.forEach(node => {
+    const fileUrl  = getFile(node.id);
+    const isWiring = node.type === 'w';
+    const hasDrill = node.children && node.children.length > 0;
+
+    const row = document.createElement('div');
+    row.className = 'sr-item' + (isWiring ? ' is-wiring' : '');
+
+    const numEl = document.createElement('span');
+    numEl.className = 'sr-num';
+    numEl.textContent = node.id;
+    row.appendChild(numEl);
+
+    const titleEl = document.createElement('span');
+    titleEl.className = 'sr-title';
+    titleEl.textContent = node.label;
+    row.appendChild(titleEl);
+
+    // Path
+    const pathEl = document.createElement('span');
+    pathEl.className = 'sr-path';
+    pathEl.textContent = node._ancestors.slice(1).map(a => a.label).join(' › ');
+    row.appendChild(pathEl);
+
+    // PDF badge
+    if (fileUrl) {
+      const pdfEl = document.createElement('span');
+      pdfEl.className = 'sr-pdf';
+      pdfEl.textContent = '↗ PDF';
+      row.appendChild(pdfEl);
+    }
+
+    row.onclick = () => {
+      if (hasDrill) {
+        // Navigate into this node's parent section, then scroll/highlight
+        clearSearch();
+        // Rebuild stack to this node's ancestors
+        stack = node._ancestors.slice(1); // exclude root
+        currentNode = node._ancestors[node._ancestors.length - 1] || TREE;
+        // If the node itself has children, drill into it
+        if (hasDrill) {
+          stack = node._ancestors.slice(1);
+          currentNode = node;
+        }
+        renderView();
+      } else if (fileUrl) {
+        window.open(fileUrl, '_blank');
+      }
+    };
+
+    sp.appendChild(row);
+  });
+}
+
+function clearSearch() {
+  const el = document.getElementById('search');
+  el.value = '';
+  doSearch('');
+}
+
+// ── KEYBOARD ───────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('search').value) {
+      clearSearch();
+    } else {
+      goBack();
+    }
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+    e.preventDefault();
+    document.getElementById('search').focus();
+  }
+});
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+renderView();
+</script>
+</body>
+</html>

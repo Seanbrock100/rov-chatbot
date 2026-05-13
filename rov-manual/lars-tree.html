@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hercules MK3 — LARS Drawing Index</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0e16;--surface:#13171f;--surface2:#181c26;--border:#1e2330;--border2:#2a3040;
+  --amber:#e8a44a;--amber-dim:#7a5018;--text:#ddd8cc;--text-dim:#6a7080;
+  --text-mid:#9a9890;--blue:#4a7fa0;--blue-dim:#2a4a60;
+}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── HEADER ── */
+#hdr{border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;background:#090c13;flex-shrink:0;}
+.htitle{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#f0ece0;letter-spacing:-.01em;}
+.hbadge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;padding:2px 8px;border-radius:2px;border:1px solid var(--amber);color:var(--amber);background:rgba(232,164,74,.08);}
+.hback{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);cursor:pointer;padding:4px 10px;border:1px solid var(--border2);border-radius:2px;text-decoration:none;transition:all .15s;}
+.hback:hover{border-color:var(--amber);color:var(--amber);}
+.hsep{width:1px;height:20px;background:var(--border);flex-shrink:0;}
+.hright{display:flex;align-items:center;gap:10px;margin-left:auto;}
+#search-wrap{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:3px;transition:border-color .15s;}
+#search-wrap:focus-within{border-color:var(--amber);}
+#search{background:transparent;border:none;outline:none;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);width:200px;}
+#search::placeholder{color:var(--text-dim);}
+.s-icon{font-size:12px;color:var(--text-dim);}
+#match-count{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);min-width:48px;}
+.s-clear{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);cursor:pointer;padding:0 2px;transition:color .15s;display:none;}
+.s-clear:hover{color:var(--amber);}
+
+/* ── BREADCRUMB ── */
+#breadcrumb{
+  padding:8px 24px;
+  display:flex;align-items:center;gap:4px;flex-wrap:wrap;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+  min-height:38px;flex-shrink:0;
+}
+.bc-home{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);cursor:pointer;letter-spacing:.05em;transition:opacity .15s;}
+.bc-home:hover{opacity:.7;}
+.bc-sep{font-size:10px;color:var(--border2);margin:0 2px;}
+.bc-crumb{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);cursor:pointer;letter-spacing:.05em;transition:color .15s;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bc-crumb:hover{color:var(--text);}
+.bc-crumb.current{color:var(--text);cursor:default;}
+.bc-back{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-mid);cursor:pointer;padding:2px 10px;border:1px solid var(--border2);border-radius:2px;transition:all .15s;margin-right:6px;}
+.bc-back:hover{border-color:var(--amber);color:var(--amber);}
+
+/* ── MAIN ── */
+#main{flex:1;padding:28px 24px;overflow-y:auto;}
+
+/* Section header */
+#section-hdr{margin-bottom:22px;}
+#section-hdr .sh-id{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.1em;margin-bottom:4px;}
+#section-hdr .sh-title{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:#f0ece0;letter-spacing:-.01em;line-height:1.2;}
+#section-hdr .sh-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.1em;margin-top:6px;}
+
+/* ── CARD GRID ── */
+#card-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:10px;
+  animation:fadeUp .18s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── CARD ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:6px;
+  padding:13px 15px 11px;
+  display:flex;flex-direction:column;gap:7px;
+  position:relative;
+  transition:border-color .15s, background .15s, transform .12s, box-shadow .15s;
+  min-height:110px;
+}
+.card.clickable{cursor:pointer;}
+.card.clickable:hover{
+  border-color:var(--amber);
+  background:var(--surface2);
+  transform:translateY(-2px);
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.card.is-wiring.clickable:hover{border-color:var(--blue);}
+.card.no-action{opacity:.45;cursor:not-allowed;}
+
+/* PDF quick-open badge (top-right corner for nodes that drill AND have PDF) */
+.card-pdf-btn{
+  position:absolute;top:10px;right:10px;
+  font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.05em;
+  color:var(--amber);border:1px solid var(--amber-dim);border-radius:2px;
+  padding:1px 5px;background:rgba(232,164,74,.08);
+  cursor:pointer;transition:all .15s;z-index:2;
+}
+.card-pdf-btn:hover{background:rgba(232,164,74,.18);}
+.card.is-wiring .card-pdf-btn{color:var(--blue);border-color:var(--blue-dim);background:rgba(74,127,160,.08);}
+.card.is-wiring .card-pdf-btn:hover{background:rgba(74,127,160,.18);}
+
+.card-num{
+  font-family:'IBM Plex Mono',monospace;font-size:8px;
+  color:var(--amber);letter-spacing:.08em;line-height:1.5;
+  padding-right:40px;/* avoid overlap with pdf btn */
+}
+.card.is-wiring .card-num{color:var(--blue);}
+.card.no-action .card-num{color:var(--text-dim);}
+
+.card-divider{height:1px;background:var(--border);flex-shrink:0;}
+
+.card-title{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:12px;font-weight:500;
+  color:var(--text);line-height:1.45;flex:1;
+}
+.card.no-action .card-title{color:var(--text-dim);}
+
+.card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:2px;gap:6px;
+}
+.card-type{
+  font-family:'IBM Plex Mono',monospace;font-size:8px;
+  letter-spacing:.1em;padding:1px 6px;border-radius:2px;flex-shrink:0;
+}
+.type-assembly{color:var(--amber);border:1px solid var(--amber-dim);background:rgba(232,164,74,.05);}
+.type-wiring{color:var(--blue);border:1px solid var(--blue-dim);background:rgba(74,127,160,.07);}
+.type-none{color:var(--text-dim);border:1px solid var(--border);background:transparent;}
+
+.card-action{
+  font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.04em;
+  display:flex;align-items:center;gap:5px;
+}
+.ca-drill{color:var(--text-dim);}
+.ca-count{
+  font-family:'IBM Plex Mono',monospace;font-size:8px;
+  color:var(--text-dim);background:var(--border2);border-radius:10px;
+  padding:1px 6px;
+}
+.ca-pdf{color:var(--amber);}
+.card.is-wiring .ca-pdf{color:var(--blue);}
+
+/* ── SEARCH RESULTS ── */
+#search-panel{display:none;animation:fadeUp .15s ease;}
+#search-panel.active{display:block;}
+.sr-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.1em;margin-bottom:12px;}
+.sr-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;
+  border:1px solid var(--border2);border-radius:4px;
+  margin-bottom:7px;cursor:pointer;
+  background:var(--surface);transition:all .15s;
+}
+.sr-item:hover{border-color:var(--amber);background:var(--surface2);}
+.sr-item.is-wiring:hover{border-color:var(--blue);}
+.sr-num{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber);min-width:170px;flex-shrink:0;}
+.sr-item.is-wiring .sr-num{color:var(--blue);}
+.sr-title{font-family:'IBM Plex Sans',monospace;font-size:12px;color:var(--text);flex:1;}
+.sr-path{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text-dim);text-align:right;flex-shrink:0;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sr-pdf{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--amber);flex-shrink:0;}
+.sr-item.is-wiring .sr-pdf{color:var(--blue);}
+.sr-empty{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);padding:24px 0;text-align:center;letter-spacing:.08em;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="hdr">
+  <a class="hback" href="index.html">← MANUAL</a>
+  <div class="hsep"></div>
+  <div class="htitle">Hercules MK3 — LARS Drawing Index</div>
+  <span class="hbadge">OCE-0400-DR-0000-01</span>
+  <div class="hright">
+    <div id="search-wrap">
+      <span class="s-icon">⌕</span>
+      <input id="search" type="text" placeholder="Search all drawings…" autocomplete="off">
+      <span id="match-count"></span>
+      <span class="s-clear" id="s-clear" onclick="clearSearch()">✕</span>
+    </div>
+  </div>
+</div>
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb"></div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="section-hdr">
+    <div class="sh-id" id="sh-id"></div>
+    <div class="sh-title" id="sh-title"></div>
+    <div class="sh-sub" id="sh-sub"></div>
+  </div>
+  <div id="card-grid"></div>
+  <div id="search-panel"></div>
+</div>
+
+<script>
+// ── FILE INDEX ─────────────────────────────────────────────────────────────
+const BASE = 'http://localhost:8765/docs/';
+const FILES = {
+  'OCE-0400-DR-0135-00': 'LARS/Cursor/OCE-0400-DR-0135-00%2BSHT%2B1%20Cursor%20GA%20MK3%20STBD.pdf',
+  'OCE-0400-DR-0030-00': 'LARS/Cursor/Cursor%20Assembly%20OCE-0400-DR-0030-00%2BSHT%2B1.pdf',
+  'OCE-0400-DR-0030-01': 'LARS/Cursor/Cursor%20Assembly%20OCE-0400-DR-0030-01%2Bsht%2B1.pdf',
+  'OCE-0400-DR-0030-02': 'LARS/Cursor/Cursor%20Assembly%20OCE-0400-DR-0030-02%2Bsht%2B1.pdf',
+  'OCE-0400-DR-0030-04': 'LARS/Cursor/Cursor%20Assembly%20OCE-0400-DR-0030-04%2BSHT%2B1.pdf',
+  'OCE-0400-DR-0303-00': 'LARS/Cursor/Cursor%20Component%20Assembly%20OCE-0400-DR-0303-00%2Bsht%2B1%20Model%20(1).pdf',
+  'OCE-0400-DR-0130-01': 'LARS/Cursor/Cursor%20Fabrication%20Details%20OCE-0400-DR-0130-01%2Bsht%2B1%20Cursor%20Fab.pdf',
+  'OCE-0396-D-0123-00':  'LARS/Cursor/Cursor%20Assembly%20OCE-0396-D-0123-00%2Bsht%2B1.pdf',
+  'OCE-0396-D-0123-01':  'LARS/Cursor/Cursor%20Assembly%20OCE-0396-D-0123-01%2Bsht%2B1.pdf',
+  'OCE-0400-DR-0131-00': 'LARS/Cursor/ROV%20LARS%20CURSOR%20WHEEL%20BOX%20GENERAL%20ARRANGEMENT%20OCE-0400-DR-0131-00%20SHT%201.pdf',
+  'OCE-0400-DR-0131-07': 'LARS/Cursor/ROV%20LARS%20CURSOR%20WHEEL%20BOX%20SHORT%20BUSH%20OCE-0400-DR-0131-07%20SHT%201.pdf',
+  'OCE-0400-DR-0131-09': 'LARS/Cursor/ROV%20LARS%20CURSOR%20WHEEL%20BOX%20SHORT%20SPACER%20OCE-0400-DR-0131-09%20SHT%201.pdf',
+  'OCE-0400-DR-0131-10': 'LARS/Cursor/ROV%20LARS%20CURSOR%20WHEEL%20BOX%20THIN%20THRUST%20WASHER%20OCE-0400-DR-0131-10%20SHT%201%20(1).pdf',
+  'OCE-0400-DR-0131-11': 'LARS/Cursor/ROV%20LARS%20CURSOR%20WHEEL%20BOX%20THICK%20THRUST%20WASHER%20OCE-0400-DR-0131-11%20SHT%201.pdf',
+  'OCE-0400-DR-0140-00': 'LARS/Latch%20Beam/OCE-0400-DR-0140-00%20LARS%20%20LatchBeam%20GA.pdf',
+  'OCE-0400-DR-0140-90': 'LARS/Latch%20Beam/OCE-0400-DR-0140-90%20LARS%20LatchBeam%20Wiring%20Diagram.pdf',
+  'OCE-0400-DR-0302-00': 'LARS/Latch%20Beam/Latch%20Beam%20Assembly%20OCE-0400-DR-0302-00%20(1%20of%203).pdf',
+  'OCE-0400-DR-0306-00': 'LARS/Latch%20Beam/Latch%20Beam%20Assembly%20OCE-0400-DR-0306-00%20(1%20of%203).pdf',
+  'OCE-0378-D-0143-00':  'LARS/Latch%20Beam/OCE-0378-D-0143-00%20-%20LatchBeam%20Roller%20Box.pdf',
+  'OCE-0378-D-0146-90':  'LARS/Latch%20Beam/Sensor%20Junction%20Box%20Wiring%20Diagram%20OCE-0378-D-0146-90%20SHT%201%20Model%20(1).pdf',
+  'OCE-0378-D-0146-00':  'LARS/Latch%20Beam/Sensor%20junction%20box/UK%2012147A%20Potted%20Junction%20Box%20OCE-0378-D-0146-00.pdf',
+  'OCE-0273-D-0241-00':  'LARS/Latch%20Beam/OCE-0273-D-0241-00%20%20GA%20SHEET%201%20REV%20C4.pdf',
+  'OCE-0396-D-0142-92':  'LARS/Latch%20Beam/Latch%20beam%20Valve%20Pack%20OCE-0396-D-0142-92.pdf',
+  'ROV-0186-103-00':     'LARS/Latch%20Beam/ROV-0186-103-00%20-%20Latch%20Beam%20Latch%20Box.pdf',
+  'OCE-0400-DR-0300-00': 'LARS/Latch%20Beam%20Winch/HYDRAULIC%20BLOCK%20DIAGRAM%20OCE-0400-DR-0300-00%20sht%203.pdf',
+  'CAB-0846-DR-0008-00': 'LARS/Latch%20Beam%20Winch/Proximity%20Switch%20Cable%20Assembly%20CAB-0846-DR-0008-00%20Proximity%20Switch.pdf',
+  'OCE-0400-DR-0551-90': 'LARS/LCC%20Winch/OCE-0400-DR-0551-90%20LARS%20Port%20LCC%20wiring%20Diagram.pdf',
+  'OCE-0400-DR-0561-90': 'LARS/LCC%20Winch/OCE-0400-DR-0561-90%20LARS%20Stbd%20LCC%20wiring%20Diagram.pdf',
+  'OCE-0400-DR-0124-00': 'LARS/Moonpool%20Doors/LARS%20Moonpool%20Door%20GA%20OCE-0400-DR-0124-00.pdf',
+  'OCE-0400-DR-0304-00': 'LARS/Service%20Winch/OCE-0400-DR-0304-00%20LARS%20Service%20Winch%20Hyd%20Schematic.pdf',
+  'OCE-0400-DR-0719-90': 'LARS/Service%20Winch/OCE-0400-DR-0719-90%20LARS%20Port%20Service%20Winch%20wiring%20Diagram%20JB119.pdf',
+  'OCE-0400-DR-0720-90': 'LARS/Service%20Winch/OCE-0400-DR-0720-90%20LARS%20Port%20Service%20Winch%20wiring%20Diagram%20JB120.pdf',
+  'OCE-0400-DR-0819-90': 'LARS/Service%20Winch/OCE-0400-DR-0819-90%20%20LARS%20Stbd%20Service%20Winch%20wiring%20Diagram%20JB219.pdf',
+  'OCE-0400-DR-0820-90': 'LARS/Service%20Winch/OCE-0400-DR-0820-90%20%20LARS%20Stbd%20Service%20Winch%20wiring%20Diagram%20JB220.pdf',
+  'OCE-0400-DR-0133-07': 'LARS/Sliding%20Weight/Sliding%20Weight%20Assembly%20OCE-0400-DR-0133-07.pdf',
+  'OCE-0400-DR-0133-03': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20PIN%20TYPE%201%20OCE-0400-DR-0133-03%20sht%201.pdf',
+  'OCE-0400-DR-0133-04': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20PIN%20TYPE%202%20OCE-0400-DR-0133-04%20SHT%201.pdf',
+  'OCE-0400-DR-0133-05': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20PIN%20TYPE%203%20OCE-0400-DR-0133-05%20SHT%201.pdf',
+  'OCE-0400-DR-0133-06': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20PIN%20TYPE%204%20OCE-0400-DR-0133-06%20SHT%201.pdf',
+  'OCE-0400-DR-0133-23': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20PIN%20TYPE%205%20OCE-0400-DR-0133-23%20SHT%201%20-%20roller%20pin%20type%205.pdf',
+  'OCE-0400-DR-0133-21': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20ROLLER%20SHAFT%20TYPE%201%20OCE-0400-DR-0133-21%20sht%201.pdf',
+  'OCE-0400-DR-0133-22': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20ROLLER%20SHAFT%20TYPE%202%20OCE-0400-DR-0133-22%20SHT%201.pdf',
+  'OCE-0400-DR-0133-08': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20ROLLER%20TYPE%201%20OCE-0400-DR-0133-08%20sht%201.pdf',
+  'OCE-0400-DR-0133-09': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20ROLLER%20TYPE%202%20OCE-0400-DR-0133-09%20SHT%201.pdf',
+  'OCE-0400-DR-0133-10': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20ROLLER%20TYPE%203%20OCE-0400-DR-0133-10%20SHT%201.pdf',
+  'OCE-0400-DR-0133-11': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20ROLLER%20TYPE%204%20OCE-0400-DR-0133-11%20sht%201.pdf',
+  'OCE-0400-DR-0133-18': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20ROLLER%20TYPE%205%20OCE-0400-DR-0133-18%20sht%201.pdf',
+  'OCE-0400-DR-0133-12': 'LARS/Sliding%20Weight/ROV%20LARS%20CURSOR%20SLIDING%20WEIGHT%20SPACER%20OCE-0400-DR-0133-12%20sht%201.pdf',
+};
+
+function getFile(id) {
+  if (FILES[id]) return BASE + FILES[id];
+  const base = id.replace(/-0+$/, '');
+  for (const k of Object.keys(FILES)) {
+    if (k.startsWith(base)) return BASE + FILES[k];
+  }
+  return null;
+}
+
+// ── TREE DATA ──────────────────────────────────────────────────────────────
+const TREE = {
+  id:'OCE-0400-DR-0001-00', label:'Hercules MK3 — LARS Assembly', type:'a',
+  children:[
+    { id:'OCE-0400-DR-0135-00', label:'Cursor Assembly', type:'a', children:[
+      { id:'OCE-0400-DR-0030-00', label:'Cursor Assembly GA (Type 00)', type:'a' },
+      { id:'OCE-0400-DR-0030-01', label:'Cursor Assembly GA (Type 01)', type:'a' },
+      { id:'OCE-0400-DR-0030-02', label:'Cursor Assembly GA (Type 02)', type:'a' },
+      { id:'OCE-0400-DR-0030-04', label:'Cursor Assembly GA (Type 04)', type:'a' },
+      { id:'OCE-0400-DR-0303-00', label:'Cursor Component Assembly', type:'a' },
+      { id:'OCE-0400-DR-0130-01', label:'Cursor Fabrication Details (SHT 1–4)', type:'a' },
+      { id:'OCE-0396-D-0123-00', label:'Cursor Assembly (Legacy OCE-0396)', type:'a' },
+      { id:'OCE-0396-D-0123-01', label:'Cursor Assembly Variant (Legacy)', type:'a' },
+      { id:'OCE-0400-DR-0131-00', label:'Cursor Wheel Box GA', type:'a', children:[
+        { id:'OCE-0400-DR-0131-07', label:'Cursor Wheel Box Short Bush', type:'a' },
+        { id:'OCE-0400-DR-0131-09', label:'Cursor Wheel Box Short Spacer', type:'a' },
+        { id:'OCE-0400-DR-0131-10', label:'Cursor Wheel Box Thin Thrust Washer', type:'a' },
+        { id:'OCE-0400-DR-0131-11', label:'Cursor Wheel Box Thick Thrust Washer', type:'a' },
+      ]},
+    ]},
+    { id:'OCE-0400-DR-0140-00', label:'Latch Beam Assembly', type:'a', children:[
+      { id:'OCE-0400-DR-0140-90', label:'LatchBeam Wiring Diagram', type:'w' },
+      { id:'OCE-0400-DR-0302-00', label:'Latch Beam Assembly (SHT 1–3)', type:'a' },
+      { id:'OCE-0400-DR-0306-00', label:'Latch Beam Assembly MK2 (SHT 1–3)', type:'a' },
+      { id:'OCE-0378-D-0143-00', label:'LatchBeam Roller Box', type:'a' },
+      { id:'OCE-0273-D-0241-00', label:'Latch Beam GA (OCE-0273)', type:'a' },
+      { id:'OCE-0396-D-0142-92', label:'Latch Beam Valve Pack', type:'a' },
+      { id:'ROV-0186-103-00', label:'Latch Beam Latch Box', type:'a' },
+      { id:'OCE-0378-D-0146-00', label:'Sensor Junction Box Assembly', type:'a', children:[
+        { id:'OCE-0378-D-0146-90', label:'Sensor JB Wiring Diagram', type:'w' },
+      ]},
+    ]},
+    { id:'OCE-0400-DR-0300-00', label:'Latch Beam Winch', type:'a', children:[
+      { id:'CAB-0846-DR-0008-00', label:'Proximity Switch Cable Assembly', type:'a' },
+    ]},
+    { id:'OCE-0400-DR-0551-90', label:'LCC Winch Wiring — Port', type:'w' },
+    { id:'OCE-0400-DR-0561-90', label:'LCC Winch Wiring — Stbd', type:'w' },
+    { id:'OCE-0400-DR-0124-00', label:'Moonpool Doors GA', type:'a' },
+    { id:'OCE-0400-DR-0304-00', label:'Service Winch', type:'a', children:[
+      { id:'OCE-0400-DR-0719-90', label:'Port Service Winch Wiring JB119', type:'w' },
+      { id:'OCE-0400-DR-0720-90', label:'Port Service Winch Wiring JB120', type:'w' },
+      { id:'OCE-0400-DR-0819-90', label:'Stbd Service Winch Wiring JB219', type:'w' },
+      { id:'OCE-0400-DR-0820-90', label:'Stbd Service Winch Wiring JB220', type:'w' },
+    ]},
+    { id:'OCE-0400-DR-0133-07', label:'Sliding Weight Assembly', type:'a', children:[
+      { id:'OCE-0400-DR-0133-03', label:'Sliding Weight Pin Type 1', type:'a' },
+      { id:'OCE-0400-DR-0133-04', label:'Sliding Weight Pin Type 2', type:'a' },
+      { id:'OCE-0400-DR-0133-05', label:'Sliding Weight Pin Type 3', type:'a' },
+      { id:'OCE-0400-DR-0133-06', label:'Sliding Weight Pin Type 4', type:'a' },
+      { id:'OCE-0400-DR-0133-23', label:'Sliding Weight Pin Type 5', type:'a' },
+      { id:'OCE-0400-DR-0133-21', label:'Sliding Weight Roller Shaft Type 1', type:'a' },
+      { id:'OCE-0400-DR-0133-22', label:'Sliding Weight Roller Shaft Type 2', type:'a' },
+      { id:'OCE-0400-DR-0133-08', label:'Sliding Weight Roller Type 1', type:'a' },
+      { id:'OCE-0400-DR-0133-09', label:'Sliding Weight Roller Type 2', type:'a' },
+      { id:'OCE-0400-DR-0133-10', label:'Sliding Weight Roller Type 3', type:'a' },
+      { id:'OCE-0400-DR-0133-11', label:'Sliding Weight Roller Type 4', type:'a' },
+      { id:'OCE-0400-DR-0133-18', label:'Sliding Weight Roller Type 5', type:'a' },
+      { id:'OCE-0400-DR-0133-12', label:'Sliding Weight Spacer', type:'a' },
+    ]},
+  ]
+};
+
+// ── BUILD SEARCH INDEX ─────────────────────────────────────────────────────
+const allNodes = [];
+function indexNode(node, ancestors=[]) {
+  node._ancestors = ancestors;
+  allNodes.push(node);
+  (node.children||[]).forEach(c => indexNode(c, [...ancestors, node]));
+}
+indexNode(TREE);
+
+// ── NAVIGATION STATE ───────────────────────────────────────────────────────
+let stack = [];   // ancestors of currentNode
+let currentNode = TREE;
+
+function navigate(node) {
+  // If has children → drill in
+  if (node.children && node.children.length > 0) {
+    stack.push(currentNode);
+    currentNode = node;
+    clearSearch();
+    renderView();
+    return;
+  }
+  // Leaf → open PDF if available
+  const url = getFile(node.id);
+  if (url) window.open(url, '_blank');
+}
+
+function goBack() {
+  if (stack.length === 0) return;
+  currentNode = stack.pop();
+  renderView();
+}
+
+function goHome() {
+  stack = [];
+  currentNode = TREE;
+  clearSearch();
+  renderView();
+}
+
+// ── BREADCRUMB ─────────────────────────────────────────────────────────────
+function renderBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  bc.innerHTML = '';
+
+  if (stack.length > 0) {
+    const back = document.createElement('span');
+    back.className = 'bc-back';
+    back.textContent = '← BACK';
+    back.onclick = goBack;
+    bc.appendChild(back);
+  }
+
+  // Home
+  const home = document.createElement('span');
+  home.className = 'bc-home';
+  home.textContent = 'HOME';
+  home.onclick = goHome;
+  bc.appendChild(home);
+
+  // Ancestors from stack
+  stack.forEach((node, i) => {
+    const sep = document.createElement('span');
+    sep.className = 'bc-sep';
+    sep.textContent = '›';
+    bc.appendChild(sep);
+
+    const crumb = document.createElement('span');
+    crumb.className = 'bc-crumb';
+    crumb.textContent = node.label;
+    crumb.title = node.id;
+    crumb.onclick = () => {
+      // Navigate to this ancestor
+      stack = stack.slice(0, i);
+      currentNode = node;
+      renderView();
+    };
+    bc.appendChild(crumb);
+  });
+
+  // Current node (if not root)
+  if (currentNode !== TREE) {
+    const sep = document.createElement('span');
+    sep.className = 'bc-sep';
+    sep.textContent = '›';
+    bc.appendChild(sep);
+
+    const cur = document.createElement('span');
+    cur.className = 'bc-crumb current';
+    cur.textContent = currentNode.label;
+    bc.appendChild(cur);
+  }
+}
+
+// ── SECTION HEADER ─────────────────────────────────────────────────────────
+function renderSectionHeader(node) {
+  const isRoot = node === TREE;
+  document.getElementById('sh-id').textContent = isRoot ? '' : node.id;
+  document.getElementById('sh-title').textContent = isRoot
+    ? 'OCE-0400-DR-0000-01 — LARS Drawing Index'
+    : node.label;
+  const count = (node.children||[]).length;
+  document.getElementById('sh-sub').textContent = isRoot
+    ? `SELECT A SYSTEM TO EXPLORE ITS DRAWINGS — ${count} TOP-LEVEL SYSTEMS`
+    : `${count} ITEM${count !== 1 ? 'S' : ''} IN THIS SECTION`;
+}
+
+// ── CARD RENDERING ─────────────────────────────────────────────────────────
+function makeCard(node) {
+  const hasChildren = node.children && node.children.length > 0;
+  const childCount  = hasChildren ? node.children.length : 0;
+  const fileUrl     = getFile(node.id);
+  const isWiring    = node.type === 'w';
+  const canAct      = hasChildren || fileUrl;
+
+  const card = document.createElement('div');
+  card.className = [
+    'card',
+    canAct ? 'clickable' : 'no-action',
+    isWiring ? 'is-wiring' : '',
+  ].join(' ');
+
+  // PDF quick-open badge (only for drill-in nodes that also have a file)
+  if (hasChildren && fileUrl) {
+    const btn = document.createElement('span');
+    btn.className = 'card-pdf-btn';
+    btn.textContent = '↗ PDF';
+    btn.title = 'Open PDF drawing';
+    btn.onclick = e => { e.stopPropagation(); window.open(fileUrl, '_blank'); };
+    card.appendChild(btn);
+  }
+
+  // Drawing number
+  const num = document.createElement('div');
+  num.className = 'card-num';
+  num.textContent = node.id;
+  card.appendChild(num);
+
+  // Divider
+  const div = document.createElement('div');
+  div.className = 'card-divider';
+  card.appendChild(div);
+
+  // Title
+  const title = document.createElement('div');
+  title.className = 'card-title';
+  title.textContent = node.label;
+  card.appendChild(title);
+
+  // Footer
+  const footer = document.createElement('div');
+  footer.className = 'card-footer';
+
+  // Type badge
+  const badge = document.createElement('span');
+  badge.className = 'card-type ' + (fileUrl
+    ? (isWiring ? 'type-wiring' : 'type-assembly')
+    : 'type-none');
+  badge.textContent = fileUrl ? (isWiring ? 'WIRING' : 'ASSEMBLY') : 'NO FILE';
+  footer.appendChild(badge);
+
+  // Action indicator
+  const act = document.createElement('span');
+  act.className = 'card-action';
+  if (hasChildren && !fileUrl) {
+    act.innerHTML = `<span class="ca-drill">EXPLORE</span><span class="ca-count">${childCount}</span>`;
+  } else if (hasChildren && fileUrl) {
+    act.innerHTML = `<span class="ca-drill">EXPLORE</span><span class="ca-count">${childCount}</span>`;
+  } else if (fileUrl) {
+    act.innerHTML = `<span class="ca-pdf">↗ OPEN PDF</span>`;
+  }
+  footer.appendChild(act);
+  card.appendChild(footer);
+
+  // Click handler
+  if (canAct) {
+    card.onclick = () => navigate(node);
+  }
+
+  return card;
+}
+
+// ── RENDER CURRENT VIEW ────────────────────────────────────────────────────
+function renderView() {
+  renderBreadcrumb();
+  renderSectionHeader(currentNode);
+
+  const grid = document.getElementById('card-grid');
+  const sp   = document.getElementById('search-panel');
+  grid.innerHTML = '';
+  sp.innerHTML   = '';
+  sp.classList.remove('active');
+  grid.style.display = '';
+
+  // Force re-animation
+  grid.style.animation = 'none';
+  grid.offsetHeight; // reflow
+  grid.style.animation = '';
+
+  const items = currentNode === TREE
+    ? currentNode.children   // home: show top-level branches
+    : currentNode.children;
+
+  (items || []).forEach(node => grid.appendChild(makeCard(node)));
+}
+
+// ── SEARCH ─────────────────────────────────────────────────────────────────
+let searchTimeout;
+document.getElementById('search').addEventListener('input', e => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => doSearch(e.target.value.trim()), 120);
+});
+
+function doSearch(q) {
+  const grid = document.getElementById('card-grid');
+  const sp   = document.getElementById('search-panel');
+  const mc   = document.getElementById('match-count');
+  const clr  = document.getElementById('s-clear');
+
+  if (!q || q.length < 2) {
+    sp.innerHTML = '';
+    sp.classList.remove('active');
+    grid.style.display = '';
+    mc.textContent = '';
+    clr.style.display = 'none';
+    renderSectionHeader(currentNode);
+    return;
+  }
+
+  clr.style.display = 'inline';
+  grid.style.display = 'none';
+
+  const upper = q.toUpperCase();
+  const hits = allNodes.filter(n =>
+    n !== TREE &&
+    (n.id.toUpperCase().includes(upper) || n.label.toUpperCase().includes(upper))
+  );
+
+  mc.textContent = hits.length + ' found';
+  document.getElementById('sh-id').textContent = '';
+  document.getElementById('sh-title').textContent = `Search: "${q}"`;
+  document.getElementById('sh-sub').textContent = hits.length
+    ? `${hits.length} DRAWING${hits.length !== 1 ? 'S' : ''} MATCHED`
+    : 'NO MATCHES FOUND';
+
+  sp.innerHTML = '';
+  sp.classList.add('active');
+
+  if (!hits.length) {
+    const empty = document.createElement('div');
+    empty.className = 'sr-empty';
+    empty.textContent = 'No drawings matched "' + q + '"';
+    sp.appendChild(empty);
+    return;
+  }
+
+  hits.forEach(node => {
+    const fileUrl  = getFile(node.id);
+    const isWiring = node.type === 'w';
+    const hasDrill = node.children && node.children.length > 0;
+
+    const row = document.createElement('div');
+    row.className = 'sr-item' + (isWiring ? ' is-wiring' : '');
+
+    const numEl = document.createElement('span');
+    numEl.className = 'sr-num';
+    numEl.textContent = node.id;
+    row.appendChild(numEl);
+
+    const titleEl = document.createElement('span');
+    titleEl.className = 'sr-title';
+    titleEl.textContent = node.label;
+    row.appendChild(titleEl);
+
+    // Path
+    const pathEl = document.createElement('span');
+    pathEl.className = 'sr-path';
+    pathEl.textContent = node._ancestors.slice(1).map(a => a.label).join(' › ');
+    row.appendChild(pathEl);
+
+    // PDF badge
+    if (fileUrl) {
+      const pdfEl = document.createElement('span');
+      pdfEl.className = 'sr-pdf';
+      pdfEl.textContent = '↗ PDF';
+      row.appendChild(pdfEl);
+    }
+
+    row.onclick = () => {
+      if (hasDrill) {
+        // Navigate into this node's parent section, then scroll/highlight
+        clearSearch();
+        // Rebuild stack to this node's ancestors
+        stack = node._ancestors.slice(1); // exclude root
+        currentNode = node._ancestors[node._ancestors.length - 1] || TREE;
+        // If the node itself has children, drill into it
+        if (hasDrill) {
+          stack = node._ancestors.slice(1);
+          currentNode = node;
+        }
+        renderView();
+      } else if (fileUrl) {
+        window.open(fileUrl, '_blank');
+      }
+    };
+
+    sp.appendChild(row);
+  });
+}
+
+function clearSearch() {
+  const el = document.getElementById('search');
+  el.value = '';
+  doSearch('');
+}
+
+// ── KEYBOARD ───────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('search').value) {
+      clearSearch();
+    } else {
+      goBack();
+    }
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+    e.preventDefault();
+    document.getElementById('search').focus();
+  }
+});
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+renderView();
+</script>
+</body>
+</html>
