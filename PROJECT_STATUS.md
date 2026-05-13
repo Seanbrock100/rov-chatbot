@@ -1,6 +1,7 @@
 # Hercules MK3 ROV Interactive Manual & Chatbot — Project Vision & Progress
-**Last Updated:** 28 April 2026
+**Last Updated:** 13 May 2026
 **Author:** Sean Brock / Subsea 7 Seven Oceanic
+**Companions:** `SESSION_HANDOFF.md` (drop-in orientation), `FILE_INVENTORY.md` (every file mapped), `MASTER_KNOWLEDGE.md` (technical ground truth)
 
 ---
 
@@ -29,11 +30,19 @@ The system has three layers:
 ### Key Files
 | File | Purpose | Size |
 |------|---------|------|
-| `rov-manual/index.html` | Main manual — all DATA, menu, chatbot, viewer | 304KB |
-| `rov-manual/admin.html` | Admin panel — review/move/remove drawings | 22KB |
-| `rov-manual/manual-viewer.html` | PDF viewer wrapper (opens manuals in new tab) | 6KB |
-| `rov-manual/manuals/` | 593 PDFs (not git tracked) | ~1.3GB |
-| `embed_new_files.py` | Batch embed script for Cowork | 246 lines |
+| `rov-manual/index.html` | Main manual — all DATA, menu, chatbot, viewer | 312 KB / 3,082 lines |
+| `rov-manual/admin.html` | Admin panel — review/move/remove drawings + Q&A log + CSV export | 27 KB / 500 lines |
+| `rov-manual/manual-viewer.html` | PDF viewer wrapper (opens manuals in new tab) | 1.4 KB / 34 lines |
+| `rov-manual/control-room-tree.html` | Standalone Control Room drawing index | 23 KB / 574 lines |
+| `rov-manual/drawing-tree.html` | Full drawing family tree (70 prefix series) | 36 KB / 721 lines |
+| `rov-manual/lars-tree.html` | Standalone LARS drawing index (10 sub-systems) | 31 KB / 658 lines |
+| `rov-manual/pdu-tree.html` | Standalone PDU drawing index | 22 KB / 566 lines |
+| `rov-manual/snippets.json` | Component long-form descriptions | 16 KB |
+| `rov-manual/docs` | Symlink to reorganised folder — **breaks on vessel copy** | — |
+| `rov-manual/manuals/` | **635 PDFs** (not git tracked) | ~1.4 GB |
+| `app.py` | Railway Flask proxy + password gate infrastructure | 156 lines |
+| `embed_new_files.py` | Batch embed script for Cowork | 275 lines |
+| `reorganise_tech_docs.py` | Reorganise + auto-rename Technical Docs folder | 482 lines |
 
 ### JS Parse Check Command
 ```bash
@@ -42,7 +51,7 @@ python3 -c "html=open('rov-manual/index.html').read(); script=html[html.rfind('<
 
 ---
 
-## Database State (30 April 2026 — POST EMBED RUN)
+## Database State (13 May 2026)
 
 | Table | Count | Notes |
 |-------|-------|-------|
@@ -50,8 +59,10 @@ python3 -c "html=open('rov-manual/index.html').read(); script=html[html.rfind('<
 | `drawing_families` | 70 rows | Full Hercules MK3 prefix/series guide |
 | `card_index` | 30 rows | ROV pod card signal path data |
 | `drawings` | 194 | 67 mapped to local files |
-| `fault_log` | 1,057 | |
-| `handover_log` | 4,060 | |
+| `fault_log` | 1,057 | H15 + H30 Sub Engineer Log |
+| `handover_log` | 4,060 | End-of-trip reports 2023–2026 |
+| `chat_log` | live (growing) | Q&A logging with GOOD/BAD ratings + free-text feedback |
+| `knowledge_corrections` | 0 | Table ready; no review workflow yet — **add `status` column before enabling for vessel users** |
 
 ### Embed run results (Cowork, 30 April 2026)
 | Stat | Count |
@@ -325,40 +336,80 @@ All 34 entries with exact page numbers for drawing + parts list:
 
 **Post embed-run state:** 23,333 chunks across 392 manuals. Full LARS (3,560 chunks), pod interface manual (926 chunks), T4 manual (1,084 chunks), control system (1,552 chunks) all now searchable. Re-test recommended.
 
+### Q&A logging & feedback loop (added May 2026)
+
+Every chatbot response is logged to Supabase `chat_log` with the question, response, retrieved chunks, system prompt, and timestamp. The UI shows GOOD / BAD rating buttons under each answer. BAD opens an inline text input for free-text feedback that updates the same `chat_log` row.
+
+This is the iteration mechanism for the chatbot's known gaps — vessel engineers flag specific misses, Sean reviews the queue via the admin panel's Q&A log view (with CSV export), and feeds confirmed corrections back into the system prompt, MASTER_KNOWLEDGE.md, or targeted re-embedding.
+
+The `knowledge_corrections` table exists for a future engineer-submitted correction flow. **It has no review workflow yet.** Before this is exposed to vessel users, add a `status` column (`pending` / `approved` / `rejected`) so corrections are reviewed rather than auto-incorporated.
+
 ---
 
-## Outstanding Tasks — Priority Order
+## Security Architecture (code complete 13 May 2026 — awaiting Railway env var configuration + key rotation)
 
-### 1. IMMEDIATE — Re-test chatbot with full library
-Now that 23,333 chunks are embedded, re-run the quality tests:
-- T4 pitch/yaw o-ring numbers (previously 7/10 — should improve)
-- Sonar relay card in pod (previously 2/10 — TMA01030 now has 926 chunks)
-- LARS-specific questions (TMA01071 now has 3,560 chunks)
-- HPU and hydraulic schematic questions
+### State
 
-### 2. SHORT TERM — Admin panel review
-Work through each section in `admin.html`:
-- Check for misplaced drawings
-- Flag duplicates (some files copied with different names)
-- Save and apply data_patch.js
+The frontend password gate, server-side admin auth, and `hmac.compare_digest` constant-time password comparison are all coded and committed. `/api/config` no longer returns any secret keys. The next step is Railway-side: set `APP_PASSWORD` and `ADMIN_PASSWORD` env vars, then rotate the previously-leaked keys.
 
-### 3. SHORT TERM — TCU wiring cross-reference
-ROV-0300-D-0420-90 (wiring drawing only) to appear under BOTH:
-- ROV ELECTRICAL (wiring drawing only)
-- ROV HYDRAULIC (full TCU section — already there)
+### Architecture
 
-### 4. MEDIUM TERM — LARS/TMS sub-sections with no drawings
-Sliding weight, slip ring, tether sections are empty — identify available drawings.
+Two independent password layers, both validated server-side:
 
-### 5. MEDIUM TERM — OCR for 174 scanned PDFs
-174 files skipped during embed run — all scanned/image PDFs with no text.
-OCR would make them searchable via chatbot. Tools: tesseract, AWS Textract, or Adobe.
-Priority candidates: any wiring diagrams or parts lists in scanned format.
+| Gate | Env var | Frontend behaviour | Default when env var unset |
+|---|---|---|---|
+| App-wide | `APP_PASSWORD` | Prompt on page load if `passwordRequired` true; sessionStorage; re-prompt on browser restart; silent reject on wrong password (clear field + brief red flash); 401 from any Railway proxy clears sessionStorage and re-prompts | **Bypass** — app works without password (dev mode) |
+| Admin only | `ADMIN_PASSWORD` | Prompt on admin overlay entry; never persisted (re-prompt every admin entry); on 401 shows "Invalid credentials" and clears field | **Deny by default** — admin locked out (destructive ops must never silently grant access) |
 
-### 6. LONGER TERM — Vessel deploy test
-- Copy `rov-manual/` folder to Windows machine
-- Test in Edge via `file://` protocol
-- Chatbot needs internet; manual + viewer works fully offline
+The browser never holds Anthropic, Voyage, or Supabase service role keys. All paid-API calls (`/anthropic/messages`, `/voyage/embeddings`) and all service-role-needing Supabase writes (`/supabase/<path>`) route through Flask proxies with the `X-App-Password` header. Direct browser → Supabase reads (`chat_log` writes, `card_index` lookups, `match_chunks` RPC, `lookup_drawing_family` RPC) keep using the public anon key — no Flask round-trip needed.
+
+### Remaining work (Sean's side, in order)
+
+1. Set `APP_PASSWORD` env var in Railway (16+ chars, store in password manager)
+2. Set `ADMIN_PASSWORD` env var in Railway (different password, also 16+ chars)
+3. Rotate `ANTHROPIC_KEY` (Anthropic console → create new → update Railway env var → test → delete old)
+4. Rotate `VOYAGE_KEY` (same pattern)
+5. Rotate `SUPABASE_SERVICE` (Supabase Project Settings → API → reset service_role secret → update Railway env var)
+6. End-to-end test in browser
+
+`SUPABASE_ANON` does NOT need rotation — public-by-design.
+
+---
+
+## Outstanding Tasks — Priority Order (13 May 2026)
+
+### 1. CRITICAL — Complete the security deploy
+Code is committed. Outstanding: set `APP_PASSWORD` and `ADMIN_PASSWORD` env vars in Railway, rotate `ANTHROPIC_KEY` / `VOYAGE_KEY` / `SUPABASE_SERVICE` (all considered compromised because `/api/config` leaked them for an unknown duration before the fix), end-to-end test. See "Security Architecture" section for full sequence.
+
+### 2. CRITICAL — Tree HTML `BASE` path mismatch
+`drawing-tree.html`, `control-room-tree.html`, `lars-tree.html`, `pdu-tree.html` hardcode `BASE = 'http://localhost:8765/docs/'` and reference hierarchical paths (`ROV/Mechanical/...`) that only exist in the `rov-manual/docs` symlink target. On vessel `file://` deploy with a flat `manuals/` folder, every PDF link in every tree HTML 404s. Three remediation options documented in `DRAWING_INDEX.md` — design decision needed (rewrite FILES maps to flat filenames vs. ship hierarchical copy vs. accept dev-only).
+
+### 3. CRITICAL — Resolve `rov-manual/docs` symlink before vessel copy
+Symlink points to `/Users/seanbrock/work documents/3. Technical Docs - Hercules MK3` — will break or duplicate on copy to vessel drive. Either delete the symlink, replace with a real folder/README, or document the resolution step in the deploy procedure.
+
+### 4. SHORT TERM — Vessel deploy test (sandboxed)
+Copy `rov-manual/` to a Windows test machine (not the vessel drive yet). Open in Edge via `file://`. Test: card click → `card_index` sidebar populates; drawing click → PDF tab at correct page; chatbot reaches Railway and answers. Check DevTools Network tab for the Anthropic POST.
+
+### 5. SHORT TERM — Actual vessel deploy to `N:\15. ROV\3. Technical Docs\`
+Only after #1, #2, #3, #4 pass. Confirm firewall whitelist for `*.up.railway.app` and `*.supabase.co` if needed.
+
+### 6. SHORT TERM — Re-test chatbot quality
+T4 o-rings, sonar relay, LARS questions, HPU schematic questions. Previous scores were pre-embed-run; TMA01030/01031/01071 are now fully searchable.
+
+### 7. SHORT TERM — Admin panel review pass
+All sections other than T4. Flag misplaced drawings and duplicates. Save and apply `data_patch.js`.
+
+### 8. SHORT TERM — TCU wiring cross-reference
+`ROV-0300-D-0420-90` should appear under both ROV ELECTRICAL (wiring only) and ROV HYDRAULIC (full TCU section, already there).
+
+### 9. MEDIUM TERM — `knowledge_corrections` review workflow
+Add `status` column (`pending`/`approved`/`rejected`). Build the admin queue UI before exposing the correction submission to vessel users.
+
+### 10. MEDIUM TERM — Empty LARS/TMS sub-sections
+Sliding weight, slip ring, tether — identify available drawings.
+
+### 11. MEDIUM TERM — OCR the 174 scanned PDFs
+Tesseract, AWS Textract, or Adobe. Priority candidates: wiring diagrams and parts lists in scanned format.
 
 ---
 
@@ -414,6 +465,15 @@ Priority candidates: any wiring diagrams or parts lists in scanned format.
   - TMA01030 Interface Systems Manual: 926 chunks — pod interface fully searchable
 - PROJECT_STATUS.md updated to reflect post-embed state
 
+### Session 6 (May 2026 — present)
+- **Q&A logging built** — every chatbot response written to Supabase `chat_log` with question, response, retrieved chunks, system prompt. GOOD / BAD rating buttons added to every answer. BAD opens inline text input for free-text feedback; BAD events update the same `chat_log` row. Admin panel gains Q&A log view with CSV export. This is the iteration mechanism for chatbot gaps.
+- **Card descriptions rewritten** — replaced bloated generic descriptions with factual content from TMA01030: connector IDs, power rails, fault diagnosis paths. Card sidebar now meaningfully useful.
+- **Drawing-tree HTMLs added** — `control-room-tree.html`, `drawing-tree.html`, `lars-tree.html`, `pdu-tree.html`. Standalone deep navigation for each major subsystem, linked from main menu.
+- **Reorganise script** — `reorganise_tech_docs.py` (482 lines) added with companion task doc. Builds parallel `Technical Docs - Hercules MK3/` folder structure mirroring the manual's functional taxonomy. Auto-renames drawing-number-only PDFs by extracting the title block via pdfminer. Test-first by default, `--full` flag for production run. **Source folder never touched.** Reorganised folder is symlinked into `rov-manual/docs` for in-app browsing.
+- **Security infrastructure scaffolded in `app.py`** — `APP_PASSWORD` env var, `@require_password` decorator, `/api/auth` endpoint, `/supabase/<path>` proxy with anon/service key selection. Not yet enabled: `APP_PASSWORD` not set in Railway, `/api/config` still leaks secret keys, frontend prompt UI not built.
+- **Vessel deploy plan locked in** — static file copy to `N:\15. ROV\3. Technical Docs\`, not a Flask local instance, not a shortcut. Engineers open `index.html` via `file://`. Manual + viewer fully offline; chatbot + live drawing search require internet to Railway + Supabase.
+- **Documentation reset** — `SESSION_HANDOFF.md`, `FILE_INVENTORY.md` added at repo root. `PROJECT_STATUS.md` refreshed.
+
 ## Known Issues & Limitations
 
 | Issue | Status | Fix |
@@ -429,22 +489,57 @@ Priority candidates: any wiring diagrams or parts lists in scanned format.
 
 ---
 
-## Vessel Deployment Notes
+## Vessel Deployment Plan (locked in May 2026)
 
-The system is designed to work in two modes:
+**Mode: static file copy.** Not a local Flask instance. Not a shortcut to Railway. Hybrid online/offline by design.
 
-**Online mode** (internet access):
-- Full chatbot via Railway proxy → Anthropic API
-- Drawing family lookup via Supabase
-- Chunk search (vector) via Supabase
+**Target path:** `N:\15. ROV\3. Technical Docs\` on the Seven Oceanic Windows network drive.
 
-**Offline mode** (vessel intranet only):
-- Manual navigation and PDF viewer: fully functional
-- Chatbot: NOT available (needs internet)
-- Admin panel: fully functional
+**What gets copied:**
+```
+rov-manual/             ← entire folder, verbatim
+  index.html
+  admin.html
+  *-tree.html
+  manual-viewer.html
+  manuals/  (635 PDFs)
+  photos/
+  snippets.json
+  missing-drawings.md
+  (docs symlink — must be resolved before copy)
+```
 
-**Deploy steps:**
-1. Copy entire `rov-manual/` folder to vessel network drive
-2. Open `index.html` directly in browser (file:// protocol)
-3. PDF viewer detects file:// and uses iframe fallback automatically
-4. Drawings open at correct pages, manuals open in new tabs with Ctrl+F
+**How engineers use it:**
+1. Open `index.html` directly in Edge (`file://`)
+2. Navigate the menu to the system / component of interest
+3. Click a drawing → opens in viewer tab at the correct page (works offline, PDFs are local)
+4. Click a manual → opens in new browser tab with native Ctrl+F (works offline)
+5. Ask the chatbot a question → requires internet (Railway proxy → Anthropic)
+6. Rate the answer GOOD / BAD; BAD prompts for free-text feedback → logged to `chat_log` for review
+
+**What works offline (no internet):**
+- Full menu navigation
+- All 635 PDFs in `manuals/`
+- Admin panel (move/remove/restore actions, save data_patch.js locally)
+- Drawing-tree subsystem indexes
+
+**What requires internet (Railway + Supabase):**
+- Chatbot (Anthropic API via Railway proxy)
+- Live drawing search via Supabase `match_chunks` / `drawing_families`
+- `card_index` sidebar population on card click
+- Q&A logging to `chat_log` and rating submissions
+
+**Conscious gaps shipped with the deploy:**
+- TMS / longline / cable components: minimal coverage
+- Thrusters / Pan & Tilt / Lights: manuals present, drawing links absent
+- TMA01030 Interface Systems Manual: previously truncated at p.102 — needs re-embed with `--force`
+- TMA01071 LARS Manual: previously truncated at p.10 — re-embedded now via Session 5 run, but verify coverage of latter sections
+- The chatbot will be generic or honest about gaps in those areas. Sean (the duty engineer) knows where it's thin. The `chat_log` BAD-rating + free-text feedback IS the iteration mechanism.
+
+**Firewall requirement (Subsea 7 vessel IT):**
+HTTPS outbound to `*.up.railway.app` and `*.supabase.co` from vessel PCs. Anthropic and Voyage do NOT need separate whitelisting — they are proxied through Railway.
+
+**Deploy-blocking prerequisites:**
+1. Security fix complete (see "Security Architecture" section)
+2. `rov-manual/docs` symlink resolved
+3. Sandbox test pass on a Windows VM or test PC before touching the actual vessel drive
