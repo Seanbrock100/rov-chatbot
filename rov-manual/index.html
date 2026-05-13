@@ -204,6 +204,18 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .adm-login-err{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#e06060;margin-top:8px;display:none;}
 .adm-login-close{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#404860;margin-top:16px;cursor:pointer;}
 .adm-login-close:hover{color:#c8c4b8;}
+/* ── APP-WIDE PASSWORD OVERLAY ───────────────────────────────────────────── */
+#app-login{position:fixed;inset:0;background:#0a0d14;z-index:10001;display:none;align-items:center;justify-content:center;}
+#app-login.visible{display:flex;}
+.app-login-box{background:#141720;border:1px solid #2a2d35;border-radius:8px;padding:40px 44px;width:380px;text-align:center;}
+.app-login-title{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:#e8a44a;margin-bottom:4px;letter-spacing:.04em;}
+.app-login-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#606470;letter-spacing:.15em;margin-bottom:32px;}
+.app-login-field{width:100%;background:#0d1018;border:1px solid #2a2d35;color:#c8c4b8;border-radius:3px;padding:11px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;outline:none;margin-bottom:14px;transition:border-color .25s;}
+.app-login-field:focus{border-color:#e8a44a;}
+.app-login-field.reject{border-color:#a04040;}
+.app-login-btn{width:100%;background:#e8a44a;color:#000;border:none;border-radius:3px;padding:11px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.1em;}
+.app-login-btn:hover{background:#f0b85a;}
+.app-login-btn:disabled{background:#3a3a3a;color:#606470;cursor:not-allowed;}
 #adm-main{display:none;flex:1;flex-direction:column;overflow:hidden;}
 #adm-main.visible{display:flex;}
 #adm-topbar{display:flex;align-items:center;gap:10px;padding:7px 14px;background:#090c13;border-bottom:1px solid #2a2d35;flex-shrink:0;}
@@ -2066,11 +2078,78 @@ if (window.location.protocol === 'file:') {
 }
 fetch('https://rov-chatbot-production-3d66.up.railway.app/api/config')
   .then(r => r.json()).then(cfg => {
-    CONFIG.anthropicKey = cfg.anthropicKey;
-    CONFIG.supabaseUrl  = cfg.supabaseUrl;
-    CONFIG.supabaseAnon = cfg.supabaseAnon;
-    CONFIG.appPassword  = cfg.appPassword || '';
+    CONFIG.supabaseUrl      = cfg.supabaseUrl;
+    CONFIG.supabaseAnon     = cfg.supabaseAnon;
+    CONFIG.passwordRequired = !!cfg.passwordRequired;
+    CONFIG.adminRequired    = !!cfg.adminRequired;
+    // App-wide password: resume from sessionStorage; prompt if required and not yet entered
+    CONFIG.appPassword = sessionStorage.getItem('rovPassword') || '';
+    if (CONFIG.passwordRequired && !CONFIG.appPassword) {
+      showAppLogin();
+    }
   }).catch(() => console.warn('Config fetch failed — offline mode'));
+
+// ── APP-WIDE PASSWORD PROMPT ───────────────────────────────────────────────
+function showAppLogin() {
+  const el = document.getElementById('app-login');
+  if (!el) return;
+  el.classList.add('visible');
+  setTimeout(() => {
+    const f = document.getElementById('app-login-p');
+    if (f) { f.value = ''; f.focus(); }
+  }, 50);
+}
+
+function hideAppLogin() {
+  const el = document.getElementById('app-login');
+  if (el) el.classList.remove('visible');
+}
+
+async function appLoginSubmit() {
+  const field = document.getElementById('app-login-p');
+  const btn   = document.getElementById('app-login-btn');
+  const pwd   = (field && field.value) || '';
+  if (!pwd) return;
+  if (btn) { btn.disabled = true; btn.textContent = 'CHECKING…'; }
+  try {
+    const r = await fetch('https://rov-chatbot-production-3d66.up.railway.app/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    if (r.ok) {
+      CONFIG.appPassword = pwd;
+      sessionStorage.setItem('rovPassword', pwd);
+      hideAppLogin();
+    } else {
+      // Silent reject — clear field, brief red border flash, no error text
+      if (field) {
+        field.value = '';
+        field.classList.add('reject');
+        setTimeout(() => field.classList.remove('reject'), 600);
+        field.focus();
+      }
+    }
+  } catch (e) {
+    // Network failure — also treat as soft reject so user can retry
+    if (field) { field.value = ''; field.focus(); }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'SIGN IN'; }
+  }
+}
+
+// Re-prompt if any Railway proxy call returns 401 (password rotated, sessionStorage stale)
+function handleAuthExpired() {
+  sessionStorage.removeItem('rovPassword');
+  CONFIG.appPassword = '';
+  showAppLogin();
+}
+
+// Enter-key submit on the password field
+document.addEventListener('DOMContentLoaded', () => {
+  const f = document.getElementById('app-login-p');
+  if (f) f.addEventListener('keydown', e => { if (e.key === 'Enter') appLoginSubmit(); });
+});
 
 // ── CONTEXT ────────────────────────────────────────────────────────────────
 const CONTEXT = { system: '', component: '', card: '', viewerFile: '' };
@@ -2362,7 +2441,7 @@ async function sendChat() {
   chatBusy = true;
   const thinking = appendMsg('assistant', '<em style="color:var(--text-dim)">Searching manuals and drawings\u2026</em>');
   try {
-    if (!CONFIG.anthropicKey) {
+    if (!CONFIG.supabaseUrl) {
       thinking.innerHTML = '<em style="color:#c06030">Not connected \u2014 check internet access</em>';
       chatBusy = false; return;
     }
@@ -2467,6 +2546,13 @@ async function sendChat() {
         messages: CHAT_HIST.slice(-10)
       })
     });
+    if (r.status === 401) {
+      // Password rotated or sessionStorage stale — re-prompt
+      thinking.innerHTML = '<em style="color:#c06030">Session expired \u2014 please sign in again</em>';
+      chatBusy = false;
+      handleAuthExpired();
+      return;
+    }
     const data = await r.json();
     const text = data.content?.[0]?.text || 'No response';
     thinking.innerHTML = formatMsg(text, draws);
@@ -2763,7 +2849,6 @@ function openDoc(file, page, label) {
     <div class="adm-login-box">
       <div class="adm-login-title">⚙ MANUAL ADMIN</div>
       <div class="adm-login-sub">HERCULES MK3 — RESTRICTED ACCESS</div>
-      <input id="adm-u" class="adm-login-field" type="text" placeholder="Username" autocomplete="off" spellcheck="false">
       <input id="adm-p" class="adm-login-field" type="password" placeholder="Password" autocomplete="off">
       <button class="adm-login-btn" onclick="admTryLogin()">SIGN IN</button>
       <div id="adm-login-err" class="adm-login-err">Invalid credentials — try again</div>
@@ -2829,7 +2914,8 @@ function openDoc(file, page, label) {
 <script>
 // ── ADMIN PANEL ──────────────────────────────────────────────────────────────
 (function(){
-  const ADM_USER = 'admin', ADM_PASS = 'hercules';
+  // Admin credentials live server-side as ADMIN_PASSWORD env var on Railway.
+  // admTryLogin() POSTs to /api/admin-auth — see server-side validation in app.py.
   const ADM_LABELS = {
     electronics_pod:'Electronics Pod', tcu:'TCU', hpu:'HPU',
     valve_packs:'Valve Packs', thrusters:'Thrusters',
@@ -2861,10 +2947,7 @@ function openDoc(file, page, label) {
     }
   });
 
-  // ── Enter-key shortcuts in login form ───────────────────────────────────
-  document.getElementById('adm-u').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') document.getElementById('adm-p').focus();
-  });
+  // ── Enter-key shortcut in login form ───────────────────────────────────
   document.getElementById('adm-p').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') admTryLogin();
   });
@@ -2880,10 +2963,9 @@ function openDoc(file, page, label) {
     overlay.classList.add('visible');
     document.getElementById('adm-login').style.display = 'flex';
     document.getElementById('adm-main').classList.remove('visible');
-    document.getElementById('adm-u').value = '';
     document.getElementById('adm-p').value = '';
     document.getElementById('adm-login-err').style.display = 'none';
-    setTimeout(() => document.getElementById('adm-u').focus(), 120);
+    setTimeout(() => document.getElementById('adm-p').focus(), 120);
   };
 
   window.admClose = function() {
@@ -2894,17 +2976,33 @@ function openDoc(file, page, label) {
     document.getElementById('adm-viewer-empty').style.display = 'flex';
   };
 
-  window.admTryLogin = function() {
-    const u = document.getElementById('adm-u').value.trim();
-    const p = document.getElementById('adm-p').value;
-    if (u === ADM_USER && p === ADM_PASS) {
-      document.getElementById('adm-login').style.display = 'none';
-      document.getElementById('adm-main').classList.add('visible');
-      admBuildSections();
-    } else {
-      document.getElementById('adm-login-err').style.display = 'block';
-      document.getElementById('adm-p').value = '';
-      document.getElementById('adm-p').focus();
+  window.admTryLogin = async function() {
+    const pField = document.getElementById('adm-p');
+    const errEl  = document.getElementById('adm-login-err');
+    const p      = (pField && pField.value) || '';
+    if (!p) return;
+    errEl.style.display = 'none';
+    try {
+      const r = await fetch('https://rov-chatbot-production-3d66.up.railway.app/api/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: p })
+      });
+      if (r.ok) {
+        document.getElementById('adm-login').style.display = 'none';
+        document.getElementById('adm-main').classList.add('visible');
+        if (pField) pField.value = '';   // never retain admin password
+        admBuildSections();
+      } else {
+        // Silent reject pattern: clear field, show inline error briefly, no lockout
+        errEl.style.display = 'block';
+        if (pField) { pField.value = ''; pField.focus(); }
+      }
+    } catch (e) {
+      // Network failure — show error but allow retry
+      errEl.textContent = 'Connection failed — try again';
+      errEl.style.display = 'block';
+      if (pField) { pField.value = ''; pField.focus(); }
     }
   };
 
@@ -3078,5 +3176,15 @@ function openDoc(file, page, label) {
   }
 })();
 </script>
+<!-- ── APP-WIDE PASSWORD OVERLAY ──────────────────────────────────────────── -->
+<div id="app-login">
+  <div class="app-login-box">
+    <div class="app-login-title">HERCULES MK3 ROV MANUAL</div>
+    <div class="app-login-sub">SEVEN OCEANIC · SUBSEA 7 · RESTRICTED</div>
+    <input id="app-login-p" class="app-login-field" type="password" placeholder="Password" autocomplete="current-password" autofocus>
+    <button id="app-login-btn" class="app-login-btn" onclick="appLoginSubmit()">SIGN IN</button>
+  </div>
+</div>
+
 </body>
 </html>

@@ -3,6 +3,7 @@ from flask_cors import CORS
 import requests
 import os
 import functools
+import hmac
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -15,12 +16,16 @@ SUPABASE_URL     = os.environ.get('SUPABASE_URL', '').strip()
 SUPABASE_ANON    = os.environ.get('SUPABASE_ANON', '').strip()
 SUPABASE_SERVICE = os.environ.get('SUPABASE_SERVICE', '').strip()
 APP_PASSWORD     = os.environ.get('APP_PASSWORD', '').strip()
+ADMIN_PASSWORD   = os.environ.get('ADMIN_PASSWORD', '').strip()
 
 
 def check_password():
     if not APP_PASSWORD:
         return True
-    return request.headers.get('X-App-Password', '') == APP_PASSWORD
+    return hmac.compare_digest(
+        request.headers.get('X-App-Password', ''),
+        APP_PASSWORD,
+    )
 
 
 def require_password(f):
@@ -44,15 +49,15 @@ def static_files(filename):
 
 @app.route('/api/config')
 def get_config():
-    if APP_PASSWORD and not check_password():
-        return jsonify({'error': 'Unauthorised'}), 401
+    # Only returns public-by-design values. Secret keys (Anthropic, Voyage,
+    # Supabase service role) are never sent to the browser — all paid-API
+    # calls and service-role writes go through Flask proxies that hold the
+    # keys server-side and require an X-App-Password header.
     return jsonify({
-        'anthropicKey':    ANTHROPIC_KEY,
-        'voyageKey':       VOYAGE_KEY,
-        'supabaseUrl':     SUPABASE_URL,
-        'supabaseAnon':    SUPABASE_ANON,
-        'supabaseService': SUPABASE_SERVICE,
+        'supabaseUrl':      SUPABASE_URL,
+        'supabaseAnon':     SUPABASE_ANON,
         'passwordRequired': bool(APP_PASSWORD),
+        'adminRequired':    bool(ADMIN_PASSWORD),
     })
 
 
@@ -61,7 +66,26 @@ def verify_password():
     data = request.get_json(silent=True) or {}
     if not APP_PASSWORD:
         return jsonify({'ok': True})
-    if data.get('password') == APP_PASSWORD:
+    submitted = data.get('password', '') or ''
+    if hmac.compare_digest(submitted, APP_PASSWORD):
+        return jsonify({'ok': True})
+    return jsonify({'ok': False, 'error': 'Wrong password'}), 401
+
+
+@app.route('/api/admin-auth', methods=['POST'])
+def verify_admin_password():
+    # Separate gate from APP_PASSWORD. Gates destructive operations in the
+    # admin overlay (move/remove drawings, save data_patch). Re-prompt on
+    # every admin entry — never persisted client-side.
+    #
+    # Asymmetric default vs APP_PASSWORD: if ADMIN_PASSWORD is not set,
+    # admin is DENIED (not bypassed). "No admin password configured" must
+    # never silently grant admin access.
+    data = request.get_json(silent=True) or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({'ok': False, 'error': 'Admin not configured'}), 401
+    submitted = data.get('password', '') or ''
+    if hmac.compare_digest(submitted, ADMIN_PASSWORD):
         return jsonify({'ok': True})
     return jsonify({'ok': False, 'error': 'Wrong password'}), 401
 
@@ -143,11 +167,12 @@ def supabase_proxy(path):
 @app.route('/health')
 def health():
     return jsonify({
-        'status': 'ok',
+        'status':    'ok',
         'anthropic': bool(ANTHROPIC_KEY),
         'voyage':    bool(VOYAGE_KEY),
         'supabase':  bool(SUPABASE_URL),
         'password':  bool(APP_PASSWORD),
+        'admin':     bool(ADMIN_PASSWORD),
     })
 
 
