@@ -21,6 +21,7 @@
 | `MASTER_KNOWLEDGE.md` | Ground truth technical reference (PCBs, signals, hydraulics, drawing numbers). The chatbot prompt is graded against this. v2.0, source manuals TMA01030/01031/00974/01028/01029. |
 | `DRAWING_INDEX.md` | Three-layer drawing-index feature reference: `card_index` flow, `drawing_families` chatbot integration, and the standalone tree HTMLs. Includes the dev-only limitation of tree HTMLs in full detail. |
 | `SECURITY_BRIEF.md` | Self-contained briefing on the security architecture (two-gate model, accepted residual risk, hard constraints, fair-game redesign areas). Read this before any change touching `app.py`, auth flows, or env vars. |
+| `CARD_SYSTEM_BRIEF.md` | Self-contained briefing on the card navigation system (three data sources — `POD_ZONES`, `DESCRIPTIONS`, `card_index`; click flow; load-bearing constraints; fair-game redesign areas). Read this before any change touching the chassis SVGs, card sidebar, or card click handler. |
 | `COWORK_TASK_REORGANISE_TECH_DOCS.md` | Run instructions for `reorganise_tech_docs.py` — the script that built the parallel reorganised folder structure. |
 
 ### Server (Railway-deployed)
@@ -178,3 +179,4 @@ Engineer opens `index.html` in Edge via `file://`. Chatbot and live drawing sear
 | Add new PDFs to the searchable corpus | `embed_new_files.py` (run via Cowork) |
 | Understand the drawing-index layers | `DRAWING_INDEX.md` |
 | Change auth, `app.py`, or env vars safely | `SECURITY_BRIEF.md` (read FIRST) |
+| Redesign the card navigation system | `CARD_SYSTEM_BRIEF.md` (read FIRST) |
